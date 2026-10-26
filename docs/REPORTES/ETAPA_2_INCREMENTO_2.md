@@ -100,9 +100,24 @@ filas/retorno, búsqueda por origen/destino, tarifas y seguridad de Etapa 1.
 La primera pasada de compatibilidad ejecutó 79/79 integraciones; una pasada ampliada
 intermedia ejecutó 27/27 +91/91; la pasada final arriba ejecutó 27/27 +95/95.
 
-CI Ubuntu/Windows × Node 22/24: pendiente de verificar tras publicar este incremento;
-no se atribuyen a este código los checks del incremento 1. El workflow existente
-continúa ejecutando npm run test:all en las cuatro combinaciones sin servicios pagos.
+Commit de implementación **f7afb70e87e8991dbf1aed40f4e0bda3fb8165aa**:
+[CI del PR #2](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40376711372)
+y [CI del push](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40376704052)
+finalizaron en **success**. Se inspeccionaron los logs de los cuatro jobs del PR:
+
+| Plataforma | Node observado en setup | Unitarias | PostgreSQL 18.4 real | Runner/listeners |
+|---|---|---|---|---|
+| Ubuntu | 22.23.3 | 27/27 | 95/95 | Aprobados |
+| Ubuntu | 24.21.0 | 27/27 | 95/95 | Aprobados |
+| Windows | 22.23.4 | 27/27 | 95/95 | Aprobados |
+| Windows | 24.22.1 | 27/27 | 95/95 | Aprobados |
+
+El workflow existente ejecutó npm run test:all en las cuatro combinaciones. No se
+modificó ni contrató infraestructura. La evidencia enlazada corresponde al commit
+de implementación; el commit documental que registra estos resultados genera sus
+propios checks visibles en el PR. No se han probado otras versiones PostgreSQL.
+También se ejecutó git diff --check con salida 0 y se verificó que main y Etapa 1
+conservan sus referencias remotas, sin fusiones ni cierres de los PRs.
 
 ## Compatibilidad y límites
 
