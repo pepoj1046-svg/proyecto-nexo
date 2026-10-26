@@ -136,8 +136,21 @@ G12 fija SHA-256 de **001–014**. Se mantienen reservas 1–6, APP/presenciales
 segmentos/tarifas, búsqueda sin selector de categoría, identidad y todas las
 actualizaciones pobladas de etapas anteriores.
 
-CI Ubuntu/Windows × Node 22/24: pendiente de verificar sobre el nuevo commit al
-publicarlo; los checks del incremento 3 no se atribuyen a 015.
+Commit de implementación **a0cb6a7898a1d542691c5e5ee13b95fbca87bfe7**:
+[CI del PR #2](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40389925988)
+finalizó con los cuatro jobs en **success**. Se inspeccionaron sus logs:
+
+| Plataforma | Node | Unitarias | PostgreSQL 18.4 real | Runner/listeners |
+|---|---|---|---|---|
+| Ubuntu | 22 | 29/29 | 122/122 | Aprobados |
+| Ubuntu | 24 | 29/29 | 122/122 | Aprobados |
+| Windows | 22 | 29/29 | 122/122 | Aprobados |
+| Windows | 24 | 29/29 | 122/122 | Aprobados |
+
+La evidencia corresponde al código del incremento 4; no se reutilizan resultados
+de 014. El commit documental posterior registra estos resultados, sin cambios de
+código, y tiene sus propios checks en el PR. main y desarrollo/etapa-1 conservaron
+sus referencias remotas y el árbol de trabajo quedó limpio tras publicar.
 
 ## 4. Compatibilidad y archivos
 
