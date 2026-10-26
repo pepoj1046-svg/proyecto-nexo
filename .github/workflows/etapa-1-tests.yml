@@ -1,0 +1,28 @@
+name: Etapa 1 - dominio y PostgreSQL
+on:
+  push:
+    branches: [desarrollo/etapa-1]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['22', '24']
+    name: tests (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Instalar dependencias fijadas
+        run: npm ci --no-fund
+      - name: Dominio y PostgreSQL local aislado
+        run: npm run test:all

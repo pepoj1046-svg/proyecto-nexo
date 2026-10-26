@@ -1,0 +1,11 @@
+-- Trufis Bolivia, Etapa 1.
+-- El DDL conceptual anterior nunca fue una migración ejecutada.
+-- Fuente ejecutable única: database/migrations/001_core.sql, 002_operations.sql,
+-- 003_queue.sql y 004_isolation_guard.sql. No aplicar este archivo como instalación.
+-- Ejecutar: npm run db:migrate (MIGRATION_DATABASE_URL local explícita).
+-- El runner registra SHA-256, serializa migradores y aplica cada archivo
+-- en una transacción. No hay migración destructiva automática desde el borrador.
+
+-- Incremento geográfico: 005_geography_authorizations.sql,
+-- 006_search_authorization_functions.sql y 007_eligibility_rls.sql.
+-- 001-004 conservan sus bytes/checksums. Consultar docs/GEOGRAFIA_Y_AUTORIZACIONES.md.
