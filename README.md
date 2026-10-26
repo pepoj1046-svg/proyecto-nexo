@@ -56,3 +56,18 @@ no hay endpoint público de registro/login, HTTP ni aplicaciones publicadas.
 Consultar [operación y decisiones](docs/IMPLEMENTACION_ETAPA_1.md),
 [seguridad pendiente](docs/SEGURIDAD_PENDIENTE.md) y
 [resultados exactos](docs/RESULTADOS_ETAPA_1.md).
+
+## Geografía y rutas habilitadas
+
+La base admite departamentos, provincias, municipios y localidades versionados.
+La búsqueda recibe origen/destino y clasifica internamente; solo publica servicios
+con asociación adherida/operativa, acceso comercial activo, permiso de ruta verificado,
+tarifa y plazas. Los catálogos de prueba son ficticios, no datos oficiales de Bolivia.
+
+    await service.search(sessionToken, { originLocalityId, destinationLocalityId });
+
+[Modelo y contrato](docs/GEOGRAFIA_Y_AUTORIZACIONES.md) ·
+[Reporte del incremento](docs/REPORTES/ETAPA_1_GEOGRAFIA.md).
+Las rutas previas no obtienen geografía ni permisos automáticamente. La actualización
+con reservas preexistentes está probada; consultar el procedimiento y límites.
+npm run test:all ejecuta 13 unitarias, 38 integraciones y la comprobación del ejecutor.

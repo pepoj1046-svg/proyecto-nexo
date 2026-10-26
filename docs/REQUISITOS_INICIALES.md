@@ -3,7 +3,7 @@
 **Estado:** borrador de requisitos acordados el 25 de octubre de 2026. Proyecto desde cero, independiente de Ruta 35, Meteo Chaco y ATLAS-AI-Lab. Nombre comercial: **Trufis Bolivia**; repositorio técnico: **proyecto-nexo**. **No hay despliegue ni pagos reales autorizados.**
 
 ## 1. Propósito y alcance
-Plataforma SaaS multi-asociación para transporte **interprovincial** de trufis y vagonetas en Bolivia. Primera prueba: Yacuiba ↔ Villamontes, con asociaciones, cuentas y viajes ficticios. La integración con minibuses queda para después. Cuatro roles: pasajero, chofer, administrador de asociación y administrador general. Cada asociación controla sus datos, choferes, vehículos, filas, rutas, paradas y tarifas, separados de los de otras asociaciones.
+Plataforma SaaS multi-asociación de cobertura nacional para trufis y vagonetas en Bolivia. Lanzamiento progresivo **intermunicipal → interprovincial → interdepartamental**, con las tres categorías admitidas desde el modelo. Primera prueba: Yacuiba ↔ Villamontes, con asociaciones, cuentas y viajes ficticios. La integración con minibuses queda para después. Cuatro roles: pasajero, chofer, administrador de asociación y administrador general. Cada asociación controla sus datos, choferes, vehículos, filas, rutas, paradas y tarifas, separados de los de otras asociaciones.
 
 ## 2. Vehículos, filas, abordaje y reservas
 - **Seis asientos de pasajeros por vagoneta** como referencia inicial (comprobar capacidad habilitada de cada vehículo).

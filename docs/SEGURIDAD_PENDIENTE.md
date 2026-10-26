@@ -42,3 +42,16 @@ real no propietaria para comprobar permisos, además de una conexión de setup a
 
 No hay datos reales, credenciales productivas, servicios remotos, facturación ni despliegues.
 Ningún recurso o archivo de Ruta 35, Meteo Chaco o ATLAS-AI-Lab forma parte del incremento.
+
+## Actualización de RLS y permisos de operación
+
+Las migraciones 005–007 restringen el catálogo público a rutas elegibles y tarifas
+vigentes; operadores y reservas propias conservan su contexto histórico. Permisos,
+referencias y motivos son privados de asociación, salvo el revisor operativo autorizado.
+Un administrador no puede autoverificar ni editar el registro de revisores.
+Búsqueda, nuevas reservas y confirmaciones revalidan habilitación, vigencia y estados.
+Se probaron suspensiones/revocaciones bajo locks y actualización con datos existentes.
+El propietario/provisionador permanece privilegiado. Falta revisión independiente,
+gestión pública de identidades, retención de motivos, documentos y permisos reales.
+[Detalle de fronteras](GEOGRAFIA_Y_AUTORIZACIONES.md) y
+[evidencia](REPORTES/ETAPA_1_GEOGRAFIA.md).

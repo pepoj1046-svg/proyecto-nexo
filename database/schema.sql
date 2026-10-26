@@ -5,3 +5,7 @@
 -- Ejecutar: npm run db:migrate (MIGRATION_DATABASE_URL local explícita).
 -- El runner registra SHA-256, serializa migradores y aplica cada archivo
 -- en una transacción. No hay migración destructiva automática desde el borrador.
+
+-- Incremento geográfico: 005_geography_authorizations.sql,
+-- 006_search_authorization_functions.sql y 007_eligibility_rls.sql.
+-- 001-004 conservan sus bytes/checksums. Consultar docs/GEOGRAFIA_Y_AUTORIZACIONES.md.

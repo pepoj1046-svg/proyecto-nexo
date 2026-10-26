@@ -45,3 +45,14 @@ incluidos pagos, licencias y turnos con vigencia, **todavía no implementados**.
 
 ## Limitaciones actuales
 Es un esquema de arranque, no el modelo de producción. Faltan el trazado geográfico detallado, constraints avanzados multi-tabla, política de retención GPS, versionado de tramos, reembolsos bancarios reales y DDL de índices optimizados. Se completarán antes de operar servicios reales.
+
+## Entidades geográficas y permisos implementados
+
+geo_catalogs, departments, provinces, municipalities y localities guardan jerarquía
+por versión/fuente, sin mezclas de catálogo mediante claves compuestas.
+routes y stops enlazan esas localidades; stop_count, extremos y topología usada
+quedan protegidos. route_authorizations y authorization_events registran vigencia,
+estado, actor y motivo; operation_reviewers delimita la verificación confiable.
+La licencia/comercialización sigue representada por el interruptor técnico previo
+de asociación; no sustituye la habilitación legal de una ruta.
+[Especificación ejecutable y límites](GEOGRAFIA_Y_AUTORIZACIONES.md).

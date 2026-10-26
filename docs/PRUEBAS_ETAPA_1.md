@@ -1,6 +1,6 @@
 # Plan de pruebas de Etapa 1
 
-Estado: **10 pruebas unitarias y 25 de integración PostgreSQL aprobadas localmente**.
+Estado: **13 pruebas unitarias y 38 de integración PostgreSQL aprobadas localmente**.
 Ver [RESULTADOS_ETAPA_1](RESULTADOS_ETAPA_1.md) para comandos, evidencia y límites.
 La tabla conserva los escenarios originales; no todos sus módulos están construidos.
 
@@ -50,3 +50,11 @@ Adicionales: migraciones repetibles/concurrentes, rollback DDL, checksum, tokens
 falsos/caducados/revocados, helpers y DML denegados, aceptación simultánea, caducidad,
 auditoría inmutable, retorno a fila, rechazo de asignaciones que salten el orden y
 rechazo de un aislamiento incompatible con el protocolo de inventario.
+
+## Incremento geográfico
+
+G01–G13 verifican las tres clasificaciones, búsqueda, vigencia y revisión de permisos,
+ estados de asociación, catálogos RLS, integridad geográfica, suspensiones/revocaciones
+ concurrentes, checksums 001–004 y actualización poblada. Detalle y evidencia en
+ [reporte geográfico](REPORTES/ETAPA_1_GEOGRAFIA.md). El ejecutor también comprueba
+ que un fallo del hijo (9) no se transforme en éxito de CI.

@@ -51,3 +51,13 @@ Registro de eventos de auditoría con actor, hora, asociación y motivo. GPS sol
 ## Entorno
 
 Desarrollo local y pruebas con datos completamente ficticios; `.env.example` sin secretos. CI sobre runners estándar si se habilita, sin credenciales reales. Antes del primer despliegue acordar costos, seguridad y autorizaciones.
+
+## Incremento de cobertura nacional
+
+Implementado mediante migraciones 005–007: jerarquía geográfica versionada, localidades
+en rutas/paradas, autorizaciones por ruta y búsqueda exclusivamente por origen/destino.
+Las categorías se derivan de la jerarquía administrativa. El lanzamiento comercial
+sigue el orden intermunicipal, interprovincial e interdepartamental; la configuración
+y los permisos habilitan cada servicio, sin expansión automática.
+El estado comercial existente se conserva separado de adhesión, operación y permiso.
+[Contrato, RLS y actualización](GEOGRAFIA_Y_AUTORIZACIONES.md). No hay frontend ni GPS.

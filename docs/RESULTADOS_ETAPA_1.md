@@ -1,5 +1,15 @@
 # Resultados de Etapa 1
 
+## Incremento geográfico actual
+
+**13 unitarias y 38 integraciones aprobadas**, más comprobación del código de fallo
+ del ejecutor. Migraciones 001–004 intactas; nuevas 005–007. Se verificaron búsqueda,
+ tres coberturas, autorizaciones, RLS, concurrencia y actualización con reservas previas.
+ Ver [reporte actual](REPORTES/ETAPA_1_GEOGRAFIA.md) y
+ [modelo/contrato](GEOGRAFIA_Y_AUTORIZACIONES.md).
+
+## Evidencia histórica del núcleo anterior
+
 Validación local: **25/10/2026 (America/La_Paz)**. Rama: `desarrollo/etapa-1`.
 Base de trabajo: `8207876a0614575e9304e855472af6ad9a0ffc2e`.
 Antes de publicar se incorporó el avance documental `8d5c0836fdabb2854eb84e09baea606eb07d6c48`
