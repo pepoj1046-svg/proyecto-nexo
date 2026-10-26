@@ -100,6 +100,9 @@ establece la comparación con el avance anterior sin modificarlo.
    default global; ahora se revoca globalmente para el creador en esta base.
 6. La revisión detectó que acumular administrador/revisor podía permitir revisión
    propia. El nuevo wrapper lo impide y mantiene la implementación previa interna.
+7. El push del entorno fue rechazado por usar una identidad sin escritura. Se
+   publicó con la conexión de GitHub del propietario, comprobando el árbol Git
+   idéntico al probado y avanzando la rama con SHA esperado, sin force ni pérdidas.
 
 Los fallos intermedios están corregidos; la evidencia final es la ejecución completa
 con código 0. El probe produce intencionalmente código 9 en el hijo y su verificación
@@ -108,9 +111,14 @@ termina con 0; no es un error pendiente.
 ## CI
 
 El workflow existente se conserva: Node 22, Ubuntu y Windows, `npm run test:all`.
-La comprobación remota del commit publicado está pendiente al redactar este informe;
-se actualizará con el enlace y resultado observados. No se da por aprobado Windows
-por el resultado local de Linux. Otras versiones PostgreSQL no se han probado.
+Commit de implementación **`6be6195`**: Ubuntu y Windows aprobados en la
+[ejecución del PR](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40358461490)
+y en la [ejecución del push](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40358448440).
+Se inspeccionaron los jobs y logs Ubuntu/Windows del PR: cada plataforma ejecutó
+**17 unitarias y 54 integraciones**, PostgreSQL 18.4 y el probe del ejecutor, todos
+aprobados. Este resultado corresponde a ese commit de implementación; cualquier
+commit documental posterior tiene su propio estado en los checks del PR.
+Otras versiones PostgreSQL no se han probado.
 
 ## Pendientes para cerrar Etapa 1
 
