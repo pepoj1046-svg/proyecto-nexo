@@ -1,8 +1,27 @@
 # Trufis Bolivia — Proyecto Nexo
 
-Backend local de Etapa 1 con datos ficticios: PostgreSQL, aislamiento por asociación,
-reservas por segmentos, aceptación del chofer y despacho. Sin despliegue, pagos ni GPS.
-Trabajo en `desarrollo/etapa-1`; [PR de revisión #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1), sin fusionar.
+Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
+asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 2 activa
+en `desarrollo/etapa-2`, desde el cierre aceptado de Etapa 1. PR de esta etapa hacia
+`desarrollo/etapa-1`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 3.
+
+## Etapa 2: reservas y negocio local
+
+`npm run dev:local` muestra dos puertos loopback: identidad/catálogo y negocio.
+El segundo requiere Bearer y claves Idempotency-Key en mutaciones; no tiene login,
+SQL ni aprovisionamiento. Ambas superficies usan la misma base nueva de pruebas.
+Los tests crean fixtures ficticios para todos los escenarios; el launcher no crea
+operadores reales ni un catálogo nacional.
+
+[Contratos y endpoints](docs/ETAPA_2_CONTRATOS.md) ·
+[Decisiones pendientes](docs/DECISIONES_PENDIENTES_ETAPA_2.md) ·
+[Reporte y pruebas del incremento](docs/REPORTES/ETAPA_2_INCREMENTO_1.md).
+
+Se mantienen 001–011 intactas y se añade 012: reserva con precio esperado opcional
+y bitácora de recogida/descenso por reserva. El núcleo de capacidad/fila/tarifas
+se reutiliza. Suite actual: **26 unitarias, 79 integraciones PostgreSQL real**,
+probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar
 
@@ -89,8 +108,8 @@ await service.suggestLocalities(sessionToken, {query: 'San José', limit: 10});
 [Pruebas y límites del incremento 008–009](docs/REPORTES/ETAPA_1_LOCALIDADES_IDENTIDAD.md).
 Las rutas previas no obtienen geografía ni permisos automáticamente. La actualización
 con reservas preexistentes está probada; consultar el procedimiento y límites.
-npm run test:all ejecuta 23 unitarias, 66 integraciones, la comprobación del ejecutor
-y el smoke de arranque/cierre de la API local con PostgreSQL real.
+npm run test:all conserva la cobertura de Etapa 1 y ejecuta también los contratos,
+actualización poblada y escenarios APP/presencial/despacho HTTP de Etapa 2.
 
 [API local y mantenimiento](docs/HTTP_LOCAL_Y_MANTENIMIENTO.md) ·
 [Auditoría y evaluación de cierre técnico](docs/REPORTES/ETAPA_1_AUDITORIA_HTTP.md).

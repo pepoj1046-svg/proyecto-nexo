@@ -1,9 +1,9 @@
-name: Etapa 1 - dominio y PostgreSQL
+name: Laboratorio - dominio y PostgreSQL
 on:
   push:
-    branches: [desarrollo/etapa-1]
+    branches: [desarrollo/etapa-1, desarrollo/etapa-2]
   pull_request:
-    branches: [main]
+    branches: [main, desarrollo/etapa-1]
 permissions:
   contents: read
 jobs:
