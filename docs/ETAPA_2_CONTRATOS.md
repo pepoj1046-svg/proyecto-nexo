@@ -256,3 +256,46 @@ la nueva oferta sigue el núcleo y requiere una política posterior de recuperac
 Las propuestas se revalidan al ejecutar; varias propuestas no garantizan capacidad
 conjunta. Las transferencias repetidas desde un viaje ya abandonado se omiten hasta
 modelar episodios de llegada/reasignación sin reutilizar relojes.
+
+## Incremento 4: episodios, incidencias y correcciones
+
+La migración 015 sustituye los límites por viaje del incremento 3 por episodios
+inmutables. 001–014 se conservan. [Reporte y límites completos](REPORTES/ETAPA_2_INCREMENTO_4.md).
+Cada nueva asignación tiene una versión `episode` y empieza sin relojes de llegada,
+READY, respuesta o recogida anteriores; también exige nueva atestación de presencia.
+El episodio base conserva los eventos heredados sin inventar historia.
+
+| Ruta /business/... | Cuerpo | Alcance |
+|---|---|---|
+| assignment-status | bookingId | Pasajero/creador, admin propio o chofer; estado efectivo, incidencia y episodios |
+| recovery-queue | routeId, limit/offset opcionales | Admin propio; incidencias ordenadas y acotadas |
+| terminal-history | bookingId, limit/offset opcionales | Reserva visible; pruebas y correcciones, sin modificar historia |
+| episode-command | bookingId, episode, command, confirmed=true | Mismos comandos/permisos de terminal, con versión explícita |
+| correct-arrival | bookingId, episode, eventId, reason | Admin propio; retira prueba vigente con evento compensatorio |
+| assignment-transfer | bookingId, targetTripId, direction, episode | Admin propio; primer candidato elegible, transacción atómica |
+| assignment-respond | bookingId, episode, accept | Chofer asignado activo; aceptación/rechazo versionado |
+
+Las mutaciones requieren Idempotency-Key. episode es entero 0–8, obligatorio en
+las rutas nuevas; STALE_ASSIGNMENT devuelve 409. TRANSFER_CONDITIONS_CHANGED también devuelve 409
+si cambian tarifa/paradas/condiciones antes de confirmar; el importe pactado no cambia. reason admite OPERATOR_ERROR,
+WRONG_RESERVATION o PASSENGER_CORRECTION, sin texto personal libre. Correcciones
+solo antes de salir, con reserva confirmada y sin movimientos. La prueba original
+permanece; una nueva VERIFIED válida prevalece sobre una DECLARED vencida/retirada.
+Reintentar DECLARED no renueva expires_at ni permite redeclarar tras su retirada
+en ese episodio. La configuración registra actor y duración anterior/nueva.
+
+transfer-candidates acepta ahora RECOVER, además de LATER/EARLIER. RECOVER solo
+aplica a ofertas trasladadas rechazadas o vencidas; busca en toda la fila compatible,
+sin devolver automáticamente al origen. La nueva propuesta conserva reserva,
+integrantes, precio y segmento, queda HELD y requiere al nuevo chofer. No hay recargo.
+Si no hay opción, RECOVERY_PENDING queda visible en booking.assignment y en las
+consultas del pasajero/administrador. confirmedTripId es NULL en esa incidencia;
+assignedTripId indica el último viaje persistido, sin afirmar que haya plaza confirmada.
+
+Las firmas antiguas continúan por compatibilidad; los nuevos clientes deben usar
+versión explícita. Las lecturas no bloquean ni garantizan disponibilidad. No se
+sustituye el estado observado por el recibo original de una operación idempotente.
+Límite técnico: ocho propuestas posteriores al episodio base; al alcanzarlo se
+requiere revisión y no se ejecuta ninguna consecuencia económica ni cancelación.
+La ausencia 0/5/8 y recogida cinco minutos siguen solo simuladas, sin envío ni
+liberación automática. No se recomponen grupos previamente divididos.

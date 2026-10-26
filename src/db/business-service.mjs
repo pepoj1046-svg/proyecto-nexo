@@ -39,6 +39,28 @@ export function createBusinessService(pool) {
   };
   const terminalCall=(fn,args)=>(token,...values)=>transaction(token,async c=>(await c.query(`SELECT nexo.${fn}(${args}) AS result`,values)).rows[0].result);
   return Object.freeze({
+    assignmentStatus:terminalCall('assignment_status','$1'),
+    correctArrival:terminalCall('correct_arrival','$1,$2,$3,$4,$5'),
+    transferAssignment:terminalCall('transfer_assignment','$1,$2,$3,$4,$5'),
+    respondAssignment:terminalCall('respond_assignment','$1,$2,$3,$4'),
+    episodeCommand:terminalCall('terminal_assignment_command','$1,$2,$3,$4,$5'),
+    terminalHistory:(token,request)=>{
+      const q=page(request,'bookingId');return transaction(token,async c=>{
+        const status=(await c.query('SELECT nexo.assignment_status($1) AS result',[q.bookingId])).rows[0].result;
+        const events=(await c.query('SELECT id,episode,trip_id,kind,actor_id,created_at,expires_at,reason,target_event FROM nexo.terminal_timeline WHERE booking_id=$1 ORDER BY episode DESC,serial DESC,created_at DESC,id DESC LIMIT $2 OFFSET $3',[q.bookingId,q.limit,q.offset])).rows;
+        return {assignment:status,events,limit:q.limit,offset:q.offset};
+      });
+    },
+    recoveryQueue:(token,request)=>{
+      const q=page(request,'routeId');return transaction(token,async c=>{
+        const scope=(await c.query("SELECT nexo.has_role(association_id,'ASSOCIATION_ADMIN') AS allowed FROM nexo.routes WHERE id=$1",[q.routeId])).rows[0];
+        if(!scope?.allowed)throw new Error('FORBIDDEN');
+        return (await c.query(`SELECT nexo.assignment_status(b.id) AS assignment FROM nexo.bookings b
+          WHERE b.route_id=$1 AND (b.status IN ('REJECTED','EXPIRED') OR (b.status='HELD' AND b.expires_at<=clock_timestamp()))
+          AND (SELECT a.source FROM nexo.assignment_episodes a WHERE a.booking_id=b.id ORDER BY episode DESC LIMIT 1) IN ('TRANSFER','RECOVERY','LEGACY_TRANSFER')
+          ORDER BY b.created_at,b.id LIMIT $2 OFFSET $3`,[q.routeId,q.limit,q.offset])).rows.map(r=>r.assignment);
+      });
+    },
     advancementCandidates:(token,trip)=>transaction(token,async c=>(await c.query('SELECT * FROM nexo.advancement_candidates($1) AS proposal',[trip])).rows.map(r=>r.proposal)),
     configureTerminal:terminalCall('configure_terminal','$1,$2,$3'),
     terminalCommand:terminalCall('terminal_command','$1,$2,$3,$4'),
@@ -64,7 +86,7 @@ export function createBusinessService(pool) {
         const b=(await c.query('SELECT '+bookingFields+' FROM nexo.bookings WHERE id=$1',[bookingId])).rows[0];
         if(!b)throw new Error('NOT_FOUND');
         const movements=(await c.query('SELECT kind,stop_index,created_at FROM nexo.booking_movements WHERE booking_id=$1 ORDER BY created_at,kind',[bookingId])).rows;
-        return {...b,members:await members(c,bookingId),movements,movementState:movements.some(m=>m.kind==='ALIGHT')?'ALIGHTED':movements.some(m=>m.kind==='BOARD')?'BOARDED':'UNRECORDED'};
+        return {...b,assignment:(await c.query('SELECT nexo.assignment_status($1) AS result',[bookingId])).rows[0].result,members:await members(c,bookingId),movements,movementState:movements.some(m=>m.kind==='ALIGHT')?'ALIGHTED':movements.some(m=>m.kind==='BOARD')?'BOARDED':'UNRECORDED'};
       });
     },
     queue:(token,request)=>{

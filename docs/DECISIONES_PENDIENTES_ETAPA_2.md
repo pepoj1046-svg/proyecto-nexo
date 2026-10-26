@@ -59,3 +59,23 @@ de verificación presencial, recomponer grupos previamente divididos, episodios 
 traslado repetido y recuperación si el nuevo chofer rechaza o vence su oferta.
 Ver límites en REPORTES/ETAPA_2_INCREMENTO_3.md. Ningún plazo técnico activa efectos
 reales ni da por aprobados sanciones/cobros/cancelaciones definitivas.
+
+## Actualización del incremento 4
+
+015 añade recuperación supervisada tras rechazo/vencimiento, incidencia visible,
+episodios repetidos y correcciones auditables de DECLARED/VERIFIED. Queda resuelto
+el bloqueo técnico de pérdida silenciosa: si no hay plaza compatible, se muestra
+RECOVERY_PENDING, sin prometer una asignación confirmada ni restaurar el origen.
+No se garantiza recuperación comercial ni capacidad futura.
+
+Los relojes y la presencia se reinician por nuevo episodio mediante evidencia nueva.
+Ocho propuestas posteriores al episodio base es un límite técnico contra ciclos,
+no una regla comercial: el tratamiento al agotarlo y las incidencias sin alternativa
+requieren decisión. El TTL de declaración permanece configurable sin default y sus
+cambios son auditables. Las correcciones previas al viaje requieren motivo, actor
+y conservación del original; falta un procedimiento comercial de prueba/revisión.
+
+Permanecen pendientes recomposición de grupos ya divididos, menores, correcciones
+BOARD/ALIGHT, manifiesto/salida, revocaciones futuras, retención y recorridos
+intramunicipales. No se activan cancelaciones por ausencia, notificaciones, pagos,
+compensaciones ni sanciones. Etapa 2 permanece en revisión funcional.

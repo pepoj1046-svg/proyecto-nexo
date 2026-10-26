@@ -42,3 +42,13 @@ test('terminal arrival and reassignment contracts require explicit confirmation 
  for(const n of [0,86401,'120',null])assert.throws(()=>terminalInput('config',{associationId:routeId,declarationSeconds:n}));
  assert.throws(()=>terminalInput('transfer',{bookingId:tripId,targetTripId:routeId,direction:'AUTO'}));
 });
+
+test('assignment contracts require bounded episode versions and coded correction reasons',async()=>{
+ const {assignmentInput}=await import('../src/domain/business.mjs');
+ assert.equal(assignmentInput('transfer',{bookingId:tripId,targetTripId:routeId,direction:'RECOVER',episode:1}).episode,1);
+ for(const episode of [-1,9,1.5,'1',undefined])assert.throws(()=>assignmentInput('respond',{bookingId:tripId,episode,accept:true}));
+ for(const reason of ['',null,'Name: fictional',undefined])assert.throws(()=>assignmentInput('correction',{bookingId:tripId,episode:0,eventId:routeId,reason}));
+ assert.throws(()=>assignmentInput('command',{bookingId:tripId,episode:0,command:'DECLARED',confirmed:false}));
+ assert.throws(()=>assignmentInput('history',{bookingId:tripId,limit:101}));
+ assert.throws(()=>assignmentInput('queue',{routeId,associationId:tripId}));
+});

@@ -1,6 +1,6 @@
 import { createBusinessService } from '../db/business-service.mjs';
 import { assertRuntime } from '../db/runtime.mjs';
-import { object,terminalInput } from '../domain/business.mjs';
+import { object,terminalInput,assignmentInput } from '../domain/business.mjs';
 import { startLocalTransport } from './local-transport.mjs';
 
 // Business-only listener: no identity, registration, SQL or provisioning pool.
@@ -10,12 +10,21 @@ export async function startBusinessRuntime(pool) {
   const service=createBusinessService(pool);
   const route=(keys,fn)=>async(body,token,key)=>{object(body,keys);return [200,await fn(token,key,body)];};
   const terminal=(op,fn)=>async(body,token,key)=>{terminalInput(op,body);return [200,await fn(token,key,body)];};
+  const assignment=(op,fn)=>async(body,token,key)=>{assignmentInput(op,body);return [200,await fn(token,key,body)];};
   return startLocalTransport({localTest:true,allProtected:true,mutations:[
     '/business/reserve','/business/walk-in','/business/respond','/business/cancel',
     '/business/depart','/business/progress','/business/request-queue','/business/movement',
     '/business/member-movement','/business/absence-draft','/business/refresh-offers',
-    '/business/terminal-command','/business/terminal-config','/business/transfer'
+    '/business/terminal-command','/business/terminal-config','/business/transfer',
+    '/business/correct-arrival','/business/assignment-transfer','/business/assignment-respond','/business/episode-command'
   ],routes:{
+    '/business/assignment-status':assignment('status',(t,_k,b)=>service.assignmentStatus(t,b.bookingId)),
+    '/business/terminal-history':assignment('history',(t,_k,b)=>service.terminalHistory(t,b)),
+    '/business/recovery-queue':assignment('queue',(t,_k,b)=>service.recoveryQueue(t,b)),
+    '/business/correct-arrival':assignment('correction',(t,k,b)=>service.correctArrival(t,k,b.bookingId,b.episode,b.eventId,b.reason)),
+    '/business/assignment-transfer':assignment('transfer',(t,k,b)=>service.transferAssignment(t,k,b.bookingId,b.targetTripId,b.direction,b.episode)),
+    '/business/assignment-respond':assignment('respond',(t,k,b)=>service.respondAssignment(t,k,b.bookingId,b.episode,b.accept)),
+    '/business/episode-command':assignment('command',(t,k,b)=>service.episodeCommand(t,k,b.bookingId,b.command,b.confirmed,b.episode)),
     '/business/advancement-candidates':terminal('advancement',(t,_k,b)=>service.advancementCandidates(t,b.tripId)),
     '/business/terminal-command':terminal('command',(t,k,b)=>service.terminalCommand(t,k,b.bookingId,b.command,b.confirmed)),
     '/business/terminal-config':terminal('config',(t,k,b)=>service.configureTerminal(t,k,b.associationId,b.declarationSeconds)),

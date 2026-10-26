@@ -67,3 +67,17 @@ export function terminalInput(operation,b) {
  if(operation==='config' && (!Number.isInteger(b.declarationSeconds)||b.declarationSeconds<1||b.declarationSeconds>86400))throw new Error('INVALID_DURATION');
  return b;
 }
+
+export function assignmentInput(operation,b) {
+ const fields={status:['bookingId'],history:['bookingId','limit','offset'],queue:['routeId','limit','offset'],correction:['bookingId','episode','eventId','reason'],transfer:['bookingId','targetTripId','direction','episode'],respond:['bookingId','episode','accept'],command:['bookingId','command','confirmed','episode']}[operation];
+ object(b,fields);
+ for(const field of fields.filter(f=>f.endsWith('Id')))id(b[field]);
+ if(fields.includes('episode') && (!Number.isInteger(b.episode)||b.episode<0||b.episode>8))throw new Error('INVALID_EPISODE');
+ if(operation==='correction' && !['OPERATOR_ERROR','WRONG_RESERVATION','PASSENGER_CORRECTION'].includes(b.reason))throw new Error('INVALID_CORRECTION');
+ if(operation==='transfer' && !['LATER','EARLIER','RECOVER'].includes(b.direction))throw new Error('INVALID_DIRECTION');
+ if(operation==='respond' && typeof b.accept!=='boolean')throw new Error('INVALID_RESPONSE');
+ if(operation==='command')terminalInput('command',{bookingId:b.bookingId,command:b.command,confirmed:b.confirmed});
+ if(operation==='history')page(b,'bookingId');
+ if(operation==='queue')page(b,'routeId');
+ return b;
+}
