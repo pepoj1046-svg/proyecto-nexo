@@ -18,11 +18,16 @@ export function validateBooking(booking, stopCount) {
  * proposed holds also count until expiration. Other states do not consume inventory.
  */
 export function segmentAvailability(inventory, stopCount, capacity = CAPACITY) {
+  if (!Number.isInteger(stopCount) || stopCount < 2) throw new Error('INVALID_ROUTE');
   if (!Number.isInteger(capacity) || capacity < 1) throw new Error('INVALID_CAPACITY');
   const occupancy = Array(stopCount - 1).fill(0);
   for (const b of inventory) {
     validateBooking(b, stopCount);
     if (!['CONFIRMED','ASSIGNED','BOARDED','HELD'].includes(b.status)) continue;
+    if (b.status === 'HELD' && b.expiresAt != null) {
+      if (!Number.isFinite(Date.parse(b.expiresAt))) throw new Error('INVALID_EXPIRATION');
+      if (Date.parse(b.expiresAt) <= Date.now()) continue;
+    }
     for (let segment=b.from; segment<b.to; segment++) occupancy[segment] += b.seats;
   }
   return occupancy.map(n => capacity - n);
@@ -62,6 +67,8 @@ export function chooseVehicle(request, vehicles, stopCount) {
 /** La salida de un lleno no modifica posiciones de vehículos incompletos. */
 export function canDepart(vehicle, stopCount) {
   if (vehicle.status !== 'QUEUED' || !vehicle.queueActive || !vehicle.shiftActive) return false;
-  const usedAtOrigin = CAPACITY - segmentAvailability(vehicle.inventory,stopCount, CAPACITY)[0];
-  return usedAtOrigin === CAPACITY;
+  const confirmed = vehicle.inventory.filter(b => ['CONFIRMED','ASSIGNED','BOARDED'].includes(b.status));
+  const availability = segmentAvailability(confirmed,stopCount,CAPACITY);
+  return availability.every(n => n >= 0)
+    && confirmed.reduce((sum,b) => sum+b.seats,0) >= CAPACITY;
 }

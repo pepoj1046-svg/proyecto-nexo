@@ -1,4 +1,4 @@
-name: Etapa 1 - pruebas de dominio
+name: Etapa 1 - dominio y PostgreSQL
 on:
   push:
     branches: [desarrollo/etapa-1]
@@ -7,12 +7,20 @@ on:
 permissions:
   contents: read
 jobs:
-  domain:
-    runs-on: ubuntu-latest
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Ejecutar pruebas del dominio
-        run: npm test
+          cache: npm
+      - name: Instalar dependencias fijadas
+        run: npm ci --no-fund
+      - name: Dominio y PostgreSQL local aislado
+        run: npm run test:all

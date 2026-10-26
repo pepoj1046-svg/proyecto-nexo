@@ -41,3 +41,13 @@ test('no contar reservas pendientes, canceladas o expiradas',()=>{
 test('rechazar seis asientos como expreso mal declarado',()=>{
   assert.throws(()=>fitsVehicle(b(5,0,2,'PENDING',true),[],3),/EXPRESS_REQUIRES_SIX/);
 });
+test('salida incluye recogidas confirmadas posteriores, pero no ofertas sin aceptar',()=>{
+  assert.equal(canDepart(v('A',1,[b(6,1,2)]),3),true);
+  assert.equal(canDepart(v('A',1,[b(6,0,2,'HELD')]),3),false);
+  assert.equal(canDepart(v('A',1,[b(6),b(1)]),3),false);
+});
+test('retenciones vencidas no consumen capacidad; ruta y vencimiento inválidos se rechazan',()=>{
+  assert.deepEqual(segmentAvailability([{...b(6,0,2,'HELD'),expiresAt:'2000-01-01T00:00:00Z'}],3),[6,6]);
+  assert.throws(()=>segmentAvailability([],1),/INVALID_ROUTE/);
+  assert.throws(()=>segmentAvailability([{...b(6,0,2,'HELD'),expiresAt:'bad'}],3),/INVALID_EXPIRATION/);
+});
