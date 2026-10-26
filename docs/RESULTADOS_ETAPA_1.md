@@ -1,6 +1,20 @@
 # Resultados de Etapa 1
 
-## Incremento geográfico actual
+## Incremento actual: localidades e identidad local (008–009)
+
+**17 unitarias y 54 integraciones PostgreSQL 18.4 aprobadas**, sin fallos,
+omitidas ni canceladas, más comprobación del fallo del ejecutor (9 preservado).
+Entorno Linux x64, Node 24.19.0 y npm 11.9.0. Migraciones 001–007 intactas.
+Se mantienen las 38 integraciones anteriores y se añaden 16; G09 ahora prueba
+también la retirada concurrente de adhesión. Actualización poblada 001–007
+verificada sin pérdida de sesiones, permisos, reservas ni capacidad por segmentos.
+
+[Informe reproducible y estado CI](REPORTES/ETAPA_1_LOCALIDADES_IDENTIDAD.md) ·
+[Contrato, fronteras y pendientes](LOCALIDADES_Y_AUTENTICACION.md).
+El incremento permanece en Etapa 1: la autenticación local y el aprovisionamiento
+no equivalen a un proveedor público, un despliegue o un piloto autorizado.
+
+## Evidencia histórica del incremento geográfico 005–007
 
 **13 unitarias y 38 integraciones aprobadas**, más comprobación del código de fallo
  del ejecutor. Migraciones 001–004 intactas; nuevas 005–007. Se verificaron búsqueda,
@@ -101,7 +115,7 @@ la defensa se incorporó como `004_isolation_guard.sql`.
 - Se impide reutilizar una llegada antigua para solicitar una fila tras un viaje más
   reciente del vehículo o chofer; la regresión forma parte de la prueba de retorno.
 
-## Pendientes explícitos
+## Pendientes al cierre del núcleo anterior (histórico)
 
 T12, T15 y T16 no están implementadas ni aprobadas (QR/conciliación/licencias).
 T10 solo valida paradas discretas autorizadas, no mapas/geografía real.
@@ -113,7 +127,7 @@ revisión funcional. Consultar `SEGURIDAD_PENDIENTE.md` y `IMPLEMENTACION_ETAPA_
 Sin modificaciones a `main`, sin merge, sin despliegues ni recursos de pago y sin
 acceso a proyectos ajenos. El PR permanece abierto para revisión.
 
-Próximo incremento propuesto: revisión técnica del PR y definición del emisor de
+Próximo incremento propuesto entonces: revisión técnica del PR y definición del emisor de
 sesiones/altas administrativas, después adaptador HTTP con pruebas de autorización.
 Decisiones del propietario antes de ampliar el piloto: plazo de ofertas, manifiesto
 de salida con relevo de pasajeros por tramos y verificación de vínculos de menores.

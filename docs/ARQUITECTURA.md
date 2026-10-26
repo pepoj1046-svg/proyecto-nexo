@@ -61,3 +61,11 @@ sigue el orden intermunicipal, interprovincial e interdepartamental; la configur
 y los permisos habilitan cada servicio, sin expansión automática.
 El estado comercial existente se conserva separado de adhesión, operación y permiso.
 [Contrato, RLS y actualización](GEOGRAFIA_Y_AUTORIZACIONES.md). No hay frontend ni GPS.
+
+## Incremento de localidades e identidad local
+
+008–009 añaden sugerencias por nombre y jerarquía, registro/login local con scrypt,
+sesiones revocables y recuperación de un uso. Conexiones separadas: nexo_app para
+negocio con RLS, nexo_identity para el módulo confiable y nexo_provisioner para
+altas/bajas privilegiadas. Sin proveedor externo ni interfaz pública desplegada.
+[Contrato, protocolo y fronteras](LOCALIDADES_Y_AUTENTICACION.md).

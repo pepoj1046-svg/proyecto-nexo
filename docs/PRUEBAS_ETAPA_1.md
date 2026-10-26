@@ -1,6 +1,6 @@
 # Plan de pruebas de Etapa 1
 
-Estado: **13 pruebas unitarias y 38 de integración PostgreSQL aprobadas localmente**.
+Estado: **17 pruebas unitarias y 54 de integración PostgreSQL aprobadas localmente**.
 Ver [RESULTADOS_ETAPA_1](RESULTADOS_ETAPA_1.md) para comandos, evidencia y límites.
 La tabla conserva los escenarios originales; no todos sus módulos están construidos.
 
@@ -58,3 +58,21 @@ G01–G13 verifican las tres clasificaciones, búsqueda, vigencia y revisión de
  concurrentes, checksums 001–004 y actualización poblada. Detalle y evidencia en
  [reporte geográfico](REPORTES/ETAPA_1_GEOGRAFIA.md). El ejecutor también comprueba
  que un fallo del hijo (9) no se transforme en éxito de CI.
+
+## Incremento 008–009
+
+Se conservan los 38 casos anteriores; G09 incluye `adherence_status` bajo bloqueo,
+y G12 verifica ahora SHA-256 de 001–007. Nuevas pruebas:
+
+| Casos | Evidencia |
+|---|---|
+| L01–L03 | Nombres homónimos, tildes/NFC/ñ, jerarquía y versión, sin servicio, límite, orden, catálogo no verificado/histórico y RLS |
+| C01–C02 | Retirada de catálogo vs reserva/aceptación, revocación de permiso vs aceptación, sin confirmación parcial |
+| H01–H03 | Registro sin roles, hashes y pools restringidos, intentos simultáneos persistentes, sesiones opacas, expiración y revocación |
+| H04–H07 | Recuperación de un uso concurrente, aislamiento A/B y auditoría, provisión privilegiada, deshabilitación y emisión vs logout-all |
+| H08–H09 | SECURITY DEFINER/search_path/ACL, defaults seguros, códigos reemplazados/vencidos |
+| H10–H11 | Actualización poblada de 001–007, inventario intacto, prohibición de revisar solicitudes propias con dos roles |
+
+Cuatro unitarias nuevas verifican validación de localidades y credenciales, scrypt,
+Unicode y rechazo de roles aportados por el cliente.
+[Resultados, plataformas y límites](REPORTES/ETAPA_1_LOCALIDADES_IDENTIDAD.md).

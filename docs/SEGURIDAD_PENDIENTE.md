@@ -25,14 +25,15 @@ real no propietaria para comprobar permisos, además de una conexión de setup a
 
 ## Pendiente antes de cualquier uso real
 
-1. Construir y revisar autenticación pública (hash de contraseñas seguro, emisión de
-   tokens aleatorios, revocación, recuperación, rate limits, TLS y transporte HTTP).
-   Las sesiones actuales solo las crea un adaptador confiable en pruebas.
+1. Revisar y autorizar la autenticación pública/proveedor y el transporte HTTP/TLS.
+   008–009 añaden módulo local con scrypt, sesiones opacas, revocación, recuperación
+   de un uso, contadores compartidos y aprovisionamiento separado. Faltan canal
+   real de recuperación, MFA, protección distribuida de abuso y controles HTTP.
 2. Limitar retención/duración y limpiar sesiones, claves de idempotencia y auditoría;
    definir política de retención y protección de información personal.
 3. Revisar particiones y vínculos verificados menores/responsables. En el prototipo
    solo se admiten solicitudes declaradas sin menores; no hay verificación de edades.
-4. Altas administrativas autenticadas, turnos con horarios, validación de terminales,
+4. Procedimiento real de altas/documentación (roles y bajas locales ya modelados), turnos con horarios, validación de terminales,
    rutas/paradas geográficas reales, cambios de trazado versionados y GPS consentido.
 5. Progreso individual de pasajeros, incidentes, recuperación ante fallos, notificaciones,
    política de ausencias, revisión funcional del plazo de ofertas y del manifiesto de salida.
@@ -55,3 +56,27 @@ El propietario/provisionador permanece privilegiado. Falta revisión independien
 gestión pública de identidades, retención de motivos, documentos y permisos reales.
 [Detalle de fronteras](GEOGRAFIA_Y_AUTORIZACIONES.md) y
 [evidencia](REPORTES/ETAPA_1_GEOGRAFIA.md).
+
+## Endurecimiento 008–009
+
+RLS geográfico solo permite catálogo VERIFIED/ACTIVE; autocompletado limitado sin
+datos operativos privados. EXECUTE de todas las funciones se revoca a PUBLIC y
+los defaults globales del creador se cierran: un REVOKE por esquema no quita el
+default global de PostgreSQL. Las políticas llaman a un helper autenticado con
+grant explícito, no al helper interno de elegibilidad. Todos los SECURITY DEFINER
+fijan search_path; se verifica su ACL por catálogo en la suite.
+
+Roles de aplicación, identidad y aprovisionamiento separados sin DML directo.
+Registro solo de pasajero; administrador A solo concede/revoca chofer de A.
+Administrador/revisor exigen el aprovisionador offline; ni con ambos roles se
+permite revisar una solicitud propia. Auditoría inmutable y filtrada por sujeto
+o asociación; sin contraseñas/tokens/hashes en eventos.
+
+Fronteras: el módulo de identidad y su conexión son confiables, capaces de emitir
+sesiones tras verificar la contraseña. Los roles de migración/provisión siguen
+siendo privilegiados. Revocar sesión no aborta una sentencia ya autorizada en curso;
+las sentencias posteriores sí revalidan. Los límites locales pueden causar bloqueo
+deliberado y requieren diseño de perímetro antes de exponer registro/login.
+No hay un nuevo estado de cancelación de reservas tras revocar permisos.
+[Contrato y pendientes](LOCALIDADES_Y_AUTENTICACION.md) y
+[evidencia actual](REPORTES/ETAPA_1_LOCALIDADES_IDENTIDAD.md).

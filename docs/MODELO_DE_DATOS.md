@@ -56,3 +56,14 @@ estado, actor y motivo; operation_reviewers delimita la verificación confiable.
 La licencia/comercialización sigue representada por el interruptor técnico previo
 de asociación; no sustituye la habilitación legal de una ruta.
 [Especificación ejecutable y límites](GEOGRAFIA_Y_AUTORIZACIONES.md).
+
+## Identidad local implementada en 009
+
+`identity_accounts` separa identificador local, hash scrypt, versión y estado de
+la identidad de las membresías; `identity_attempts` conserva presupuestos de
+intentos por hash, `identity_recovery` códigos con hash/caducidad/consumo, y
+`identity_events` auditoría inmutable con sujeto, asociación y principal SQL.
+La tabla `sessions` anterior se reutiliza sin reescribir filas; no se añaden
+columnas a users/sessions ni se pierde la identidad de reservas antiguas.
+Las nuevas tablas no admiten DML ni lectura de credenciales desde nexo_app.
+[Roles, RLS y límites](LOCALIDADES_Y_AUTENTICACION.md).

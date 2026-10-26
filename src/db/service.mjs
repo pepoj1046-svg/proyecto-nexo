@@ -1,14 +1,18 @@
 // Server-side adapter. Never accept actorId/associationId as authentication.
 // The identity provider must issue random opaque sessions via a trusted connection.
 import { validateSearch } from '../domain/search.mjs';
+import { validateLocalityQuery } from '../domain/localities.mjs';
 export function createService(pool) {
   async function transaction(token, work) {
     if (typeof token !== 'string' || token.length < 32) throw new Error('UNAUTHENTICATED');
     const client = await pool.connect();
     try {
-      const { rows: [role] } = await client.query(`SELECT rolsuper,rolbypassrls,
-        pg_has_role(current_user,'nexo_app','USAGE') AS runtime FROM pg_roles WHERE rolname=current_user`);
-      if (!role?.runtime || role.rolsuper || role.rolbypassrls) throw new Error('UNSAFE_RUNTIME_ROLE');
+      const { rows: [role] } = await client.query(`SELECT rolsuper,rolbypassrls,rolcreaterole,rolcreatedb,
+        pg_has_role(current_user,'nexo_app','USAGE') AS runtime,
+        (SELECT pg_has_role(current_user,nspowner,'MEMBER') FROM pg_namespace WHERE nspname='nexo') AS owner
+        FROM pg_roles WHERE rolname=current_user`);
+      if (!role?.runtime || role.rolsuper || role.rolbypassrls || role.rolcreaterole || role.rolcreatedb || role.owner)
+        throw new Error('UNSAFE_RUNTIME_ROLE');
       await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
       await client.query("SELECT set_config('nexo.session_token',$1,true)", [token]);
       await client.query("SET LOCAL lock_timeout='10s'; SET LOCAL statement_timeout='15s'");
@@ -26,6 +30,13 @@ export function createService(pool) {
   });
   return Object.freeze({
     reserve: call('reserve', '$1::text,$2::jsonb'),
+    suggestLocalities: (token,request) => {
+      const q=validateLocalityQuery(request);
+      return call('suggest_localities','$1::text,$2::integer')(token,q.query,q.limit);
+    },
+    logout: call('logout',''),
+    logoutAll: call('logout_all',''),
+    setDriverMembership: call('set_driver_membership','$1::uuid,$2::uuid,$3::boolean,$4::text'),
     search: (token,request) => {
       const q=validateSearch(request);
       return call('search_services','$1::uuid,$2::uuid,$3::integer,$4::boolean')(

@@ -51,8 +51,10 @@ await service.reserve(sessionToken, actionKey, {
 }); // HELD; el chofer debe aceptar para llegar a CONFIRMED.
 ```
 
-El emisor de sesiones aún es un adaptador de confianza simulado por las pruebas;
-no hay endpoint público de registro/login, HTTP ni aplicaciones publicadas.
+El módulo local `src/auth/identity.mjs` implementa registro de pasajeros, login con
+scrypt y sesiones revocables. Usa un pool separado con `nexo_identity`; el negocio
+usa `nexo_app` y las altas privilegiadas requieren `nexo_provisioner`. No hay
+endpoint público, proveedor remoto ni aplicaciones publicadas.
 Consultar [operación y decisiones](docs/IMPLEMENTACION_ETAPA_1.md),
 [seguridad pendiente](docs/SEGURIDAD_PENDIENTE.md) y
 [resultados exactos](docs/RESULTADOS_ETAPA_1.md).
@@ -68,6 +70,17 @@ tarifa y plazas. Los catálogos de prueba son ficticios, no datos oficiales de B
 
 [Modelo y contrato](docs/GEOGRAFIA_Y_AUTORIZACIONES.md) ·
 [Reporte del incremento](docs/REPORTES/ETAPA_1_GEOGRAFIA.md).
+
+Autocompletado de nombres (catálogo VERIFIED/ACTIVE, máximo 20 sugerencias):
+
+```js
+await service.suggestLocalities(sessionToken, {query: 'San José', limit: 10});
+// Cada resultado incluye localidad, municipio, provincia, departamento e IDs/versión.
+// La selección alimenta search con originLocalityId y destinationLocalityId.
+```
+
+[Contrato de localidades, identidad y roles](docs/LOCALIDADES_Y_AUTENTICACION.md) ·
+[Pruebas y límites del incremento 008–009](docs/REPORTES/ETAPA_1_LOCALIDADES_IDENTIDAD.md).
 Las rutas previas no obtienen geografía ni permisos automáticamente. La actualización
 con reservas preexistentes está probada; consultar el procedimiento y límites.
-npm run test:all ejecuta 13 unitarias, 38 integraciones y la comprobación del ejecutor.
+npm run test:all ejecuta 17 unitarias, 54 integraciones y la comprobación del ejecutor.
