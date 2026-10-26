@@ -9,8 +9,11 @@ import pg from 'pg';
 // Always a fresh local cluster. No DATABASE_URL or remote database is consumed.
 const root = resolve('.local');
 await mkdir(root, { recursive: true });
-const databaseDir = await mkdtemp(resolve(root, 'postgres-'));
-if (!(await realpath(databaseDir)).startsWith((await realpath(root)) + sep)) throw new Error('UNSAFE_TEST_DIRECTORY');
+const clusterDir = await mkdtemp(resolve(root, 'postgres-'));
+if (!(await realpath(clusterDir)).startsWith((await realpath(root)) + sep)) throw new Error('UNSAFE_TEST_DIRECTORY');
+// initdb must create its own data directory. On elevated Windows runners its
+// restricted token cannot chmod a directory pre-created by the administrator.
+const databaseDir = resolve(clusterDir,'data');
 const port = await new Promise((resolvePort, reject) => {
   const server = createServer();
   server.on('error', reject);
@@ -43,7 +46,7 @@ let started = false;
 try {
   await postgres.initialise();
   // pg_ctl provides graceful cross-platform shutdown, including Windows.
-  await control(['start','-D',databaseDir,'-l',resolve(databaseDir,'server.log'),'-w','-t','30',
+  await control(['start','-D',databaseDir,'-l',resolve(clusterDir,'server.log'),'-w','-t','30',
     '-o',`-p ${port} -h 127.0.0.1 -c max_connections=80`]);
   started = true;
   const setup = new pg.Client({host:'127.0.0.1',port,user:'postgres',password,database:'postgres'});
