@@ -213,8 +213,21 @@ se amplían a 017; no se debilitan las aserciones comerciales o de seguridad ant
 | F10 | Base ficticia poblada 001–015→016/017: todas las filas previas idénticas, episodios y movimientos preservados, reaplicación vacía y continuidad del contrato heredado |
 | F11 | Impedimento legítimo de terminal documentado, confirmación del administrador y habilitación explícita sin inventar sustitución |
 
-CI Node 22/24 × Ubuntu/Windows: pendiente de verificar sobre el commit publicado de
-este incremento. No se atribuyen a 016/017 los checks del incremento 4.
+Commit de implementación **3b91ee90ec3ebdf3a6e65bd2255f6064c9088760**:
+[CI del PR #2](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40410781145)
+con los cuatro jobs en **success**. Se inspeccionaron sus logs:
+
+| Plataforma | Node | Unitarias | PostgreSQL 18.4 real | Runner/listeners |
+|---|---|---|---|---|
+| Ubuntu | 22 | 31/31 | 146/146 | Aprobados |
+| Ubuntu | 24 | 31/31 | 146/146 | Aprobados |
+| Windows | 22 | 31/31 | 146/146 | Aprobados |
+| Windows | 24 | 31/31 | 146/146 | Aprobados |
+
+La evidencia corresponde al código de este incremento, no a los checks de 015.
+El commit documental posterior registra estos resultados sin cambios de código y
+tiene sus propios checks en el PR. main y desarrollo/etapa-1 conservaron sus
+referencias remotas. No se probaron otras versiones PostgreSQL fuera de 18.4.
 
 ## 4. Riesgos, límites y decisiones antes del cierre
 
