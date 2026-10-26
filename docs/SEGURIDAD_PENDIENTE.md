@@ -16,6 +16,7 @@
 - Referencias compuestas de asociación, conductor activo, único servicio activo por
   vehículo/chofer, inventario bloqueado y grupos atómicos; auditoría sin UPDATE/DELETE.
 - Caducidad, rechazo y cancelación liberan plazas; salida idempotente exclusiva del chofer.
+- Escrituras SQL directas exigen READ COMMITTED, además de la configuración del adaptador.
 
 El propietario de migraciones sigue siendo una identidad de alta confianza: puede
 alterar esquemas/funciones. RLS no contiene a un superusuario ni al propietario que

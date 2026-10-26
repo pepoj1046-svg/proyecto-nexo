@@ -16,6 +16,7 @@ posteriores a esta entrega deberán agregarse como nuevas migraciones.
    tarifas, reservas, acciones, auditoría, claves compuestas y RLS.
 2. `002_operations.sql`: reservas, aceptación/rechazo, cancelación, salida y progreso.
 3. `003_queue.sql`: solicitud de ingreso a fila de destino y auditoría inmutable.
+4. `004_isolation_guard.sql`: exige READ COMMITTED también a llamadas SQL directas.
 
 No hay migración automática desde una base con el DDL conceptual anterior ni `down`
 destructivo. El alcance reproducible es una base local vacía de este repositorio.
@@ -46,6 +47,9 @@ Además se bloquea el viaje afectado. Se comprueba cada segmento `[from,to)` con
 reservas confirmadas y retenciones vigentes. Nunca se cuenta solo un total editable.
 Este bloqueo amplio favorece claridad en el piloto y limita el rendimiento por ruta;
 optimizar por segmento queda para después de medir cargas.
+Se rechaza otra configuración de aislamiento en las funciones de escritura, incluso
+si se invocan directamente con el rol de aplicación, para evitar snapshots anteriores
+al escritor esperado. `.gitattributes` fija LF en SQL para conservar los checksums.
 
 La tarifa vigente debe ser **única** para ruta, segmentos y modalidad; si falta o hay
 ambigüedad, no se reserva. Precio pactado y versión se copian a la reserva: tarifa

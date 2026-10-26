@@ -19,7 +19,7 @@ before(async () => {
   await admin.connect();
   const version = await admin.query('SHOW server_version');
   console.log(`PostgreSQL real: ${version.rows[0].server_version}`);
-  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql']);
+  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql']);
   // A real non-owner, non-superuser login exercises grants and RLS.
   await admin.query(`CREATE ROLE nexo_test_runtime LOGIN PASSWORD '${runtimePassword}'
     NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS INHERIT;
@@ -99,7 +99,7 @@ async function occupancy() {
 
 test('migrations: second application is a no-op, registry checksums match',async()=>{
   assert.deepEqual(await migrate(admin),[]);
-  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,3);
+  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,4);
 });
 test('migrations: failed DDL rolls back; checksum drift is rejected',async()=>{
   const dir=await mkdtemp(resolve('.local','migration-test-'));
@@ -325,5 +325,16 @@ test('explicit assignments cannot bypass the first compatible vehicle',async()=>
   await rejects(fixed(1,1),/QUEUE_ORDER/);
   await rejects(hold(5,{splitConsent:true,containsMinors:false,parts:[
     {tripId:fixture.trips[1],seats:3},{tripId:fixture.trips[2],seats:2}]}),/QUEUE_ORDER/);
+  assert.equal((await admin.query('SELECT * FROM nexo.bookings')).rowCount,0);
+});
+test('direct RPC cannot bypass fresh inventory snapshots with a different isolation level',async()=>{
+  for (const isolation of ['REPEATABLE READ','SERIALIZABLE']) {
+    const client=await pool.connect();
+    try {
+      await client.query(`BEGIN ISOLATION LEVEL ${isolation}`);
+      await client.query("SELECT set_config('nexo.session_token',$1,true)",[fixture.tokens.p]);
+      await rejects(client.query('SELECT nexo.reserve($1,$2::jsonb)',[key(),request()]),/UNSUPPORTED_ISOLATION/);
+    } finally {await client.query('ROLLBACK'); client.release();}
+  }
   assert.equal((await admin.query('SELECT * FROM nexo.bookings')).rowCount,0);
 });

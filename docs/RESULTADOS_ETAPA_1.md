@@ -4,6 +4,8 @@ Validación local: **25/10/2026 (America/La_Paz)**. Rama: `desarrollo/etapa-1`.
 Base de trabajo: `8207876a0614575e9304e855472af6ad9a0ffc2e`.
 Antes de publicar se incorporó el avance documental `8d5c0836fdabb2854eb84e09baea606eb07d6c48`
 con `COORDINACION_CHATGPT_CODEX.md`, leído y preservado sin cambios.
+Se preservó también `DECISION_BUSQUEDA_PASAJERO.md`, añadido en `3f58e1d` durante
+la revisión CI; no amplía el alcance ni activa una interfaz o servicios externos.
 Entorno: Windows x64, Node.js 24.21.0, npm 11.19.0, PostgreSQL **18.4 real**.
 No se usó emulación SQL. Datos y tokens generados exclusivamente para pruebas locales.
 
@@ -14,18 +16,17 @@ npm install --no-fund
 added 17 packages, and audited 18 packages
 found 0 vulnerabilities
 
-npm run test:all
-  npm test
+npm test
     tests 10
     pass 10
     fail 0
     cancelled 0
     skipped 0
     todo 0
-  npm run test:integration
+npm run test:integration
     PostgreSQL real: 18.4
-    tests 24
-    pass 24
+    tests 25
+    pass 25
     fail 0
     cancelled 0
     skipped 0
@@ -41,6 +42,10 @@ momento de instalación, no a una garantía de ausencia de vulnerabilidades futu
 La CI existente ahora ejecuta esos mismos conjuntos en Ubuntu y Windows con Node 22;
 su evidencia remota se consulta en los checks del [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1).
 Este archivo acredita los resultados locales; no sustituye el estado de cada ejecución CI.
+Tras la última defensa de aislamiento se volvió a ejecutar `npm run test:integration`:
+**25/25 aprobadas**, cero fallos/omitidas/canceladas; código 0. Las 10 unitarias no
+cambiaron y se mantienen aprobadas. Las migraciones ya publicadas se conservaron:
+la defensa se incorporó como `004_isolation_guard.sql`.
 
 ## Evidencia cuantitativa de integración
 
@@ -60,8 +65,10 @@ Este archivo acredita los resultados locales; no sustituye el estado de cada eje
 - Administrador A ve **3 vehículos**, B ve **1**, chofer ve **1 servicio/vehículo**.
   Pasajero ajeno no ve reservas ni puede cancelarlas; escritura directa, sesiones,
   membresías, helper interno e inventario quedan denegados al rol real de aplicación.
-- Migraciones iniciales **3**, segunda aplicación **0**, ejecutores concurrentes **0/0**.
+- Migraciones iniciales **4**, segunda aplicación **0**, ejecutores concurrentes **0/0**.
   DDL fallido revierte tabla y registro; alterar checksum se rechaza.
+- Llamadas SQL directas con REPEATABLE READ o SERIALIZABLE se rechazan antes de
+  escribir; el adaptador ejecuta las operaciones con READ COMMITTED.
 
 ## Correcciones detectadas durante desarrollo
 
@@ -74,6 +81,11 @@ Este archivo acredita los resultados locales; no sustituye el estado de cada eje
   ficticio libre en B para demostrar la FK cruzada sin desactivar la otra garantía.
 - El cierre inicial del binario en Windows no terminaba correctamente el ejecutor.
   Se reemplazó por `pg_ctl` y la ejecución completa finalizó con código 0.
+- La primera CI Windows falló en `initdb` por permisos del directorio precreado
+  bajo el usuario elevado del runner. Ahora `initdb` crea su propio subdirectorio;
+  [la CI posterior aprobó Ubuntu y Windows](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40257663979).
+- Se añadió una defensa del aislamiento para impedir snapshots antiguos mediante
+  RPC directa, y `.gitattributes` fija LF para checksums consistentes entre sistemas.
 - Se eliminó el DDL conceptual como instalador alternativo: las migraciones son la
   única fuente ejecutable y la documentación distingue diseño futuro de implementación.
 - Se impide reutilizar una llegada antigua para solicitar una fila tras un viaje más

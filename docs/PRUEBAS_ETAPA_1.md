@@ -1,6 +1,6 @@
 # Plan de pruebas de Etapa 1
 
-Estado: **10 pruebas unitarias y 24 de integración PostgreSQL aprobadas localmente**.
+Estado: **10 pruebas unitarias y 25 de integración PostgreSQL aprobadas localmente**.
 Ver [RESULTADOS_ETAPA_1](RESULTADOS_ETAPA_1.md) para comandos, evidencia y límites.
 La tabla conserva los escenarios originales; no todos sus módulos están construidos.
 
@@ -48,4 +48,5 @@ Lo que no se haya construido o ejecutado debe etiquetarse **pendiente**, no apro
 
 Adicionales: migraciones repetibles/concurrentes, rollback DDL, checksum, tokens
 falsos/caducados/revocados, helpers y DML denegados, aceptación simultánea, caducidad,
-auditoría inmutable, retorno a fila y rechazo de asignaciones que salten el orden.
+auditoría inmutable, retorno a fila, rechazo de asignaciones que salten el orden y
+rechazo de un aislamiento incompatible con el protocolo de inventario.
