@@ -52,3 +52,19 @@ test('assignment contracts require bounded episode versions and coded correction
  assert.throws(()=>assignmentInput('history',{bookingId:tripId,limit:101}));
  assert.throws(()=>assignmentInput('queue',{routeId,associationId:tripId}));
 });
+
+test('operational commands require explicit checks, versions, consent and simulated-only payment states',async()=>{
+ const {operationalInput}=await import('../src/domain/business.mjs');
+ assert.equal(operationalInput('arrival',{bookingId:tripId,episode:0,confirmed:true}).confirmed,true);
+ assert.equal(operationalInput('fleet',{tripId,version:3,command:'ASSIGN',targetTripId:routeId,confirmed:true}).command,'ASSIGN');
+ for(const b of [{tripId,version:0,command:'REPORT',confirmed:true},{tripId,version:1,command:'REPORT',confirmed:false},{tripId,version:1,command:'REPORT',confirmed:true,gps:[0,0]},{tripId,version:1,command:'SAFE_TRANSFER',onboard:7,confirmed:true}])assert.throws(()=>operationalInput('fleet',b));
+ assert.throws(()=>operationalInput('payment',{bookingId:tripId,state:'PAID',confirmed:true}));
+ assert.throws(()=>operationalInput('observation',{bookingId:tripId,kind:'BOARD',seats:2,destination:3,confirmed:true,name:'FICTIONAL'}));
+});
+test('operational history, group targets and repair release reject malformed or unconfirmed requests',async()=>{
+ const {operationalInput}=await import('../src/domain/business.mjs');
+ assert.throws(()=>operationalInput('consent',{bookingId:tripId,episode:0,confirmed:true}));
+ assert.throws(()=>operationalInput('restore',{vehicleId:tripId,confirmed:false}));
+ assert.throws(()=>operationalInput('history',{tripId,limit:101}));
+ assert.throws(()=>operationalInput('correction',{bookingId:tripId,factKey:'x',reason:'INVENT_DESCENT',confirmed:true}));
+});

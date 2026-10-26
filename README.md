@@ -19,13 +19,15 @@ operadores reales ni un catálogo nacional.
 [Primer incremento](docs/REPORTES/ETAPA_2_INCREMENTO_1.md) ·
 [Segundo incremento](docs/REPORTES/ETAPA_2_INCREMENTO_2.md) ·
 [Tercer incremento](docs/REPORTES/ETAPA_2_INCREMENTO_3.md) ·
-[Cuarto incremento: recuperación y episodios](docs/REPORTES/ETAPA_2_INCREMENTO_4.md).
+[Cuarto incremento](docs/REPORTES/ETAPA_2_INCREMENTO_4.md) ·
+[Quinto incremento: terminal y sustitución urbana](docs/REPORTES/ETAPA_2_INCREMENTO_5.md).
 
-Se mantienen 001–014 intactas; 015 añade episodios, recuperación supervisada
-y correcciones auditables de llegada. 014 incluye simulación 0/5/8 y traslados. 013 incluye integrantes técnicos, movimientos
+Se mantienen 001–015 intactas. 016 añade terminal, consentimiento grupal y
+correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
+distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**29 unitarias, 122 integraciones PostgreSQL real**,
+**31 unitarias, 146 integraciones PostgreSQL real**,
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar

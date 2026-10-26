@@ -26,7 +26,7 @@ before(async () => {
   await admin.connect();
   const version = await admin.query('SHOW server_version');
   console.log(`PostgreSQL real: ${version.rows[0].server_version}`);
-  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql','005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql']);
+  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql','005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql']);
   // A real non-owner, non-superuser login exercises grants and RLS.
   await admin.query(`CREATE ROLE nexo_test_runtime LOGIN PASSWORD '${runtimePassword}'
     NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS INHERIT;
@@ -45,7 +45,7 @@ before(async () => {
 after(async () => { for(const p of [pool,identityPool,provisionPool,maintenancePool]) if(p) await p.end(); await admin.end(); });
 
 beforeEach(async () => {
-  await admin.query(`TRUNCATE nexo.episode_terminal_events,nexo.assignment_outcomes,nexo.assignment_episodes,nexo.terminal_config_changes,nexo.terminal_events,nexo.terminal_config,nexo.absence_drafts,nexo.member_movements,nexo.booking_members,nexo.booking_movements,nexo.security_events,nexo.identity_recovery,nexo.identity_accounts,nexo.identity_attempts,nexo.identity_events,
+  await admin.query(`TRUNCATE nexo.fleet_events,nexo.vehicle_blocks,nexo.fleet_incidents,nexo.urban_runs,nexo.movement_corrections,nexo.operational_notices,nexo.simulated_payments,nexo.consent_uses,nexo.terminal_bindings,nexo.group_consents,nexo.group_responsibles,nexo.arrival_contracts,nexo.episode_terminal_events,nexo.assignment_outcomes,nexo.assignment_episodes,nexo.terminal_config_changes,nexo.terminal_events,nexo.terminal_config,nexo.absence_drafts,nexo.member_movements,nexo.booking_members,nexo.booking_movements,nexo.security_events,nexo.identity_recovery,nexo.identity_accounts,nexo.identity_attempts,nexo.identity_events,
     nexo.audit_events,nexo.bookings,nexo.actions,nexo.fares,nexo.trips,
     nexo.vehicles,nexo.stops,nexo.routes,nexo.memberships,nexo.sessions,nexo.users,nexo.associations,
     nexo.authorization_events,nexo.route_authorizations,nexo.operation_reviewers,
@@ -130,7 +130,7 @@ test('migrations: populated schema reapplication preserves every table and regis
   const before=await snapshot();
   assert.deepEqual(await migrate(admin),[]);
   assert.deepEqual(await snapshot(),before);
-  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,15);
+  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,17);
 });
 test('migrations: failed DDL rolls back; checksum drift is rejected',async()=>{
   const dir=await mkdtemp(resolve('.local','migration-test-'));
@@ -545,7 +545,7 @@ test('G11: authorization revocation preserves active trips, cancellation and ter
   await rejects(hold(),/ROUTE_NOT_ELIGIBLE/);
   assert.equal((await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3)).status,'COMPLETED');
 });
-test('G12: applied migrations 001-014 remain byte-identical',async()=>{
+test('G12: applied migrations 001-015 remain byte-identical',async()=>{
   const expected={
     '001_core.sql':'9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059',
     '002_operations.sql':'787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4',
@@ -557,6 +557,7 @@ test('G12: applied migrations 001-014 remain byte-identical',async()=>{
     '008_locality_lookup.sql':'ab3e82713198f078fbda5e424239900c41ecfa73a400aa923ead457e64e884b5',
     '009_identity_and_provisioning.sql':'e0401515ae8f564cb2d17561e960a56e6472e67085ab82fec34e41ffae41a4b6',
     '010_security_and_abuse.sql':'dace616e2de098a700035e4b61beb6d45ce722678729cb3255c92ca8c0268067',
+    '015_assignment_recovery.sql':'a897f5b2e7d47dbab7e701acf16db294e097d9b20483c378f1c383a17bd53dbe',
     '014_terminal_operations.sql':'e3b1ef1322638547e97c89ec709bbdcd0bbd1110947266c330c95c916103796b',
     '013_individual_operations.sql':'e111f11211fb8153d08cc96ebe45fbc7b628efed9bf5ac5d8a48ce1ca94d92b5',
     '012_business_operations.sql':'080065cf039ddb2971f68a787a96abb4d6382f538d3ead829181ebd3d3280649',
@@ -590,7 +591,7 @@ test('G13: additive upgrade of a populated 001-004 database preserves bookings a
     await db.query("INSERT INTO nexo.fares(id,association_id,route_id,from_stop,to_stop,version,amount_bob,valid_from) VALUES($1,$2,$3,0,1,1,10,now())",[fare,a,r]);
     await db.query("INSERT INTO nexo.bookings(id,association_id,trip_id,route_id,passenger_id,created_by,group_id,source,seats,from_stop,to_stop,fare_id,price_bob,fare_version,status,expires_at,driver_accepted) VALUES($1,$2,$3,$4,$5,$5,$1,'APP',2,0,1,$6,20,1,'CONFIRMED',now()+interval '1 hour',true)",[b,a,t,r,u,fare]);
     const before=(await db.query('SELECT * FROM nexo.bookings')).rows;
-    assert.deepEqual(await migrate(db),['005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql']);
+    assert.deepEqual(await migrate(db),['005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql']);
     assert.deepEqual((await db.query('SELECT * FROM nexo.bookings')).rows,before);
     assert.deepEqual(await migrate(db),[]);
     assert.equal((await db.query('SELECT * FROM nexo.route_authorizations')).rowCount,0);
@@ -873,7 +874,7 @@ test('H10: populated 001-009 upgrade preserves sessions, tenant roles, permits, 
     assert.equal((await db.query("SELECT nexo.identity_attempt('blocked.fixture','LOGIN') AS r")).rows[0].r.allowed,false);
     assert.equal((await db.query('SELECT count(*)::integer AS n FROM nexo.identity_attempts')).rows[0].n,countBefore+1);
     const before=await snapshot();
-    assert.deepEqual(await migrate(db),['010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql']);
+    assert.deepEqual(await migrate(db),['010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql']);
     assert.deepEqual(await snapshot(),before); assert.deepEqual(await migrate(db),[]);
     await db.query("SELECT set_config('nexo.session_token',$1,false)",[managed.token]);
     assert.equal((await db.query('SELECT nexo.actor() AS actor')).rows[0].actor,account.user_id);
@@ -1229,7 +1230,7 @@ test('B12: populated Stage 1 (001-011) upgrades additively, preserving old booki
     const snapshot=async()=>{
       const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
     };
-    const before=await snapshot();assert.deepEqual(await migrate(db),['012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql']);
+    const before=await snapshot();assert.deepEqual(await migrate(db),['012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql']);
     assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
     assert.equal((await db.query('SELECT * FROM nexo.booking_movements')).rowCount,0);
     await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.d0]);
@@ -1476,7 +1477,7 @@ test('I12: populated 001-012 upgrade preserves every old row and aggregate histo
     const snapshot=async()=>{
       const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
     };
-    const before=await snapshot();assert.deepEqual(await migrate(db),['013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql']);assert.deepEqual(await snapshot(),before);
+    const before=await snapshot();assert.deepEqual(await migrate(db),['013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql']);assert.deepEqual(await snapshot(),before);
     assert.equal((await db.query('SELECT * FROM nexo.booking_members')).rowCount,6);
     assert.equal((await db.query('SELECT * FROM nexo.member_movements')).rowCount,0);
     assert.equal((await db.query('SELECT * FROM nexo.absence_drafts')).rowCount,0);
@@ -1642,7 +1643,7 @@ test('J09: populated 001-013 upgrade preserves every old row and aggregate histo
     const snapshot=async()=>{
       const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
     };
-    const before=await snapshot();assert.deepEqual(await migrate(db),['014_terminal_operations.sql','015_assignment_recovery.sql']);assert.deepEqual(await snapshot(),before);
+    const before=await snapshot();assert.deepEqual(await migrate(db),['014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql']);assert.deepEqual(await snapshot(),before);
     assert.equal((await db.query('SELECT * FROM nexo.booking_members')).rowCount,6);
     assert.equal((await db.query('SELECT * FROM nexo.member_movements')).rowCount,0);
     assert.equal((await db.query('SELECT * FROM nexo.absence_drafts')).rowCount,0);
@@ -1900,7 +1901,7 @@ test('K13: populated 001-014 upgrade preserves all old rows, movements and a leg
   const snapshot=async()=>{
    const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
   };
-  const before=await snapshot();assert.deepEqual(await migrate(db),['015_assignment_recovery.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
+  const before=await snapshot();assert.deepEqual(await migrate(db),['015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
   await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.p]);
   const incident=(await db.query('SELECT nexo.assignment_status($1) AS s',[failed.bookingIds[0]])).rows[0].s;
   assert.equal(incident.state,'RECOVERY_PENDING');assert.equal(incident.originalTripId,fixture.trips[0]);assert.equal(incident.assignedTripId,fixture.trips[2]);assert.equal(incident.episodes[0].source,'LEGACY_TRANSFER');
@@ -1954,4 +1955,308 @@ test('K16: destination acceptance revalidates a concurrent tariff change and kee
  const after=await b.booking(fixture.tokens.p,id);assert.equal(after.price_bob,before.price_bob);assert.equal(after.status,'HELD');assert.equal(after.driver_accepted,false);
  assert.ok(!after.assignment.outcomes.some(o=>o.episode===1 && o.kind==='CONFIRMED'));
  await b.respondAssignment(fixture.tokens.d1,key(),id,1,false);assert.equal((await b.assignmentStatus(fixture.tokens.p,id)).state,'RECOVERY_PENDING');
+});
+
+async function cityRun({busyB=true}={}) {
+ const a=await fixed(4),pickup=await fixed(2,0,{from:1});await acceptAll(a);await acceptAll(pickup);
+ let busy;if(busyB){busy=await fixed(1,1);await acceptAll(busy);}
+ const b=business(),trip=fixture.trips[0];
+ await b.terminalObservation(fixture.tokens.adminA,key(),a.bookingIds[0],null,'BOARD',4,3,true);
+ const state=await b.beginUrban(fixture.tokens.d0,key(),trip,2,true);
+ return {b,trip,a,pickup,busy,state};
+}
+async function confirmBreakdown(run) {
+ let s=await run.b.fleetCommand(fixture.tokens.d0,key(),run.trip,run.state.version,'REPORT',null,null,true);
+ return run.b.fleetCommand(fixture.tokens.adminA,key(),run.trip,s.version,'CONFIRM',null,null,true);
+}
+test('L01: approved transfer is immediately binding, preserves group/price and informs responsible and destination driver',async()=>{
+ const g=await individualFixture(3),b=business(),id=g.bookingIds[0];
+ assert.equal((await b.groupStatus(fixture.tokens.p,id)).paymentState,'UNVERIFIED');
+ await rejects(b.consentGroup(fixture.tokens.other,key(),id,fixture.trips[1],0,true),/FORBIDDEN/);
+ const c=await b.consentGroup(fixture.tokens.p,key(),id,fixture.trips[1],0,true),k=key();
+ const before=await b.booking(fixture.tokens.p,id);
+ const results=await Promise.allSettled(Array.from({length:8},()=>b.approveTerminalTransfer(fixture.tokens.adminA,k,c.consentId)));
+ for(const r of results)assert.equal(r.status,'fulfilled',r.reason?.message);
+ assert.ok(results.every(r=>r.value.status==='CONFIRMED'));
+ const after=await b.booking(fixture.tokens.p,id);assert.equal(after.trip_id,fixture.trips[1]);assert.equal(after.price_bob,before.price_bob);assert.equal(after.driver_accepted,false);assert.deepEqual(after.members,before.members);
+ await rejects(b.respond(fixture.tokens.d1,key(),id,false),/TERMINAL_RESERVATION_BINDING/);
+ await rejects(b.respondAssignment(fixture.tokens.d1,key(),id,1,false),/TERMINAL_RESERVATION_BINDING/);
+ await rejects(b.transferAssignment(fixture.tokens.adminA,key(),id,fixture.trips[0],'EARLIER',1),/NO_COMPATIBLE|TERMINAL_RESERVATION_BINDING/);
+ assert.equal((await b.notices(fixture.tokens.d1))[0].delivery,'DISABLED');assert.ok((await b.notices(fixture.tokens.p)).some(n=>n.kind==='GROUP_TRANSFER_CONFIRMED'));
+ assert.equal((await admin.query('SELECT * FROM nexo.bookings')).rowCount,1);
+ await rejects(b.approveTerminalTransfer(fixture.tokens.adminA,key(),c.consentId),/CONSENT_USED/);
+});
+test('L02: explicit whole-group consent permits atomic recomposition into a free third trufi, never automatic splitting',async()=>{
+ const g=await hold(3,{splitConsent:true,containsMinors:false,parts:[{tripId:fixture.trips[0],seats:1},{tripId:fixture.trips[1],seats:2}]});await acceptAll(g);
+ const b=business(),id=g.bookingIds[0],before=await Promise.all(g.bookingIds.map(id=>b.booking(fixture.tokens.p,id)));
+ const c=await b.consentGroup(fixture.tokens.p,key(),id,fixture.trips[2],0,true);
+ const result=await b.approveTerminalTransfer(fixture.tokens.adminA,key(),c.consentId);assert.equal(result.bookingIds.length,2);
+ for(let i=0;i<g.bookingIds.length;i++) {
+  const after=await b.booking(fixture.tokens.p,g.bookingIds[i]);assert.equal(after.trip_id,fixture.trips[2]);assert.equal(after.price_bob,before[i].price_bob);assert.equal(after.seats,before[i].seats);assert.deepEqual(after.members,before[i].members);assert.equal(after.status,'CONFIRMED');
+ }
+ assert.equal((await admin.query('SELECT * FROM nexo.booking_members')).rowCount,3);assert.ok((await occupancy()).every(r=>r.used<=6));
+});
+test('L03: walk-in responsible is registered explicitly; simulated payment requires association verification and never implies a real payment',async()=>{
+ const b=business(),g=await b.walkIn(fixture.tokens.adminA,key(),request(2));await acceptAll(g);const id=g.bookingIds[0];
+ assert.equal((await b.groupStatus(fixture.tokens.adminA,id)).responsibleId,null);
+ await b.registerResponsible(fixture.tokens.adminA,key(),id,fixture.p,true);
+ assert.equal((await b.booking(fixture.tokens.p,id)).id,id);
+ assert.equal((await b.groupStatus(fixture.tokens.p,id)).paymentState,'UNVERIFIED');
+ await rejects(b.simulatePayment(fixture.tokens.p,key(),id,'VERIFIED_SIMULATED',true),/FORBIDDEN/);
+ await b.simulatePayment(fixture.tokens.adminA,key(),id,'VERIFIED_SIMULATED',true);
+ assert.equal((await b.groupStatus(fixture.tokens.p,id)).paymentState,'VERIFIED_SIMULATED');assert.equal((await b.groupStatus(fixture.tokens.p,id)).paymentIsReal,false);
+ await b.simulatePayment(fixture.tokens.adminA,key(),id,'REVOKED_SIMULATED',true);
+ assert.equal((await b.groupStatus(fixture.tokens.p,id)).paymentState,'REVOKED_SIMULATED');
+ const c=await b.consentGroup(fixture.tokens.p,key(),id,fixture.trips[1],0,true);await b.approveTerminalTransfer(fixture.tokens.adminA,key(),c.consentId);
+ assert.equal((await b.booking(fixture.tokens.p,id)).price_bob,'20.00');
+});
+test('L04: new arrival contract uses 120 provisional seconds without renewing an existing declaration or absence clock',async()=>{
+ const g=await individualFixture(),b=business(),id=g.bookingIds[0];
+ await b.terminalCommand(fixture.tokens.d0,key(),id,'READY',true);
+ const ready=(await b.terminalEvaluation(fixture.tokens.p,id)).readyAt;
+ await b.terminalArrival(fixture.tokens.p,key(),id,0,true);
+ const first=(await admin.query("SELECT created_at,expires_at FROM nexo.terminal_events WHERE booking_id=$1 AND kind='DECLARED'",[id])).rows[0];
+ assert.ok(Math.abs((first.expires_at-first.created_at)/1000-120)<1);
+ await b.terminalArrival(fixture.tokens.p,key(),id,0,true);
+ assert.deepEqual((await admin.query("SELECT created_at,expires_at FROM nexo.terminal_events WHERE booking_id=$1 AND kind='DECLARED'",[id])).rows[0],first);
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,id)).readyAt,ready);
+ // A separate past episode event proves expiry without sleeping 120 seconds.
+ const other=await fixed(6,1);await acceptAll(other);const oid=other.bookingIds[0];
+ await admin.query("INSERT INTO nexo.terminal_events(association_id,booking_id,trip_id,kind,actor_id,created_at,expires_at) VALUES($1,$2,$3,'DECLARED',$4,clock_timestamp()-interval '121 seconds',clock_timestamp()-interval '1 second')",[fixture.A,oid,fixture.trips[1],fixture.p]);
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,oid)).declaredActive,false);
+ await b.terminalCommand(fixture.tokens.adminA,key(),oid,'VERIFIED',true);assert.equal((await b.terminalEvaluation(fixture.tokens.p,oid)).verified,true);
+});
+test('L05: administrator boards at terminal after exact reservation checks, with immutable compensating corrections',async()=>{
+ const g=await individualFixture(2),b=business(),id=g.bookingIds[0];
+ await rejects(b.terminalObservation(fixture.tokens.adminA,key(),id,null,'BOARD',3,3,true),/INVALID_BOARDING_CHECK/);
+ await b.terminalObservation(fixture.tokens.adminA,key(),id,null,'BOARD',2,3,true);
+ let manifest=await b.manifest(fixture.tokens.adminA,{tripId:fixture.trips[0]});assert.equal(manifest.observedOnboard,2);
+ const fact=(await b.movementHistory(fixture.tokens.p,id))[0].fact_key,price=(await b.booking(fixture.tokens.p,id)).price_bob;
+ await rejects(b.correctMovement(fixture.tokens.p,key(),id,fact,'OPERATOR_ERROR',true),/FORBIDDEN/);
+ await b.correctMovement(fixture.tokens.adminA,key(),id,fact,'OPERATOR_ERROR',true);
+ assert.equal((await b.manifest(fixture.tokens.adminA,{tripId:fixture.trips[0]})).observedOnboard,0);
+ assert.equal((await admin.query('SELECT * FROM nexo.booking_movements')).rowCount,1);
+ await b.terminalObservation(fixture.tokens.adminA,key(),id,null,'BOARD',2,3,true);
+ manifest=await b.manifest(fixture.tokens.adminA,{tripId:fixture.trips[0]});assert.equal(manifest.observedOnboard,2);
+ assert.equal((await b.movementHistory(fixture.tokens.p,id)).filter(f=>f.voided).length,1);
+ assert.equal((await b.booking(fixture.tokens.p,id)).price_bob,price);assert.equal((await b.booking(fixture.tokens.p,id)).movementState,'BOARDED');
+});
+test('L06: binding adoption blocks arbitrary rejection while legacy held offers and recovery retain their contract',async()=>{
+ const g=await individualFixture(2),b=business(),id=g.bookingIds[0];
+ await b.activateTerminal(fixture.tokens.adminA,key(),id);
+ await rejects(b.respond(fixture.tokens.d0,key(),id,false),/TERMINAL_RESERVATION_BINDING/);
+ const legacy=await b.reserve(fixture.tokens.p,key(),request(2));
+ assert.equal((await b.respond(fixture.tokens.d0,key(),legacy.bookingIds[0],false)).status,'REJECTED');
+ assert.equal((await b.booking(fixture.tokens.p,id)).status,'CONFIRMED');
+});
+test('L07: stale group consent, foreign administrators and unavailable destinations cannot partially transfer a group',async()=>{
+ const g=await individualFixture(3),b=business(),id=g.bookingIds[0],c=await b.consentGroup(fixture.tokens.p,key(),id,fixture.trips[1],0,true);
+ await rejects(b.approveTerminalTransfer(fixture.tokens.adminB,key(),c.consentId),/FORBIDDEN/);
+ await b.cancel(fixture.tokens.p,key(),id);
+ await rejects(b.approveTerminalTransfer(fixture.tokens.adminA,key(),c.consentId),/STALE_CONSENT/);
+ assert.equal((await b.booking(fixture.tokens.p,id)).status,'CANCELLED');assert.equal((await admin.query('SELECT * FROM nexo.consent_uses')).rowCount,0);
+});
+test('F01: broken A with four aboard and two pending skips occupied B, assigns free C exclusively, then completes pickups before main travel',async()=>{
+ const run=await cityRun(),{b,trip,a,pickup}=run;
+ const before=(await b.manifest(fixture.tokens.adminA,{tripId:trip})).bookings.map(x=>({id:x.id,price:x.price_bob,seats:x.seats}));
+ let s=await confirmBreakdown(run);assert.equal(s.phase,'AWAITING_REPLACEMENT');assert.equal(s.observedOnboard,4);assert.equal(s.pendingPickupSeats,2);
+ assert.equal(await b.freeReplacement(fixture.tokens.adminA,s.incidentId),fixture.trips[2]);
+ s=await b.fleetCommand(fixture.tokens.adminA,key(),trip,s.version,'ASSIGN',fixture.trips[2],null,true);
+ assert.equal((await b.manifest(fixture.tokens.adminA,{tripId:trip})).trip.status,'RESCUE');
+ assert.equal(s.phase,'RESCUE');assert.equal(s.vehicleId,fixture.vehicles[2]);assert.equal(s.exclusive,true);assert.equal(s.mainStartedAt,null);
+ assert.equal((await admin.query('SELECT status,completed_at FROM nexo.trips WHERE id=$1',[fixture.trips[2]])).rows[0].status,'WITHDRAWN');
+ await rejects(b.progress(fixture.tokens.d0,key(),trip,1),/FORBIDDEN/);
+ await rejects(b.progress(fixture.tokens.d2,key(),trip,1),/OPERATION_BLOCKED/);
+ await rejects(b.fleetCommand(fixture.tokens.d2,key(),trip,s.version,'SAFE_TRANSFER',null,3,true),/INVALID_SAFE_TRANSFER/);
+ s=await b.fleetCommand(fixture.tokens.d2,key(),trip,s.version,'SAFE_TRANSFER',null,4,true);
+ assert.equal(s.observedOnboard,4);assert.equal((await admin.query('SELECT * FROM nexo.booking_movements WHERE booking_id=$1',[a.bookingIds[0]])).rowCount,1);
+ assert.equal((await b.progress(fixture.tokens.d2,key(),trip,1)).status,'URBAN_COLLECTION');
+ s=await b.operationalStatus(fixture.tokens.d2,trip);assert.equal(s.mainStartedAt,null);assert.equal(s.pendingPickupSeats,2);
+ await rejects(b.progress(fixture.tokens.d2,key(),trip,2),/PICKUPS_PENDING/);
+ await b.terminalObservation(fixture.tokens.adminA,key(),pickup.bookingIds[0],null,'BOARD',2,3,true);
+ await b.progress(fixture.tokens.d2,key(),trip,2);s=await b.operationalStatus(fixture.tokens.d2,trip);
+ assert.equal(s.phase,'URBAN_COLLECTION');assert.equal(s.mainStartedAt,null);assert.equal(s.observedOnboard,6);
+ s=await b.fleetCommand(fixture.tokens.d2,key(),trip,s.version,'MAIN_START',null,null,true);assert.equal(s.phase,'MAIN_TRIP');assert.ok(s.mainStartedAt);
+ const after=(await b.manifest(fixture.tokens.adminA,{tripId:trip})).bookings.map(x=>({id:x.id,price:x.price_bob,seats:x.seats}));assert.deepEqual(after,before);
+ assert.deepEqual((await b.queue(fixture.tokens.adminA,{routeId:fixture.ra})).map(t=>t.id),[fixture.trips[1]]);
+ await b.progress(fixture.tokens.d2,key(),trip,3);assert.equal((await b.operationalStatus(fixture.tokens.d2,trip)).phase,'COMPLETED');
+ assert.ok((await occupancy()).every(r=>r.used<=6));
+});
+test('F02: no completely free vehicle leaves a visible confirmed incident and never promises a replacement',async()=>{
+ const run=await cityRun(),occupied=await fixed(6,2);await acceptAll(occupied);const {b,trip}=run;
+ let s=await confirmBreakdown(run);assert.equal(await b.freeReplacement(fixture.tokens.adminA,s.incidentId),null);
+ await rejects(b.fleetCommand(fixture.tokens.adminA,key(),trip,s.version,'ASSIGN',fixture.trips[2],null,true),/NO_FREE_REPLACEMENT/);
+ s=await b.operationalStatus(fixture.tokens.p,trip);assert.equal(s.phase,'AWAITING_REPLACEMENT');assert.equal(s.vehicleId,fixture.vehicles[0]);assert.equal(s.replacementVehicleId,null);
+ assert.equal((await b.booking(fixture.tokens.p,run.a.bookingIds[0])).status,'CONFIRMED');
+});
+test('F03: two administrators cannot assign the same empty C twice',async()=>{
+ const run=await cityRun(),{b,trip}=run,s=await confirmBreakdown(run);
+ await admin.query("INSERT INTO nexo.memberships VALUES($1,$2,'ASSOCIATION_ADMIN',true)",[fixture.A,fixture.other]);
+ const results=await Promise.allSettled([fixture.tokens.adminA,fixture.tokens.other].map(token=>b.fleetCommand(token,key(),trip,s.version,'ASSIGN',fixture.trips[2],null,true)));
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.match(results.find(r=>r.status==='rejected').reason.message,/STALE_OPERATION/);
+ assert.equal((await admin.query("SELECT * FROM nexo.trips WHERE vehicle_id=$1 AND status IN ('QUEUED','IN_TRANSIT')",[fixture.vehicles[2]])).rowCount,1);
+ assert.equal((await admin.query("SELECT * FROM nexo.fleet_events WHERE kind='REPLACEMENT_ASSIGNED'")).rowCount,1);
+});
+test('F04: new reservation racing replacement either owns C capacity or loses without overbooking or partial rescue',async()=>{
+ const run=await cityRun(),{b,trip}=run,s=await confirmBreakdown(run);
+ const results=await Promise.allSettled([b.fleetCommand(fixture.tokens.adminA,key(),trip,s.version,'ASSIGN',fixture.trips[2],null,true),b.reserve(fixture.tokens.other,key(),request(6))]);
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
+ assert.match(results.find(r=>r.status==='rejected').reason.message,/NO_CAPACITY|NO_FREE_REPLACEMENT/);
+ assert.ok((await occupancy()).every(r=>r.used<=6));
+ const state=await b.operationalStatus(fixture.tokens.adminA,trip);assert.ok(['RESCUE','AWAITING_REPLACEMENT'].includes(state.phase));
+});
+test('F05: replacement failure rolls back queue withdrawal, carrier, notices and action; retry succeeds once',async()=>{
+ const run=await cityRun(),{b,trip}=run,s=await confirmBreakdown(run),k=key();
+ await admin.query(`CREATE FUNCTION nexo.test_assignment_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.id='${trip}' AND NEW.vehicle_id='${fixture.vehicles[2]}' THEN RAISE EXCEPTION 'TEST_ASSIGNMENT_FAILURE'; END IF;RETURN NEW;END $$`);
+ await admin.query('CREATE TRIGGER test_assignment_failure BEFORE UPDATE ON nexo.trips FOR EACH ROW EXECUTE FUNCTION nexo.test_assignment_failure()');
+ try{await rejects(b.fleetCommand(fixture.tokens.adminA,k,trip,s.version,'ASSIGN',fixture.trips[2],null,true),/TEST_ASSIGNMENT_FAILURE/);}finally{await admin.query('DROP TRIGGER test_assignment_failure ON nexo.trips');await admin.query('DROP FUNCTION nexo.test_assignment_failure()');}
+ assert.equal((await admin.query('SELECT status FROM nexo.trips WHERE id=$1',[fixture.trips[2]])).rows[0].status,'QUEUED');assert.equal((await b.operationalStatus(fixture.tokens.adminA,trip)).vehicleId,fixture.vehicles[0]);
+ const retry=await b.fleetCommand(fixture.tokens.adminA,k,trip,s.version,'ASSIGN',fixture.trips[2],null,true);assert.equal(retry.phase,'RESCUE');
+ assert.deepEqual(await b.fleetCommand(fixture.tokens.adminA,k,trip,s.version,'ASSIGN',fixture.trips[2],null,true),retry);
+});
+test('F06: original vehicle stays blocked until safe transfer and explicit authorized repair release',async()=>{
+ const run=await cityRun(),{b,trip}=run;let s=await confirmBreakdown(run);
+ s=await b.fleetCommand(fixture.tokens.adminA,key(),trip,s.version,'ASSIGN',fixture.trips[2],null,true);
+ await rejects(b.restoreVehicle(fixture.tokens.adminA,key(),fixture.vehicles[0],true),/INVALID_RECOVERY_STATE/);
+ await rejects(b.restoreVehicle(fixture.tokens.adminB,key(),fixture.vehicles[0],true),/FORBIDDEN/);
+ await b.fleetCommand(fixture.tokens.d2,key(),trip,s.version,'SAFE_TRANSFER',null,4,true);
+ assert.equal((await admin.query('SELECT blocked FROM nexo.vehicle_blocks WHERE vehicle_id=$1',[fixture.vehicles[0]])).rows[0].blocked,true);
+ await b.restoreVehicle(fixture.tokens.adminA,key(),fixture.vehicles[0],true);
+ assert.equal((await admin.query('SELECT blocked FROM nexo.vehicle_blocks WHERE vehicle_id=$1',[fixture.vehicles[0]])).rows[0].blocked,false);
+ assert.equal((await b.operationalStatus(fixture.tokens.adminA,trip)).vehicleId,fixture.vehicles[2]);
+});
+test('L08: an erroneous alighting is compensated without overwriting history and a later true alighting is a new fact',async()=>{
+ const g=await individualFixture(),b=business(),id=g.bookingIds[0];await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);
+ await b.movement(fixture.tokens.d0,key(),id,'BOARD');await b.progress(fixture.tokens.d0,key(),fixture.trips[0],3);await b.movement(fixture.tokens.d0,key(),id,'ALIGHT');
+ const fact=(await b.movementHistory(fixture.tokens.p,id)).find(f=>f.kind==='ALIGHT').fact_key;
+ await b.correctMovement(fixture.tokens.adminA,key(),id,fact,'OPERATOR_ERROR',true);
+ assert.equal((await b.manifest(fixture.tokens.adminA,{tripId:fixture.trips[0]})).observedOnboard,6);
+ await b.movement(fixture.tokens.d0,key(),id,'ALIGHT');
+ assert.equal((await b.manifest(fixture.tokens.adminA,{tripId:fixture.trips[0]})).observedOnboard,0);
+ assert.equal((await admin.query('SELECT * FROM nexo.booking_movements')).rowCount,2);
+ assert.equal((await b.movementHistory(fixture.tokens.p,id)).filter(f=>f.kind==='ALIGHT').length,2);
+});
+test('L09: correction cannot put nine passengers aboard after later segment passengers already boarded',async()=>{
+ const first=await fixed(3,0,{to:1}),through=await fixed(3),later=await fixed(3,0,{from:1});for(const g of [first,through,later])await acceptAll(g);
+ const b=business();await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);
+ for(const g of [first,through])await b.movement(fixture.tokens.d0,key(),g.bookingIds[0],'BOARD');
+ await b.progress(fixture.tokens.d0,key(),fixture.trips[0],1);await b.movement(fixture.tokens.d0,key(),first.bookingIds[0],'ALIGHT');await b.movement(fixture.tokens.d0,key(),later.bookingIds[0],'BOARD');
+ const fact=(await b.movementHistory(fixture.tokens.p,first.bookingIds[0])).find(f=>f.kind==='ALIGHT').fact_key;
+ await rejects(b.correctMovement(fixture.tokens.adminA,key(),first.bookingIds[0],fact,'OPERATOR_ERROR',true),/OBSERVED_CAPACITY_EXCEEDED/);
+ assert.equal((await b.manifest(fixture.tokens.adminA,{tripId:fixture.trips[0]})).observedOnboard,6);assert.equal((await admin.query('SELECT * FROM nexo.movement_corrections')).rowCount,0);
+});
+test('F07: revoked route or session and foreign association cannot approve a replacement; incident remains visible',async()=>{
+ const run=await cityRun(),{b,trip}=run,s=await confirmBreakdown(run);
+ await rejects(b.freeReplacement(fixture.tokens.adminB,s.incidentId),/FORBIDDEN/);
+ const blocker=new pg.Client({connectionString:url.href});await blocker.connect();let pending;
+ try {
+  await blocker.query('BEGIN');await blocker.query("UPDATE nexo.route_authorizations SET status='REVOKED' WHERE route_id=$1",[fixture.ra]);
+  pending=b.fleetCommand(fixture.tokens.adminA,key(),trip,s.version,'ASSIGN',fixture.trips[2],null,true).then(value=>({value}),error=>({error}));
+  await waitForQueryLock('%nexo.fleet_command(%');await blocker.query('COMMIT');assert.match((await pending).error.message,/ROUTE_NOT_ELIGIBLE/);
+ }finally{await blocker.query('ROLLBACK');await blocker.end();if(pending)await pending;}
+ assert.equal((await b.operationalStatus(fixture.tokens.p,trip)).phase,'AWAITING_REPLACEMENT');
+ await admin.query('UPDATE nexo.sessions SET revoked_at=clock_timestamp() WHERE user_id=$1',[fixture.adminA]);
+ await rejects(b.fleetCommand(fixture.tokens.adminA,key(),trip,s.version,'ASSIGN',fixture.trips[2],null,true),/UNAUTHENTICATED/);
+ assert.equal((await sql(fixture.tokens.adminB,'SELECT * FROM nexo.fleet_incidents')).rowCount,0);
+ await rejects(sql(fixture.tokens.d0,'UPDATE nexo.vehicle_blocks SET blocked=false'),/permission denied/);
+ await rejects(admin.query('DELETE FROM nexo.fleet_events'),/IMMUTABLE/);
+});
+test('F08: two different broken runs competing for one C yield one rescue and one pending incident',async()=>{
+ const a=await fixed(6),d=await fixed(6,1);await acceptAll(a);await acceptAll(d);const b=business(),states=[];
+ for(let idx=0;idx<2;idx++) {
+  let s=await b.beginUrban(fixture.tokens['d'+idx],key(),fixture.trips[idx],2,true);
+  s=await b.fleetCommand(fixture.tokens['d'+idx],key(),fixture.trips[idx],s.version,'REPORT',null,null,true);
+  s=await b.fleetCommand(fixture.tokens.adminA,key(),fixture.trips[idx],s.version,'CONFIRM',null,null,true);states.push(s);
+  assert.equal(await b.freeReplacement(fixture.tokens.adminA,s.incidentId),fixture.trips[2]);
+ }
+ const results=await Promise.allSettled(states.map((s,i)=>b.fleetCommand(fixture.tokens.adminA,key(),fixture.trips[i],s.version,'ASSIGN',fixture.trips[2],null,true)));
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.match(results.find(r=>r.status==='rejected').reason.message,/NO_FREE_REPLACEMENT/);
+ assert.equal((await admin.query("SELECT * FROM nexo.trips WHERE vehicle_id=$1 AND status IN ('QUEUED','IN_TRANSIT')",[fixture.vehicles[2]])).rowCount,1);
+ assert.equal((await admin.query("SELECT * FROM nexo.urban_runs WHERE phase='AWAITING_REPLACEMENT'")).rowCount,1);
+ assert.equal((await admin.query('SELECT * FROM nexo.bookings')).rowCount,2);
+});
+test('F09: new operational HTTP rejects GPS, unchecked boarding, forged roles and stale versions',async()=>{
+ const run=await cityRun(),http=await startBusinessRuntime(pool),{b,trip}=run;
+ const command=(path,body,token=fixture.tokens.adminA)=>postJson(http.url,'/business/'+path,body,{Authorization:'Bearer '+token,'Idempotency-Key':key()});
+ try {
+  assert.equal((await command('operational-status',{tripId:trip},fixture.tokens.p)).body.phase,'URBAN_COLLECTION');
+  assert.equal((await command('fleet-command',{tripId:trip,version:1,command:'REPORT',confirmed:true,gps:[0,0]},fixture.tokens.d0)).status,400);
+  assert.equal((await command('fleet-command',{tripId:trip,version:1,command:'REPORT',confirmed:true},fixture.tokens.adminB)).status,403);
+  const report=await command('fleet-command',{tripId:trip,version:1,command:'REPORT',confirmed:true},fixture.tokens.d0);assert.equal(report.status,200);
+  assert.equal((await command('fleet-command',{tripId:trip,version:1,command:'CONFIRM',confirmed:true})).status,409);
+  assert.equal((await command('fleet-history',{tripId:trip,limit:1})).body.length,1);
+  assert.equal((await command('terminal-observation',{bookingId:run.pickup.bookingIds[0],seats:2,destination:3,kind:'BOARD',confirmed:false})).status,400);
+  assert.equal((await b.operationalStatus(fixture.tokens.p,trip)).mainStartedAt,null);
+ }finally{await http.close();}
+});
+test('F10: populated 001-015 upgrade preserves every old row and history, then continues legacy movements normally',async()=>{
+ const g=await individualFixture(),b=business(),id=g.bookingIds[0];
+ await b.episodeCommand(fixture.tokens.p,key(),id,'TRANSFER_REQUEST',true,0);await b.transferAssignment(fixture.tokens.adminA,key(),id,fixture.trips[1],'LATER',0);await acceptAll(g);
+ await b.episodeCommand(fixture.tokens.adminA,key(),id,'VERIFIED',true,1);await api.depart(fixture.tokens.d1,key(),fixture.trips[1]);await b.movement(fixture.tokens.d1,key(),id,'BOARD');
+ const name='nexo_test_upgrade_'+randomBytes(6).toString('hex');await admin.query('CREATE DATABASE '+admin.escapeIdentifier(name));const target=new URL(url);target.pathname='/'+name;
+ const db=new pg.Client({connectionString:target.href});await db.connect();
+ try {
+  const dir=await mkdtemp(resolve('.local','stage2-operational-migrations-'));
+  const files=(await admin.query("SELECT name FROM public.nexo_migrations WHERE name<'016' ORDER BY name")).rows.map(x=>x.name);
+  for(const file of files)await writeFile(resolve(dir,file),await readFile(new URL('../../database/migrations/'+file,import.meta.url)));
+  assert.equal((await migrate(db,pathToFileURL(dir+sep))).length,15);
+  const tables=['users','identity_accounts','identity_recovery','identity_attempts','sessions','associations','memberships','geo_catalogs','departments','provinces','municipalities','localities','routes','stops','operation_reviewers','route_authorizations','vehicles','trips','fares','bookings','actions','audit_events','identity_events','security_events','booking_movements','booking_members','member_movements','absence_drafts','terminal_config','terminal_events','assignment_episodes','assignment_outcomes','episode_terminal_events','terminal_config_changes'];
+  await db.query('ALTER TABLE nexo.bookings DISABLE TRIGGER create_booking_members');await db.query('ALTER TABLE nexo.bookings DISABLE TRIGGER assignment_tracking');
+  for(const table of tables)for(const row of (await admin.query('SELECT * FROM nexo.'+table)).rows) {
+   const columns=Object.keys(row);await db.query(`INSERT INTO nexo.${table} (${columns.map(k=>db.escapeIdentifier(k)).join(',')}) OVERRIDING SYSTEM VALUE VALUES (${columns.map((_,i)=>'$'+(i+1)).join(',')})`,Object.values(row));
+  }
+  await db.query('ALTER TABLE nexo.bookings ENABLE TRIGGER create_booking_members');await db.query('ALTER TABLE nexo.bookings ENABLE TRIGGER assignment_tracking');
+  await db.query("SELECT setval(pg_get_serial_sequence('nexo.episode_terminal_events','serial'),coalesce(max(serial),1),max(serial) IS NOT NULL) FROM nexo.episode_terminal_events");
+  const snapshot=async()=>{const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;};
+  const before=await snapshot();assert.deepEqual(await migrate(db),['016_terminal_boarding.sql','017_urban_replacement.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
+  assert.equal((await db.query('SELECT * FROM nexo.urban_runs')).rowCount,0);assert.equal((await db.query('SELECT * FROM nexo.movement_corrections')).rowCount,0);
+  await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.d1]);await db.query('SELECT nexo.progress($1,$2,3)',[key(),fixture.trips[1]]);await db.query("SELECT nexo.record_movement($1,$2,'ALIGHT')",[key(),id]);
+  assert.equal((await db.query('SELECT price_bob,status FROM nexo.bookings WHERE id=$1',[id])).rows[0].price_bob,'60.00');
+ }finally{await db.end();}
+});
+test('L10: a legacy recovery incident can enter the approved binding contract without another discretionary driver acceptance',async()=>{
+ const {id,b}=await transferredGroup(2);await b.respondAssignment(fixture.tokens.d1,key(),id,1,false);
+ const fill=await fixed(6);await acceptAll(fill);await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);
+ const c=await b.consentGroup(fixture.tokens.p,key(),id,fixture.trips[2],1,true);
+ const result=await b.approveTerminalTransfer(fixture.tokens.adminA,key(),c.consentId);assert.equal(result.status,'CONFIRMED');
+ assert.equal((await b.assignmentStatus(fixture.tokens.p,id)).recoveryRequired,false);assert.equal((await b.booking(fixture.tokens.p,id)).price_bob,'20.00');
+ await rejects(b.respond(fixture.tokens.d2,key(),id,false),/TERMINAL_RESERVATION_BINDING/);
+});
+test('L11: effective terminal boarding suppresses absence eligibility and prevents cancellation from releasing occupied seats',async()=>{
+ const g=await individualFixture(),b=business(),id=g.bookingIds[0];
+ await admin.query("INSERT INTO nexo.terminal_events(association_id,booking_id,trip_id,kind,actor_id,created_at) VALUES($1,$2,$3,'READY',$4,clock_timestamp()-interval '9 minutes')",[fixture.A,id,fixture.trips[0],fixture.drivers[0]]);
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,id)).cancellationEligibleSimulation,true);
+ await b.terminalObservation(fixture.tokens.adminA,key(),id,null,'BOARD',6,3,true);
+ let e=await b.terminalEvaluation(fixture.tokens.p,id);assert.equal(e.boarded,true);assert.equal(e.verified,false);assert.equal(e.cancellationEligibleSimulation,false);
+ await rejects(b.cancel(fixture.tokens.p,key(),id),/PASSENGERS_ONBOARD/);
+ const fact=(await b.movementHistory(fixture.tokens.p,id))[0].fact_key;await b.correctMovement(fixture.tokens.adminA,key(),id,fact,'OPERATOR_ERROR',true);
+ e=await b.terminalEvaluation(fixture.tokens.p,id);assert.equal(e.boarded,false);assert.equal(e.cancellationEligibleSimulation,true);
+ assert.equal(e.automaticCancellationEnabled,false);assert.equal((await b.booking(fixture.tokens.p,id)).status,'CONFIRMED');
+});
+test('L12: a fully approved group departs without a second driver acceptance or a fabricated acceptance flag',async()=>{
+ const g=await individualFixture(),b=business(),id=g.bookingIds[0],c=await b.consentGroup(fixture.tokens.p,key(),id,fixture.trips[1],0,true);
+ await b.approveTerminalTransfer(fixture.tokens.adminA,key(),c.consentId);
+ assert.equal((await b.booking(fixture.tokens.p,id)).driver_accepted,false);assert.equal((await b.groupStatus(fixture.tokens.p,id)).confirmationAuthority,'ADMIN_APPROVED');
+ await b.terminalObservation(fixture.tokens.d1,key(),id,null,'BOARD',6,3,true);
+ assert.equal((await b.depart(fixture.tokens.d1,key(),fixture.trips[1])).status,'IN_TRANSIT');assert.equal((await b.groupStatus(fixture.tokens.p,id)).paymentState,'UNVERIFIED');
+});
+test('F11: legitimate terminal impediment is recorded instead of arbitrary rejection and requires explicit authorized clearance',async()=>{
+ const g=await individualFixture(3),b=business(),id=g.bookingIds[0],trip=fixture.trips[0];await b.activateTerminal(fixture.tokens.adminA,key(),id);
+ await rejects(b.respond(fixture.tokens.d0,key(),id,false),/TERMINAL_RESERVATION_BINDING/);
+ let s=await b.terminalImpediment(fixture.tokens.d0,key(),trip,'REPORT','MECHANICAL_FAILURE',true);assert.equal(s.phase,'OPERATIONAL_INCIDENT');
+ await rejects(b.terminalImpediment(fixture.tokens.d0,key(),trip,'CONFIRM','MECHANICAL_FAILURE',true),/FORBIDDEN/);
+ s=await b.terminalImpediment(fixture.tokens.adminA,key(),trip,'CONFIRM','MECHANICAL_FAILURE',true);assert.equal(s.incidentState,'CONFIRMED');
+ assert.equal((await b.booking(fixture.tokens.p,id)).status,'CONFIRMED');assert.equal(await b.freeReplacement(fixture.tokens.adminA,s.incidentId),null);
+ await b.restoreVehicle(fixture.tokens.adminA,key(),fixture.vehicles[0],true);s=await b.operationalStatus(fixture.tokens.p,trip);assert.equal(s.phase,'QUEUED');assert.equal(s.incidentState,'CLEARED');
+});
+test('L13: terminal boarding waiting behind a group transfer cannot record a stale vehicle assignment',async()=>{
+ const g=await individualFixture(2),b=business(),id=g.bookingIds[0],consent=await b.consentGroup(fixture.tokens.p,key(),id,fixture.trips[1],0,true);
+ const blocker=new pg.Client({connectionString:url.href});await blocker.connect();let pending;
+ try {
+  await blocker.query('BEGIN');await blocker.query('SELECT id FROM nexo.routes WHERE id=$1 FOR UPDATE',[fixture.ra]);
+  pending=b.terminalObservation(fixture.tokens.adminA,key(),id,null,'BOARD',2,3,true).then(value=>({value}),error=>({error}));
+  await waitForQueryLock('%nexo.terminal_observation(%');await blocker.query("SELECT set_config('nexo.session_token',$1,true)",[fixture.tokens.adminA]);
+  await blocker.query('SELECT nexo.approve_terminal_transfer($1,$2)',[key(),consent.consentId]);await blocker.query('COMMIT');assert.match((await pending).error.message,/STALE_ASSIGNMENT/);
+ }finally{await blocker.query('ROLLBACK');await blocker.end();if(pending)await pending;}
+ assert.equal((await admin.query('SELECT * FROM nexo.booking_movements')).rowCount,0);assert.equal((await b.booking(fixture.tokens.p,id)).trip_id,fixture.trips[1]);
 });

@@ -25,9 +25,9 @@ export function createBusinessService(pool) {
   async function members(c,bookingId) {
     return (await c.query(`SELECT m.id,m.ordinal,
       coalesce((SELECT jsonb_agg(jsonb_build_object('kind',e.kind,'stop',e.stop_index,'createdAt',e.created_at) ORDER BY e.created_at,e.kind)
-        FROM nexo.member_movements e WHERE e.member_id=m.id),'[]') AS movements,
-      CASE WHEN EXISTS(SELECT FROM nexo.member_movements e WHERE e.member_id=m.id AND kind='ALIGHT') THEN 'ALIGHTED'
-        WHEN EXISTS(SELECT FROM nexo.member_movements e WHERE e.member_id=m.id AND kind='BOARD') THEN 'BOARDED' ELSE 'UNRECORDED' END AS state,
+        FROM nexo.effective_movements e WHERE e.member_id=m.id),'[]') AS movements,
+      CASE WHEN EXISTS(SELECT FROM nexo.effective_movements e WHERE e.member_id=m.id AND kind='ALIGHT') THEN 'ALIGHTED'
+        WHEN EXISTS(SELECT FROM nexo.effective_movements e WHERE e.member_id=m.id AND kind='BOARD') THEN 'BOARDED' ELSE 'UNRECORDED' END AS state,
       EXISTS(SELECT FROM nexo.booking_movements e WHERE e.booking_id=m.booking_id) AS legacy_aggregate,
       coalesce((SELECT jsonb_agg(jsonb_build_object('kind',d.kind,'createdAt',d.created_at,'delivery',d.delivery) ORDER BY d.created_at,d.kind)
         FROM nexo.absence_drafts d WHERE d.member_id=m.id),'[]') AS absence_drafts
@@ -39,6 +39,33 @@ export function createBusinessService(pool) {
   };
   const terminalCall=(fn,args)=>(token,...values)=>transaction(token,async c=>(await c.query(`SELECT nexo.${fn}(${args}) AS result`,values)).rows[0].result);
   return Object.freeze({
+    fleetHistory:(token,request)=>{
+      const q=page(request,'tripId');return transaction(token,async c=>{
+        await c.query('SELECT nexo.operational_status($1)',[q.tripId]);
+        return (await c.query('SELECT id,kind,vehicle_id,actor_id,payload,created_at FROM nexo.fleet_events WHERE trip_id=$1 ORDER BY created_at,id LIMIT $2 OFFSET $3',[q.tripId,q.limit,q.offset])).rows;
+      });
+    },
+    terminalImpediment:terminalCall('terminal_impediment','$1,$2,$3,$4,$5'),
+    operationalStatus:terminalCall('operational_status','$1'),
+    groupStatus:terminalCall('group_status','$1'),
+    registerResponsible:terminalCall('register_responsible','$1,$2,$3,$4'),
+    consentGroup:terminalCall('consent_group_transfer','$1,$2,$3,$4,$5'),
+    approveTerminalTransfer:terminalCall('approve_terminal_transfer','$1,$2'),
+    simulatePayment:terminalCall('simulate_payment','$1,$2,$3,$4'),
+    activateTerminal:terminalCall('activate_terminal_booking','$1,$2'),
+    terminalArrival:terminalCall('terminal_arrival','$1,$2,$3,$4'),
+    terminalObservation:terminalCall('terminal_observation','$1,$2,$3,$4,$5,$6,$7'),
+    correctMovement:terminalCall('correct_movement','$1,$2,$3,$4,$5'),
+    beginUrban:terminalCall('begin_urban','$1,$2,$3,$4'),
+    fleetCommand:terminalCall('fleet_command','$1,$2,$3,$4,$5,$6,$7'),
+    freeReplacement:terminalCall('free_replacement','$1'),
+    restoreVehicle:terminalCall('restore_vehicle','$1,$2,$3'),
+    notices:token=>transaction(token,async c=>(await c.query('SELECT id,trip_id,booking_id,kind,delivery,created_at FROM nexo.operational_notices ORDER BY created_at DESC,id DESC LIMIT 50')).rows),
+    movementHistory:(token,bookingId)=>transaction(token,async c=>{
+      await c.query('SELECT nexo.assignment_status($1)',[id(bookingId)]);
+      return (await c.query(`SELECT f.*,EXISTS(SELECT FROM nexo.movement_corrections x WHERE x.target_key=f.fact_key) AS voided
+        FROM nexo.movement_facts f WHERE booking_id=$1 ORDER BY created_at,fact_key LIMIT 100`,[bookingId])).rows;
+    }),
     assignmentStatus:terminalCall('assignment_status','$1'),
     correctArrival:terminalCall('correct_arrival','$1,$2,$3,$4,$5'),
     transferAssignment:terminalCall('transfer_assignment','$1,$2,$3,$4,$5'),
@@ -85,8 +112,8 @@ export function createBusinessService(pool) {
       id(bookingId);return transaction(token,async c=>{
         const b=(await c.query('SELECT '+bookingFields+' FROM nexo.bookings WHERE id=$1',[bookingId])).rows[0];
         if(!b)throw new Error('NOT_FOUND');
-        const movements=(await c.query('SELECT kind,stop_index,created_at FROM nexo.booking_movements WHERE booking_id=$1 ORDER BY created_at,kind',[bookingId])).rows;
-        return {...b,assignment:(await c.query('SELECT nexo.assignment_status($1) AS result',[bookingId])).rows[0].result,members:await members(c,bookingId),movements,movementState:movements.some(m=>m.kind==='ALIGHT')?'ALIGHTED':movements.some(m=>m.kind==='BOARD')?'BOARDED':'UNRECORDED'};
+        const movements=(await c.query('SELECT kind,stop_index,created_at FROM nexo.effective_movements WHERE booking_id=$1 AND member_id IS NULL ORDER BY created_at,kind',[bookingId])).rows;
+        return {...b,operation:(await c.query('SELECT nexo.operational_status($1) AS result',[b.trip_id])).rows[0].result,assignment:(await c.query('SELECT nexo.assignment_status($1) AS result',[bookingId])).rows[0].result,members:await members(c,bookingId),movements,movementState:movements.some(m=>m.kind==='ALIGHT')?'ALIGHTED':movements.some(m=>m.kind==='BOARD')?'BOARDED':'UNRECORDED'};
       });
     },
     queue:(token,request)=>{
@@ -104,12 +131,10 @@ export function createBusinessService(pool) {
           FROM nexo.stops s LEFT JOIN nexo.bookings b ON b.trip_id=$1 AND b.from_stop<=s.stop_index AND b.to_stop>s.stop_index
           WHERE s.route_id=$2 AND s.stop_index<(SELECT max(stop_index) FROM nexo.stops WHERE route_id=$2)
           GROUP BY s.stop_index ORDER BY s.stop_index`,[q.tripId,t.route_id])).rows;
-        const observed=(await c.query(`SELECT
-          (SELECT count(*) FROM nexo.member_movements m JOIN nexo.bookings b ON b.id=m.booking_id WHERE b.trip_id=$1 AND m.kind='BOARD'
-            AND NOT EXISTS(SELECT FROM nexo.member_movements a WHERE a.member_id=m.member_id AND a.kind='ALIGHT'))::integer
-          +coalesce((SELECT sum(b.seats) FROM nexo.booking_movements m JOIN nexo.bookings b ON b.id=m.booking_id WHERE b.trip_id=$1 AND m.kind='BOARD'
-            AND NOT EXISTS(SELECT FROM nexo.booking_movements a WHERE a.booking_id=m.booking_id AND a.kind='ALIGHT')),0)::integer AS onboard`,[q.tripId])).rows[0].onboard;
-        return {trip:t,bookings,segments,observedOnboard:observed,departurePolicy:'EXISTING_CONFIRMED_INVENTORY',limit:q.limit,offset:q.offset};
+        const operation=(await c.query('SELECT nexo.operational_status($1) AS result',[q.tripId])).rows[0].result;
+        const observed=operation.observedOnboard;
+        if(!['QUEUED','LEGACY_IN_TRANSIT','COMPLETED','WITHDRAWN'].includes(operation.phase)){t.legacyStatus=t.status;t.status=operation.phase;}
+        return {trip:t,operation,bookings,segments,observedOnboard:observed,departurePolicy:'EXISTING_CONFIRMED_INVENTORY',limit:q.limit,offset:q.offset};
       });
     },
     roster:(token,bookingId)=>{
@@ -123,8 +148,8 @@ export function createBusinessService(pool) {
     absencePreview:(token,memberId)=>{
       id(memberId);return transaction(token,async c=>{
         const row=(await c.query(`SELECT m.id,
-          EXISTS(SELECT FROM nexo.member_movements e WHERE e.member_id=m.id AND e.kind='BOARD') OR
-          EXISTS(SELECT FROM nexo.booking_movements e WHERE e.booking_id=m.booking_id AND e.kind='BOARD') OR
+          EXISTS(SELECT FROM nexo.effective_movements e WHERE e.member_id=m.id AND e.kind='BOARD') OR
+          EXISTS(SELECT FROM nexo.effective_movements e WHERE e.booking_id=m.booking_id AND e.member_id IS NULL AND e.kind='BOARD') OR
           EXISTS(SELECT FROM nexo.absence_drafts d WHERE d.member_id=m.id AND d.kind='RESOLVED') AS resolved,
           (SELECT greatest(0,extract(epoch FROM clock_timestamp()-d.created_at))::integer FROM nexo.absence_drafts d
             WHERE d.member_id=m.id AND d.kind='WAITING') AS elapsed

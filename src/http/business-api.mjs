@@ -1,6 +1,6 @@
 import { createBusinessService } from '../db/business-service.mjs';
 import { assertRuntime } from '../db/runtime.mjs';
-import { object,terminalInput,assignmentInput } from '../domain/business.mjs';
+import { object,terminalInput,assignmentInput,operationalInput } from '../domain/business.mjs';
 import { startLocalTransport } from './local-transport.mjs';
 
 // Business-only listener: no identity, registration, SQL or provisioning pool.
@@ -11,13 +11,33 @@ export async function startBusinessRuntime(pool) {
   const route=(keys,fn)=>async(body,token,key)=>{object(body,keys);return [200,await fn(token,key,body)];};
   const terminal=(op,fn)=>async(body,token,key)=>{terminalInput(op,body);return [200,await fn(token,key,body)];};
   const assignment=(op,fn)=>async(body,token,key)=>{assignmentInput(op,body);return [200,await fn(token,key,body)];};
+  const operational=(op,fn)=>async(body,token,key)=>{operationalInput(op,body);return [200,await fn(token,key,body)];};
   return startLocalTransport({localTest:true,allProtected:true,mutations:[
     '/business/reserve','/business/walk-in','/business/respond','/business/cancel',
     '/business/depart','/business/progress','/business/request-queue','/business/movement',
     '/business/member-movement','/business/absence-draft','/business/refresh-offers',
     '/business/terminal-command','/business/terminal-config','/business/transfer',
-    '/business/correct-arrival','/business/assignment-transfer','/business/assignment-respond','/business/episode-command'
+    '/business/correct-arrival','/business/assignment-transfer','/business/assignment-respond','/business/episode-command',
+    '/business/terminal-impediment','/business/register-responsible','/business/group-consent','/business/approve-terminal-transfer','/business/simulate-payment','/business/activate-terminal','/business/terminal-arrival','/business/terminal-observation','/business/correct-movement','/business/begin-urban','/business/fleet-command','/business/restore-vehicle'
   ],routes:{
+    '/business/terminal-impediment':operational('impediment',(t,k,b)=>service.terminalImpediment(t,k,b.tripId,b.command,b.reason,b.confirmed)),
+    '/business/fleet-history':operational('history',(t,_k,b)=>service.fleetHistory(t,b)),
+    '/business/operational-status':operational('status',(t,_k,b)=>service.operationalStatus(t,b.tripId)),
+    '/business/group-status':operational('booking',(t,_k,b)=>service.groupStatus(t,b.bookingId)),
+    '/business/register-responsible':operational('responsible',(t,k,b)=>service.registerResponsible(t,k,b.bookingId,b.responsibleId,b.confirmed)),
+    '/business/group-consent':operational('consent',(t,k,b)=>service.consentGroup(t,k,b.bookingId,b.targetTripId,b.episode,b.confirmed)),
+    '/business/approve-terminal-transfer':operational('approve',(t,k,b)=>service.approveTerminalTransfer(t,k,b.consentId)),
+    '/business/simulate-payment':operational('payment',(t,k,b)=>service.simulatePayment(t,k,b.bookingId,b.state,b.confirmed)),
+    '/business/activate-terminal':operational('booking',(t,k,b)=>service.activateTerminal(t,k,b.bookingId)),
+    '/business/terminal-arrival':operational('arrival',(t,k,b)=>service.terminalArrival(t,k,b.bookingId,b.episode,b.confirmed)),
+    '/business/terminal-observation':operational('observation',(t,k,b)=>service.terminalObservation(t,k,b.bookingId,b.memberId??null,b.kind,b.seats,b.destination,b.confirmed)),
+    '/business/correct-movement':operational('correction',(t,k,b)=>service.correctMovement(t,k,b.bookingId,b.factKey,b.reason,b.confirmed)),
+    '/business/movement-history':operational('booking',(t,_k,b)=>service.movementHistory(t,b.bookingId)),
+    '/business/begin-urban':operational('urban',(t,k,b)=>service.beginUrban(t,k,b.tripId,b.mainStop,b.confirmed)),
+    '/business/fleet-command':operational('fleet',(t,k,b)=>service.fleetCommand(t,k,b.tripId,b.version,b.command,b.targetTripId??null,b.onboard??null,b.confirmed)),
+    '/business/free-replacement':operational('replacement',(t,_k,b)=>service.freeReplacement(t,b.incidentId)),
+    '/business/restore-vehicle':operational('restore',(t,k,b)=>service.restoreVehicle(t,k,b.vehicleId,b.confirmed)),
+    '/business/notices':operational('notices',(t)=>service.notices(t)),
     '/business/assignment-status':assignment('status',(t,_k,b)=>service.assignmentStatus(t,b.bookingId)),
     '/business/terminal-history':assignment('history',(t,_k,b)=>service.terminalHistory(t,b)),
     '/business/recovery-queue':assignment('queue',(t,_k,b)=>service.recoveryQueue(t,b)),

@@ -79,3 +79,27 @@ Permanecen pendientes recomposición de grupos ya divididos, menores, correccion
 BOARD/ALIGHT, manifiesto/salida, revocaciones futuras, retención y recorridos
 intramunicipales. No se activan cancelaciones por ausencia, notificaciones, pagos,
 compensaciones ni sanciones. Etapa 2 permanece en revisión funcional.
+
+## Reglas aprobadas e incremento 5
+
+El nuevo contrato de terminal confirma administrativamente las reasignaciones con
+consentimiento del responsable, sin otra aceptación discrecional del chofer ni
+recargo. Las ofertas heredadas siguen por compatibilidad. Se documentan averías,
+emergencias declaradas e impedimentos, en vez de rechazar arbitrariamente reservas.
+BOARD presencial y compensaciones auditables se separan de llegada y pago. El pago
+solo puede figurar verificado como simulación de la asociación; nunca se supone.
+El nuevo flujo Ya llegué usa 120 segundos provisionales sin renovar READY; conserva
+0/5/8 y recogida cinco minutos, sin automatización de ausencia.
+
+La sustitución urbana completa reserva una unidad libre para la misma carrera,
+retira su entrada de fila y conserva manifiesto/precios/historia. Sin sustituto no
+hay promesa de rescate. A queda bloqueado hasta recuperación administrativa. Las
+posiciones/custodia se declaran y auditan; sin GPS ni asistencias reales.
+
+Pendientes: revisión del plazo provisional, fuentes/evidencia para operación real,
+manifiestos urbanos fuera del protocolo inicial, sustitución fuera de ciudad,
+recomposición con responsables diferentes o dentro de un viaje de origen, menores,
+correcciones tardías/bloqueadas, retención y tratamiento comercial de incidencias.
+No se activan sanciones, compensaciones, cobros ni cancelaciones por ausencia.
+Estas reglas sustituyen las propuestas previas en los endpoints nuevos, sin
+reescribir los informes históricos ni declarar cerrada la Etapa 2.

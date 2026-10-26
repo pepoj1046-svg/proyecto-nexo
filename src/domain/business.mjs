@@ -77,7 +77,30 @@ export function assignmentInput(operation,b) {
  if(operation==='transfer' && !['LATER','EARLIER','RECOVER'].includes(b.direction))throw new Error('INVALID_DIRECTION');
  if(operation==='respond' && typeof b.accept!=='boolean')throw new Error('INVALID_RESPONSE');
  if(operation==='command')terminalInput('command',{bookingId:b.bookingId,command:b.command,confirmed:b.confirmed});
+ if(operation==='impediment' && (!['REPORT','CONFIRM'].includes(b.command)||!['MECHANICAL_FAILURE','EMERGENCY_DECLARED','OPERATIONAL_BARRIER'].includes(b.reason)))throw new Error('INVALID_INCIDENT');
  if(operation==='history')page(b,'bookingId');
  if(operation==='queue')page(b,'routeId');
+ return b;
+}
+
+export function operationalInput(operation,b) {
+ const fields={impediment:['tripId','command','reason','confirmed'],history:['tripId','limit','offset'],status:['tripId'],booking:['bookingId'],responsible:['bookingId','responsibleId','confirmed'],consent:['bookingId','targetTripId','episode','confirmed'],approve:['consentId'],payment:['bookingId','state','confirmed'],arrival:['bookingId','episode','confirmed'],observation:['bookingId','memberId','kind','seats','destination','confirmed'],correction:['bookingId','factKey','reason','confirmed'],urban:['tripId','mainStop','confirmed'],fleet:['tripId','version','command','targetTripId','onboard','confirmed'],replacement:['incidentId'],restore:['vehicleId','confirmed'],notices:[]}[operation];
+ object(b,fields);
+ for(const field of fields.filter(f=>f.endsWith('Id')))if(field!=='memberId' && field!=='targetTripId' || b[field]!==undefined)id(b[field]);
+ if(['impediment','responsible','consent','payment','arrival','observation','correction','urban','fleet','restore'].includes(operation) && b.confirmed!==true)throw new Error('INVALID_CONFIRMATION');
+ if(fields.includes('episode') && (!Number.isInteger(b.episode)||b.episode<0||b.episode>8))throw new Error('INVALID_EPISODE');
+ if(operation==='impediment' && (!['REPORT','CONFIRM'].includes(b.command)||!['MECHANICAL_FAILURE','EMERGENCY_DECLARED','OPERATIONAL_BARRIER'].includes(b.reason)))throw new Error('INVALID_INCIDENT');
+ if(operation==='history')page(b,'tripId');
+ if(operation==='consent')id(b.targetTripId);
+ if(operation==='payment' && !['VERIFIED_SIMULATED','REVOKED_SIMULATED'].includes(b.state))throw new Error('INVALID_PAYMENT_SIMULATION');
+ if(operation==='observation' && (!['BOARD','ALIGHT'].includes(b.kind)||!Number.isInteger(b.seats)||b.seats<1||b.seats>6||!Number.isInteger(b.destination)||b.destination<1||b.destination>10000))throw new Error('INVALID_BOARDING_CHECK');
+ if(operation==='correction' && (typeof b.factKey!=='string'||b.factKey.length>100||!['OPERATOR_ERROR','WRONG_RESERVATION','WRONG_MEMBER'].includes(b.reason)))throw new Error('INVALID_CORRECTION');
+ if(operation==='urban' && (!Number.isInteger(b.mainStop)||b.mainStop<1||b.mainStop>10000))throw new Error('INVALID_MAIN_STOP');
+ if(operation==='fleet') {
+  if(!Number.isInteger(b.version)||b.version<1||!['REPORT','CONFIRM','ASSIGN','SAFE_TRANSFER','MAIN_START'].includes(b.command))throw new Error('INVALID_FLEET_COMMAND');
+  if(b.command==='ASSIGN')id(b.targetTripId);
+  if(b.command==='SAFE_TRANSFER' && (!Number.isInteger(b.onboard)||b.onboard<0||b.onboard>6))throw new Error('INVALID_SAFE_TRANSFER');
+  if(b.command!=='ASSIGN' && 'targetTripId' in b || b.command!=='SAFE_TRANSFER' && 'onboard' in b)throw new Error('INVALID_REQUEST');
+ }
  return b;
 }

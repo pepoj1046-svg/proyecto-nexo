@@ -299,3 +299,66 @@ Límite técnico: ocho propuestas posteriores al episodio base; al alcanzarlo se
 requiere revisión y no se ejecuta ninguna consecuencia económica ni cancelación.
 La ausencia 0/5/8 y recogida cinco minutos siguen solo simuladas, sin envío ni
 liberación automática. No se recomponen grupos previamente divididos.
+
+## Incremento 5: reglas aprobadas de terminal y sustitución urbana
+
+Las secciones anteriores documentan los contratos heredados. Los clientes del nuevo
+flujo usan esta sección y [el reporte 5](REPORTES/ETAPA_2_INCREMENTO_5.md). 001–015
+se conservan; se añaden 016 y 017. El transporte continúa solo en loopback, con Bearer,
+JSON estricto e Idempotency-Key para mutaciones. No hay interfaz pública desplegada.
+
+| Ruta /business/... | Cuerpo | Alcance |
+|---|---|---|
+| activate-terminal | bookingId | Admin activa una reserva ya confirmada como obligación de terminal |
+| register-responsible | bookingId, responsibleId, confirmed=true | Admin registra responsable ficticio WALK_IN; APP conserva su pasajero |
+| group-status | bookingId | Responsable, creador, admin o chofer; plazas, autoridad y pago simulado |
+| group-consent | bookingId, targetTripId, episode, confirmed=true | Responsable consiente todas las partes y destino concreto |
+| approve-terminal-transfer | consentId | Admin revalida y confirma conjuntamente, sin segunda aceptación |
+| simulate-payment | bookingId, state, confirmed=true | Admin; VERIFIED_SIMULATED o REVOKED_SIMULATED, sin bancos |
+| terminal-arrival | bookingId, episode, confirmed=true | Responsable declara llegada; nuevas declaraciones usan 120 s provisionales |
+| terminal-observation | bookingId, memberId opcional, kind BOARD/ALIGHT, seats, destination, confirmed=true | Chofer/admin propio; verifica código, destino/plazas y parada |
+| movement-history | bookingId | Historia original/efectiva y marcas de corrección |
+| correct-movement | bookingId, factKey, reason, confirmed=true | Admin, parada exacta y límites físicos; motivo OPERATOR_ERROR/WRONG_RESERVATION/WRONG_MEMBER |
+| begin-urban | tripId, mainStop, confirmed=true | Chofer autorizado declara comienzo de recogidas urbanas; no es MAIN_START |
+| operational-status | tripId | Estado operativo, vehículo actual, incidencia, versión y ocupación observada |
+| fleet-history | tripId, limit/offset opcionales | Historial sujeto a RLS, máximo 100 filas |
+| fleet-command | tripId, version, command, confirmed=true; targetTripId solo ASSIGN; onboard solo SAFE_TRANSFER | REPORT/MAIN_START del chofer; CONFIRM/ASSIGN del admin; SAFE_TRANSFER del nuevo chofer/admin |
+| free-replacement | incidentId | Admin; primer sustituto completamente libre o NULL; consulta sin retención |
+| terminal-impediment | tripId, command REPORT/CONFIRM, reason, confirmed=true | Reporte legítimo en terminal; confirmar exige admin |
+| restore-vehicle | vehicleId, confirmed=true | Admin registra recuperación simulada; sin reincorporación automática |
+| notices | objeto vacío | Solo destinatario/admin propio; últimos 50 avisos DISABLED |
+
+CONFIRMED con autoridad ADMIN_APPROVED es válido aunque driver_accepted sea false:
+ese campo no inventa una aceptación personal. El chofer recibe un aviso simulado y
+no puede rechazar arbitrariamente la asignación protegida. Reporta impedimentos
+legítimos, que bloquean la unidad y quedan pendientes de confirmación/gestión.
+Los contratos HELD y recuperación anteriores continúan por compatibilidad.
+
+Los consentimientos son de responsable y grupo completos, con ruta/segmento, precio,
+miembros estables por reserva y episodios actuales. La aprobación no divide ni cobra
+recargos. Recomponer partes requiere mismo responsable, segmento y capacidad total
+hasta seis, en un destino distinto de todos los viajes de origen. Adelantar requiere
+presencia verificada efectiva. Un consentimiento consumido o desactualizado no se
+reutiliza. Un traslado anterior fallido puede recuperarse por el contrato nuevo con
+consentimiento y revisión actualizados; no se restablece automáticamente el origen.
+
+Reserva, pago, DECLARED, VERIFIED y BOARD son estados distintos. No se supone un
+pago por consentir, llegar o abordar. DECLARED de terminal-arrival/contrato activado
+caduca provisionalmente en 120 s; reintentos no renuevan READY ni el plazo. Se
+conservan declaraciones históricas y configuración del contrato heredado. La
+cancelación/ausencia no libera plazas de pasajeros con BOARD efectivo en fila.
+No se activan cancelaciones automáticas ni comunicaciones reales.
+
+La carrera urbana conserva trip_id y todas sus reservas. La unidad sustituta pierde
+su entrada de fila con WITHDRAWN, sin una finalización ficticia, y asume en exclusiva
+la carrera del averiado. Debe registrarse SAFE_TRANSFER en el punto seguro ficticio
+antes de continuar; no crea BOARD/ALIGHT nuevos para las personas ya observadas.
+Se atienden las recogidas pendientes y el chofer registra MAIN_START. Manifest y
+progress muestran fase URBAN_COLLECTION/RESCUE antes de MAIN_TRIP; legacyStatus es
+solo el estado técnico heredado. mainStartedAt permanece NULL hasta entonces.
+Los estados de posición son declaraciones auditadas, no comprobaciones GPS.
+
+La avería sin sustituto permanece AWAITING_REPLACEMENT. Una incidencia de terminal
+sin contexto urbano no se convierte en rescate automáticamente. Fuera de ciudad,
+riesgo físico o lesiones requieren coordinación humana; la aplicación no reemplaza
+la asistencia de emergencia. Ver límites de manifiesto/corrección en el informe.
