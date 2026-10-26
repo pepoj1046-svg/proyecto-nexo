@@ -1,6 +1,8 @@
 # Plan de pruebas de Etapa 1
 
-Estado: **escenarios definidos, aún no ejecutados**. Antes de afirmar que la etapa está terminada, implementar ejecutor CI y comprobar PostgreSQL real de pruebas aislado, sin pagar servicios externos.
+Estado: **10 pruebas unitarias y 24 de integración PostgreSQL aprobadas localmente**.
+Ver [RESULTADOS_ETAPA_1](RESULTADOS_ETAPA_1.md) para comandos, evidencia y límites.
+La tabla conserva los escenarios originales; no todos sus módulos están construidos.
 
 | ID | Caso | Resultado esperado |
 |---|---|---|
@@ -31,3 +33,19 @@ Estado: **escenarios definidos, aún no ejecutados**. Antes de afirmar que la et
 - Ningún servicio productivo ni pago real iniciado.
 
 Lo que no se haya construido o ejecutado debe etiquetarse **pendiente**, no aprobado.
+
+## Cobertura ejecutada de los escenarios originales
+
+| Escenarios | Estado del incremento |
+|---|---|
+| T01–T09 | Aprobados en integración local: RLS, permisos, inventario, grupos, expreso, fila y salida idempotente |
+| T10 | Aprobado para índices de paradas autorizadas y progreso; geografía/mapas reales pendientes |
+| T11 | Aprobado: tarifa inexistente o ambigua impide reservar; sin cobro implementado |
+| T12 | Pendiente: no hay módulo QR ni verificación bancaria |
+| T13–T14 | Aprobados: ocultar catálogo suspendido, negar nuevas reservas y terminar viaje iniciado |
+| T15–T16 | Pendientes: licencias, horarios y revisión de comprobantes sin política definitiva |
+| T17–T18 | Aprobados: membresías, claves compuestas y capacidad concurrente por segmentos |
+
+Adicionales: migraciones repetibles/concurrentes, rollback DDL, checksum, tokens
+falsos/caducados/revocados, helpers y DML denegados, aceptación simultánea, caducidad,
+auditoría inmutable, retorno a fila y rechazo de asignaciones que salten el orden.

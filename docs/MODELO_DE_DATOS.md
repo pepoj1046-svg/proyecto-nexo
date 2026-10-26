@@ -1,6 +1,16 @@
-# Modelo de datos — versión conceptual
+# Modelo de datos — conceptual y alcance implementado
 
-El DDL de referencia está en [schema.sql](../database/schema.sql). **No se ha ejecutado contra ninguna base**.
+El esquema operativo ejecutable está en [migrations](../database/migrations).
+Se ha aplicado y probado en PostgreSQL local aislado. [schema.sql](../database/schema.sql)
+ahora solo indica esa fuente única; el DDL conceptual anterior no se aplica.
+
+Implementado: usuarios ficticios/sesiones, asociaciones/membresías, vehículos, rutas
+versionadas/paradas/tarifas, `trips` como unidad de fila+servicio, reservas APP/WALK_IN
+con grupo e inventario por segmento, acciones idempotentes y auditoría inmutable.
+Se usan claves compuestas de asociación en las relaciones operativas. La propuesta
+y aceptación de asignación están en la reserva y sus eventos; no hay una tabla de
+asignaciones separada. El resto de este documento es el catálogo conceptual futuro,
+incluidos pagos, licencias y turnos con vigencia, **todavía no implementados**.
 
 ## Identidad y asociaciones
 - `users`: identidad global y autenticación (sin contraseñas en texto).

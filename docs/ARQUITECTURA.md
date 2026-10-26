@@ -1,6 +1,9 @@
 # Arquitectura — Etapa 1
 
-**Estado:** diseño inicial; sin API, aplicaciones ni base de datos desplegadas. Fuente de reglas: [REQUISITOS_INICIALES](REQUISITOS_INICIALES.md).
+**Estado:** núcleo PostgreSQL y adaptador de servidor implementados y probados localmente.
+Sin API HTTP, aplicaciones ni base desplegada. Fuente de reglas: [REQUISITOS_INICIALES](REQUISITOS_INICIALES.md).
+El mapa de componentes siguiente sigue siendo el objetivo; el incremento ejecutable
+está descrito en [IMPLEMENTACION_ETAPA_1](IMPLEMENTACION_ETAPA_1.md).
 
 ## Componentes propuestos
 
