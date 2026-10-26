@@ -8,6 +8,9 @@ import pg from 'pg';
 import { migrate } from '../../scripts/migrate.mjs';
 import { createService } from '../../src/db/service.mjs';
 import { createIdentity } from '../../src/auth/identity.mjs';
+import { createMaintenance } from '../../src/db/maintenance.mjs';
+import { startTestRuntime } from '../../src/http/test-runtime.mjs';
+import { postJson } from '../helpers/http.mjs';
 import { seedGeography,mapRoute,permit } from '../helpers/geography.mjs';
 
 const url = new URL(process.env.NEXO_TEST_URL || 'postgres://invalid');
@@ -15,13 +18,13 @@ if (process.env.NEXO_TEST_LOCAL !== '1' || url.hostname !== '127.0.0.1' || !/^\/
   throw new Error('Run npm run test:integration: isolated local database required');
 }
 const admin = new pg.Client({connectionString: url.href});
-let pool, api, fixture, identityPool, provisionPool, identity;
+let pool, api, fixture, identityPool, provisionPool, maintenancePool, identity;
 const runtimePassword = randomBytes(32).toString('hex');
 before(async () => {
   await admin.connect();
   const version = await admin.query('SHOW server_version');
   console.log(`PostgreSQL real: ${version.rows[0].server_version}`);
-  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql','005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql']);
+  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql','005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql']);
   // A real non-owner, non-superuser login exercises grants and RLS.
   await admin.query(`CREATE ROLE nexo_test_runtime LOGIN PASSWORD '${runtimePassword}'
     NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS INHERIT;
@@ -29,18 +32,18 @@ before(async () => {
   const runtimeUrl = new URL(url); runtimeUrl.username='nexo_test_runtime'; runtimeUrl.password=runtimePassword;
   pool = new pg.Pool({connectionString:runtimeUrl.href,max:40});
   api=createService(pool);
-  for (const [name,group] of [['identity','nexo_identity'],['provision','nexo_provisioner']]) {
+  for (const [name,group] of [['identity','nexo_identity'],['provision','nexo_provisioner'],['maintenance','nexo_maintenance']]) {
     await admin.query(`CREATE ROLE nexo_test_${name} LOGIN PASSWORD '${runtimePassword}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS INHERIT; GRANT ${group} TO nexo_test_${name}`);
     const loginUrl=new URL(url); loginUrl.username='nexo_test_'+name; loginUrl.password=runtimePassword;
     const trustedPool=new pg.Pool({connectionString:loginUrl.href,max:12});
-    if(name==='identity') identityPool=trustedPool; else provisionPool=trustedPool;
+    if(name==='identity') identityPool=trustedPool; else if(name==='provision') provisionPool=trustedPool; else maintenancePool=trustedPool;
   }
   identity=createIdentity(identityPool);
 });
-after(async () => { for(const p of [pool,identityPool,provisionPool]) if(p) await p.end(); await admin.end(); });
+after(async () => { for(const p of [pool,identityPool,provisionPool,maintenancePool]) if(p) await p.end(); await admin.end(); });
 
 beforeEach(async () => {
-  await admin.query(`TRUNCATE nexo.identity_recovery,nexo.identity_accounts,nexo.identity_attempts,nexo.identity_events,
+  await admin.query(`TRUNCATE nexo.security_events,nexo.identity_recovery,nexo.identity_accounts,nexo.identity_attempts,nexo.identity_events,
     nexo.audit_events,nexo.bookings,nexo.actions,nexo.fares,nexo.trips,
     nexo.vehicles,nexo.stops,nexo.routes,nexo.memberships,nexo.sessions,nexo.users,nexo.associations,
     nexo.authorization_events,nexo.route_authorizations,nexo.operation_reviewers,
@@ -115,7 +118,7 @@ async function occupancy() {
 
 test('migrations: second application is a no-op, registry checksums match',async()=>{
   assert.deepEqual(await migrate(admin),[]);
-  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,9);
+  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,11);
 });
 test('migrations: failed DDL rolls back; checksum drift is rejected',async()=>{
   const dir=await mkdtemp(resolve('.local','migration-test-'));
@@ -530,7 +533,7 @@ test('G11: authorization revocation preserves active trips, cancellation and ter
   await rejects(hold(),/ROUTE_NOT_ELIGIBLE/);
   assert.equal((await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3)).status,'COMPLETED');
 });
-test('G12: applied migrations 001-007 remain byte-identical',async()=>{
+test('G12: applied migrations 001-009 remain byte-identical',async()=>{
   const expected={
     '001_core.sql':'9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059',
     '002_operations.sql':'787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4',
@@ -538,7 +541,9 @@ test('G12: applied migrations 001-007 remain byte-identical',async()=>{
     '004_isolation_guard.sql':'2ecd12ef4230f29a94a6bc915f8be31f2f3d5e2e1b395cc3c15555442951d401',
     '005_geography_authorizations.sql':'42e93efbfc8a70cbff8cadc0620216830b6b7e05e354335db4ddd752773e8fd5',
     '006_search_authorization_functions.sql':'e156c33c62f08e6c9bb2a9c0605fc6a841ca888fca0476f5424b99fa62d4d4de',
-    '007_eligibility_rls.sql':'3fef73dc7ec20fce98505206bdc61426ba2cba321aaf83ea2fecd0b789105b03'
+    '007_eligibility_rls.sql':'3fef73dc7ec20fce98505206bdc61426ba2cba321aaf83ea2fecd0b789105b03',
+    '008_locality_lookup.sql':'ab3e82713198f078fbda5e424239900c41ecfa73a400aa923ead457e64e884b5',
+    '009_identity_and_provisioning.sql':'e0401515ae8f564cb2d17561e960a56e6472e67085ab82fec34e41ffae41a4b6'
   };
   for(const [name,digest] of Object.entries(expected)) {
     const bytes=await readFile(new URL('../../database/migrations/'+name,import.meta.url));
@@ -568,7 +573,7 @@ test('G13: additive upgrade of a populated 001-004 database preserves bookings a
     await db.query("INSERT INTO nexo.fares(id,association_id,route_id,from_stop,to_stop,version,amount_bob,valid_from) VALUES($1,$2,$3,0,1,1,10,now())",[fare,a,r]);
     await db.query("INSERT INTO nexo.bookings(id,association_id,trip_id,route_id,passenger_id,created_by,group_id,source,seats,from_stop,to_stop,fare_id,price_bob,fare_version,status,expires_at,driver_accepted) VALUES($1,$2,$3,$4,$5,$5,$1,'APP',2,0,1,$6,20,1,'CONFIRMED',now()+interval '1 hour',true)",[b,a,t,r,u,fare]);
     const before=(await db.query('SELECT * FROM nexo.bookings')).rows;
-    assert.deepEqual(await migrate(db),['005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql']);
+    assert.deepEqual(await migrate(db),['005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql']);
     assert.deepEqual((await db.query('SELECT * FROM nexo.bookings')).rows,before);
     assert.deepEqual(await migrate(db),[]);
     assert.equal((await db.query('SELECT * FROM nexo.route_authorizations')).rowCount,0);
@@ -709,7 +714,7 @@ test('H02: concurrent invalid logins persist shared abuse counters, with expiry 
   const results=await Promise.allSettled(Array.from({length:9},()=>identity.login({login:a.login_key,password:'Otra clave ficticia 99'})));
   assert.ok(results.every(r=>r.status==='rejected' && /INVALID_CREDENTIALS/.test(r.reason.message)));
   assert.equal((await admin.query('SELECT * FROM nexo.sessions WHERE user_id=$1',[a.user_id])).rowCount,0);
-  assert.equal((await admin.query('SELECT attempts FROM nexo.identity_attempts WHERE bucket=$1',[hashToken('LOGIN:'+a.login_key)])).rows[0].attempts,10);
+  assert.equal((await admin.query('SELECT attempts FROM nexo.identity_attempts WHERE bucket=$1',[hashToken('LOGIN:'+a.login_key)])).rows[0].attempts,7);
   await rejects(identity.login({login:a.login_key,password}),/INVALID_CREDENTIALS/);
   await admin.query("UPDATE nexo.identity_attempts SET started_at=now()-interval '16 minutes'");
   assert.ok((await identity.login({login:a.login_key,password})).token);
@@ -797,7 +802,7 @@ test('H08: all SECURITY DEFINER functions pin search_path and expose no PUBLIC e
   assert.ok(functions.rowCount>20);
   for(const f of functions.rows) {
     assert.equal(f.public_exec,false,f.proname);
-    if(f.prosecdef) assert.ok(f.proconfig.includes('search_path=pg_catalog, nexo'),f.proname);
+    if(f.prosecdef) assert.ok(f.proconfig.includes('search_path=pg_catalog, nexo, pg_temp'),f.proname);
   }
   await rejects(identityPool.query('SELECT * FROM nexo.identity_accounts'),/permission denied/);
   await rejects(identityPool.query("SELECT nexo.provision_recovery($1,$2,'Intento')",[fixture.p,hashToken(key())]),/permission denied/);
@@ -819,18 +824,19 @@ test('H09: replaced and expired recovery codes cannot change passwords or accoun
   for(let i=0;i<6;i++) await identityPool.query("SELECT nexo.identity_attempt('recovery','LOGIN')");
   assert.equal((await identityPool.query("SELECT nexo.identity_attempt('recovery','RECOVERY') AS r")).rows[0].r.allowed,true);
 });
-test('H10: populated 001-007 upgrade preserves sessions, tenant roles, permits, bookings and six-seat inventory',async()=>{
+test('H10: populated 001-009 upgrade preserves sessions, tenant roles, permits, bookings and six-seat inventory',async()=>{
   const group=await fixed(2); await acceptAll(group);
+  const account=await managedAccount(); const managed=await identity.login({login:account.login_key,password});
   const name='nexo_test_upgrade_'+randomBytes(6).toString('hex');
   await admin.query('CREATE DATABASE '+admin.escapeIdentifier(name));
   const copyUrl=new URL(url); copyUrl.pathname='/'+name;
   const db=new pg.Client({connectionString:copyUrl.href}); await db.connect();
   try {
     const directory=await mkdtemp(resolve('.local','seven-migrations-'));
-    const names=(await admin.query('SELECT name FROM public.nexo_migrations WHERE name<$1 ORDER BY name',['008'])).rows.map(r=>r.name);
+    const names=(await admin.query('SELECT name FROM public.nexo_migrations WHERE name<$1 ORDER BY name',['010'])).rows.map(r=>r.name);
     for(const file of names) await writeFile(resolve(directory,file),await readFile(new URL('../../database/migrations/'+file,import.meta.url)));
-    assert.equal((await migrate(db,pathToFileURL(directory+sep))).length,7);
-    const tables=['users','sessions','associations','memberships','geo_catalogs','departments','provinces','municipalities','localities',
+    assert.equal((await migrate(db,pathToFileURL(directory+sep))).length,9);
+    const tables=['users','identity_accounts','identity_recovery','identity_attempts','identity_events','sessions','associations','memberships','geo_catalogs','departments','provinces','municipalities','localities',
       'routes','stops','operation_reviewers','route_authorizations','vehicles','trips','fares','bookings'];
     for(const table of tables) {
       const rows=(await admin.query('SELECT * FROM nexo.'+table)).rows;
@@ -844,9 +850,16 @@ test('H10: populated 001-007 upgrade preserves sessions, tenant roles, permits, 
       for(const table of [...tables,'authorization_events']) result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY row_to_json(t)::text')).rows;
       return result;
     };
+    // Demonstrate 009's allocation bug in the old database before applying the fix.
+    await db.query("INSERT INTO nexo.identity_attempts VALUES('global',now(),1000)");
+    const countBefore=(await db.query('SELECT count(*)::integer AS n FROM nexo.identity_attempts')).rows[0].n;
+    assert.equal((await db.query("SELECT nexo.identity_attempt('blocked.fixture','LOGIN') AS r")).rows[0].r.allowed,false);
+    assert.equal((await db.query('SELECT count(*)::integer AS n FROM nexo.identity_attempts')).rows[0].n,countBefore+1);
     const before=await snapshot();
-    assert.deepEqual(await migrate(db),['008_locality_lookup.sql','009_identity_and_provisioning.sql']);
+    assert.deepEqual(await migrate(db),['010_security_and_abuse.sql','011_identity_maintenance.sql']);
     assert.deepEqual(await snapshot(),before); assert.deepEqual(await migrate(db),[]);
+    await db.query("SELECT set_config('nexo.session_token',$1,false)",[managed.token]);
+    assert.equal((await db.query('SELECT nexo.actor() AS actor')).rows[0].actor,account.user_id);
     await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.p]);
     assert.equal((await db.query('SELECT nexo.actor() AS actor')).rows[0].actor,fixture.p);
     const four=(await db.query('SELECT nexo.reserve($1,$2) AS r',[key(),request(4,{parts:[{tripId:fixture.trips[0],seats:4}]})])).rows[0].r;
@@ -860,4 +873,177 @@ test('H11: even a provisioned reviewer cannot review their own authorization req
   await rejects(api.reviewAuthorization(fixture.tokens.adminA,key(),a.authorizationId,'VERIFIED','Autoverificación ficticia'),/FORBIDDEN_SELF_REVIEW/);
   await rejects(sql(fixture.tokens.adminA,'SELECT nexo.review_authorization_internal($1,$2,$3,$4)',[key(),a.authorizationId,'VERIFIED','Intento ficticio']),/permission denied/);
   assert.equal((await api.reviewAuthorization(fixture.tokens.reviewer,key(),a.authorizationId,'VERIFIED','Revisión ficticia separada')).status,'VERIFIED');
+});
+
+test('S01: exhausted global abuse budget allocates no new buckets and logs one threshold event',async()=>{
+  await admin.query("INSERT INTO nexo.identity_attempts VALUES('global:LOGIN',now(),1000)");
+  for(let i=0;i<20;i++) {
+    const r=await identityPool.query('SELECT nexo.identity_attempt($1,$2) AS r',['attack.ficticio.'+i,'LOGIN']);
+    assert.equal(r.rows[0].r.allowed,false);
+  }
+  assert.equal((await admin.query('SELECT * FROM nexo.identity_attempts')).rowCount,1);
+  assert.equal((await admin.query("SELECT * FROM nexo.security_events WHERE event='THROTTLED'")).rowCount,1);
+  for(const p of [pool,identityPool,provisionPool,maintenancePool]) await rejects(p.query('SELECT * FROM nexo.security_events'),/permission denied/);
+});
+test('S02: registration cannot exhaust login; one invalid recovery code cannot block another account',async()=>{
+  const a=await managedAccount();
+  for(let i=0;i<5;i++) await identityPool.query('SELECT nexo.identity_attempt($1,$2)',[a.login_key,'REGISTER']);
+  await rejects(identity.register({login:a.login_key,password}),/INVALID_CREDENTIALS/);
+  const session=await identity.login({login:a.login_key,password});assert.ok(session.token);
+  const bad=randomBytes(32).toString('base64url');
+  for(let i=0;i<6;i++) await identityPool.query('SELECT nexo.identity_attempt($1,$2)',[hashToken(bad),'RECOVERY']);
+  const code=randomBytes(32).toString('base64url');
+  await provisionPool.query('SELECT nexo.provision_recovery($1,$2,$3)',[a.user_id,hashToken(code),'Fixture']);
+  assert.equal((await identity.recover({code,password:'Nueva contraseña ficticia 45'})).status,'RECOVERED');
+  await rejects(api.logout(session.token),/UNAUTHENTICATED/);
+});
+test('S03: mixed, elevated and object-owner runtime authority fails closed before identity/tenant operations',async()=>{
+  await admin.query('GRANT nexo_identity TO nexo_test_runtime');
+  try {await rejects(api.bookings(fixture.tokens.p),/UNSAFE_RUNTIME_ROLE/);}
+  finally {await admin.query('REVOKE nexo_identity FROM nexo_test_runtime');}
+  await admin.query('GRANT nexo_provisioner TO nexo_test_identity');
+  try {await rejects(identity.login({login:'fixture.local',password}),/UNSAFE_IDENTITY_RUNTIME_ROLE/);}
+  finally {await admin.query('REVOKE nexo_provisioner FROM nexo_test_identity');}
+  await admin.query('GRANT pg_read_all_data TO nexo_test_runtime');
+  try {await rejects(api.bookings(fixture.tokens.p),/UNSAFE_RUNTIME_ROLE/);}
+  finally {await admin.query('REVOKE pg_read_all_data FROM nexo_test_runtime');}
+  await admin.query('CREATE TABLE nexo.runtime_owned_fixture(id integer); ALTER TABLE nexo.runtime_owned_fixture OWNER TO nexo_test_runtime');
+  try {await rejects(api.bookings(fixture.tokens.p),/UNSAFE_RUNTIME_ROLE/);}
+  finally {await admin.query('DROP TABLE nexo.runtime_owned_fixture');}
+  assert.deepEqual(await api.bookings(fixture.tokens.p),[]);
+});
+test('S04: dry-run and concurrent bounded maintenance preserve valid sessions, live counters, inventory and audit',async()=>{
+  const account=await managedAccount();const session=await identity.login({login:account.login_key,password});
+  await fixed(2);const bookings=(await admin.query('SELECT * FROM nexo.bookings')).rows;
+  for(let i=0;i<2;i++) await admin.query("INSERT INTO nexo.sessions VALUES($1,$2,now()-interval '2 days',NULL)",[hashToken(key()),account.user_id]);
+  await admin.query("INSERT INTO nexo.sessions VALUES($1,$2,now()+interval '1 day',now()-interval '2 days')",[hashToken(key()),account.user_id]);
+  await admin.query("INSERT INTO nexo.identity_recovery VALUES($1,$2,now()-interval '2 days',NULL)",[hashToken(key()),account.user_id]);
+  await admin.query("INSERT INTO nexo.identity_attempts VALUES('old.fixture',now()-interval '2 days',5)");
+  const maintenance=createMaintenance(maintenancePool), cutoff=new Date(Date.now()-3600000).toISOString();
+  const before=(await admin.query('SELECT * FROM nexo.sessions')).rowCount;
+  assert.deepEqual(await maintenance.run({cutoff}),{sessions:3,recovery:1,attempts:1,dryRun:true});
+  assert.equal((await admin.query('SELECT * FROM nexo.sessions')).rowCount,before);
+  const results=await Promise.all([maintenance.run({cutoff,batchSize:2,dryRun:false}),maintenance.run({cutoff,batchSize:2,dryRun:false})]);
+  assert.equal(results.reduce((n,r)=>n+r.sessions,0),3);
+  assert.equal(results.reduce((n,r)=>n+r.recovery,0),1);
+  assert.equal(results.reduce((n,r)=>n+r.attempts,0),1);
+  assert.equal((await admin.query('SELECT * FROM nexo.sessions')).rowCount,before-3);
+  assert.deepEqual((await admin.query('SELECT * FROM nexo.bookings')).rows,bookings);
+  assert.ok((await admin.query('SELECT * FROM nexo.identity_attempts')).rowCount>0);
+  assert.equal((await admin.query("SELECT * FROM nexo.security_events WHERE event='MAINTENANCE'")).rowCount,2);
+  assert.equal(await api.logout(session.token),true);
+  for(const p of [pool,identityPool,provisionPool])
+    await rejects(p.query('SELECT nexo.maintain_identity(now(),10,false)'),/permission denied/);
+  await rejects(maintenance.run({cutoff:'2100-01-01',dryRun:false}),/INVALID_MAINTENANCE/);
+  await rejects(maintenancePool.query('DELETE FROM nexo.identity_events'),/permission denied/);
+});
+test('S05: maintenance skips locked rows and cannot clear active budgets even with cutoff now',async()=>{
+  const digest=hashToken(key());
+  await admin.query("INSERT INTO nexo.sessions VALUES($1,$2,now()-interval '2 days',NULL)",[digest,fixture.p]);
+  await identityPool.query("SELECT nexo.identity_attempt('budget.fixture','LOGIN')");
+  const blocker=new pg.Client({connectionString:url.href});await blocker.connect();
+  const maintenance=createMaintenance(maintenancePool);
+  try {
+    await blocker.query('BEGIN');await blocker.query('SELECT * FROM nexo.sessions WHERE token_hash=$1 FOR UPDATE',[digest]);
+    const result=await maintenance.run({cutoff:new Date().toISOString(),dryRun:false});
+    assert.equal(result.sessions,0);assert.equal(result.attempts,0);
+  } finally {await blocker.query('ROLLBACK');await blocker.end();}
+  assert.equal((await maintenance.run({cutoff:new Date().toISOString(),dryRun:false})).sessions,1);
+});
+test('S06: pg_temp/search_path and forged session context cannot shadow identity or read a foreign association',async()=>{
+  const c=await pool.connect();
+  try {
+    await c.query('BEGIN');
+    await c.query("CREATE TEMP TABLE sessions(token_hash text,user_id uuid,expires_at timestamptz,revoked_at timestamptz) ON COMMIT DROP");
+    await c.query("INSERT INTO sessions VALUES($1,$2,now()+interval '1 hour',NULL)",[hashToken('forged'.repeat(8)),fixture.adminB]);
+    await c.query("SELECT set_config('nexo.session_token',$1,true)",['forged'.repeat(8)]);
+    await c.query('SET LOCAL search_path=pg_temp,public,nexo');
+    assert.equal((await c.query('SELECT nexo.actor() AS actor')).rows[0].actor,null);
+    assert.equal((await c.query('SELECT * FROM nexo.vehicles')).rowCount,0);
+    await c.query("SELECT set_config('nexo.session_token',$1,true)",[fixture.tokens.adminA]);
+    assert.ok((await c.query('SELECT * FROM nexo.vehicles')).rows.every(v=>v.association_id===fixture.A));
+    await c.query('COMMIT');
+  } finally {await c.query('ROLLBACK');c.release();}
+});
+test('S07: concurrent logout produces at most one revocation event and no reusable session',async()=>{
+  const a=await managedAccount(), session=await identity.login({login:a.login_key,password});
+  const results=await Promise.allSettled(Array.from({length:10},()=>api.logout(session.token)));
+  assert.ok(results.some(r=>r.status==='fulfilled'));
+  assert.ok(results.every(r=>r.status==='fulfilled' || /UNAUTHENTICATED/.test(r.reason.message)));
+  assert.equal((await admin.query("SELECT * FROM nexo.identity_events WHERE subject_id=$1 AND event='LOGOUT'",[a.user_id])).rowCount,1);
+  await rejects(api.reserve(session.token,key(),request()),/UNAUTHENTICATED/);
+});
+test('S08: function grants, RLS coverage and failed-auth security records preserve least privilege',async()=>{
+  const unprotected=await admin.query("SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='nexo' AND c.relkind='r' AND NOT c.relrowsecurity");
+  assert.deepEqual(unprotected.rows,[]);
+  for(const [role,expected] of [
+    ['nexo_identity',['identity_attempt','issue_identity_session','record_identity_failure','recover_identity','register_identity']],
+    ['nexo_provisioner',['provision_recovery','provision_role','set_identity_active']],
+    ['nexo_maintenance',['maintain_identity']]]) {
+    const rows=await admin.query("SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='nexo' AND has_function_privilege($1,p.oid,'EXECUTE') ORDER BY p.proname",[role]);
+    assert.deepEqual(rows.rows.map(r=>r.proname),expected);
+  }
+  const a=await managedAccount();
+  await rejects(identity.login({login:a.login_key,password:'Contraseña errada ficticia 99'}),/INVALID_CREDENTIALS/);
+  await rejects(identity.login({login:'unknown.fixture',password}),/INVALID_CREDENTIALS/);
+  const rows=(await admin.query("SELECT * FROM nexo.security_events WHERE event='INVALID_CREDENTIALS'")).rows;
+  assert.equal(rows.length,2);assert.ok(rows.some(r=>r.subject_id===a.user_id));assert.ok(rows.some(r=>r.subject_id===null));
+  const json=JSON.stringify(rows);assert.ok(!json.includes(password));assert.ok(!json.includes(a.login_key));
+  await rejects(admin.query("UPDATE nexo.security_events SET event='THROTTLED'"),/IMMUTABLE_AUDIT/);
+});
+test('W01: real local HTTP register/login/suggest/search/logout enforces sessions and rejects role escalation',async()=>{
+  await namedLocalities();const http=await startTestRuntime(pool,identityPool);
+  try {
+    const credentials={login:'http.fixture',password};
+    assert.equal((await postJson(http.url,'/v1/register',{...credentials,role:'REVIEWER'})).status,400);
+    assert.equal((await postJson(http.url,'/v1/register',credentials)).status,202);
+    const session=await postJson(http.url,'/v1/login',credentials);assert.equal(session.status,200);
+    const headers={Authorization:'Bearer '+session.body.token};
+    const suggestions=await postJson(http.url,'/v1/localities/suggest',{query:'San Jose'},headers);
+    assert.equal(suggestions.status,200);assert.equal(suggestions.body.length,2);
+    const query={originLocalityId:fixture.geo.localities[0],destinationLocalityId:fixture.geo.localities[1]};
+    const found=await postJson(http.url,'/v1/services/search',query,headers);
+    assert.equal(found.status,200);assert.equal(found.body.status,'FOUND');
+    assert.equal((await postJson(http.url,'/v1/services/search',{...query,coverage:'INTERMUNICIPAL'},headers)).status,400);
+    assert.equal((await postJson(http.url,'/v1/logout',{},headers)).status,200);
+    assert.equal((await postJson(http.url,'/v1/localities/suggest',{query:'San'},headers)).status,401);
+    const account=(await admin.query("SELECT * FROM nexo.identity_accounts WHERE login_key='http.fixture'")).rows[0];
+    assert.equal((await admin.query('SELECT * FROM nexo.memberships WHERE user_id=$1',[account.user_id])).rowCount,0);
+  } finally {await http.close();}
+});
+test('W02: real local HTTP recovery revokes old tokens; invalid logins throttle without leaking SQL',async()=>{
+  const a=await managedAccount();const old=await identity.login({login:a.login_key,password});
+  const code=randomBytes(32).toString('base64url');
+  await provisionPool.query('SELECT nexo.provision_recovery($1,$2,$3)',[a.user_id,hashToken(code),'Fixture']);
+  const http=await startTestRuntime(pool,identityPool);
+  try {
+    assert.equal((await postJson(http.url,'/v1/recover',{code,password:'Clave nueva ficticia 99'})).status,200);
+    assert.equal((await postJson(http.url,'/v1/logout',{}, {Authorization:'Bearer '+old.token})).status,401);
+    const attempts=await Promise.all(Array.from({length:7},()=>postJson(http.url,'/v1/login',{login:'http.unknown',password})));
+    assert.ok(attempts.some(r=>r.status===429));assert.ok(attempts.every(r=>[401,429].includes(r.status)));
+    assert.ok(attempts.every(r=>!JSON.stringify(r.body).includes('SQL')));
+  } finally {await http.close();}
+});
+test('S09: session lifetime starts after a concurrent account lock is released',async()=>{
+  const a=await managedAccount(), digest=hashToken(key());
+  const blocker=new pg.Client({connectionString:url.href});await blocker.connect();let result;
+  try {
+    await blocker.query('BEGIN');await blocker.query('SELECT * FROM nexo.identity_accounts WHERE user_id=$1 FOR UPDATE',[a.user_id]);
+    result=identityPool.query('SELECT nexo.issue_identity_session($1,$2,$3)',[a.user_id,a.version,digest]);
+    await waitForQueryLock('%nexo.issue_identity_session(%');
+    const released=(await blocker.query('SELECT clock_timestamp()::text AS t')).rows[0].t;
+    await blocker.query('COMMIT');await result;
+    assert.equal((await admin.query("SELECT expires_at >= $2::timestamptz+interval '1 hour' AS full_lifetime FROM nexo.sessions WHERE token_hash=$1",[digest,released])).rows[0].full_lifetime,true);
+  } finally {await blocker.query('ROLLBACK');await blocker.end();if(result)await result;}
+});
+test('P01: synthetic catalog probe uses the prefix index and keeps concurrent suggestions bounded',async()=>{
+  await namedLocalities();
+  await admin.query("INSERT INTO nexo.localities(id,catalog_id,municipality_id,code,name) SELECT gen_random_uuid(),$1,$2,'scale-'||i,'Escala ficticia '||lpad(i::text,5,'0') FROM generate_series(1,20000) i",[fixture.geo.catalog,fixture.geo.municipalities[0]]);
+  await admin.query('ANALYZE nexo.localities');
+  const {rows:[plan]}=await admin.query("EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) SELECT id FROM nexo.localities WHERE catalog_id=$1 AND nexo.locality_key(name) LIKE 'escala ficticia 1999%'",[fixture.geo.catalog]);
+  assert.ok(JSON.stringify(plan).includes('locality_name_prefix'));
+  const results=await Promise.all(Array.from({length:12},()=>api.suggestLocalities(fixture.tokens.p,{query:'Escala ficticia 1999',limit:20})));
+  assert.ok(results.every(r=>r.length===10));assert.ok(results.every(r=>JSON.stringify(r)===JSON.stringify(results[0])));
+  assert.equal((await api.suggestLocalities(fixture.tokens.p,{query:'Escala ficticia'})).length,10);
+  console.log('Synthetic locality probe: 20000 generated rows, prefix index used; SQL execution ms='+plan['QUERY PLAN'][0]['Execution Time']);
 });

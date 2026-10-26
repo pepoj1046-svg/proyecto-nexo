@@ -1,6 +1,20 @@
 # Resultados de Etapa 1
 
-## Incremento actual: localidades e identidad local (008–009)
+## Incremento actual: auditoría, HTTP local y mantenimiento (010–011)
+
+**23 unitarias y 66 integraciones PostgreSQL 18.4 aprobadas**, cero fallos,
+omitidas o canceladas, más probe del ejecutor y smoke del launcher HTTP/PostgreSQL.
+Linux x64, Node 24.19.0 y npm 11.9.0. Migraciones 001–009 intactas.
+Actualización poblada 001–009 → 010–011 conserva sesiones/roles/permisos/reservas
+y las seis plazas por segmento. Prueba sintética de 20.000 localidades con índice
+de prefijo y sugerencias concurrentes; no acredita catálogo oficial ni escala real.
+
+[Informe de auditoría, resultados CI y cierre propuesto](REPORTES/ETAPA_1_AUDITORIA_HTTP.md) ·
+[API local, recuperación y mantenimiento](HTTP_LOCAL_Y_MANTENIMIENTO.md).
+Se propone revisión del cierre técnico del laboratorio, sin cierre formal,
+despliegue ni inicio de Etapa 2.
+
+## Evidencia histórica de localidades e identidad local (008–009)
 
 **17 unitarias y 54 integraciones PostgreSQL 18.4 aprobadas**, sin fallos,
 omitidas ni canceladas, más comprobación del fallo del ejecutor (9 preservado).

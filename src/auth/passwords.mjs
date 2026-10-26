@@ -3,7 +3,7 @@ import { promisify } from 'node:util';
 const scrypt = promisify(scryptCallback);
 const options = { N: 32768, r: 8, p: 3, maxmem: 64 * 1024 * 1024 };
 export function validatePassword(password) {
-  if (typeof password !== 'string' || [...password].length < 12 || Buffer.byteLength(password) > 128)
+  if (typeof password !== 'string' || !password.isWellFormed() || [...password].length < 12 || Buffer.byteLength(password) > 128)
     throw new Error('INVALID_PASSWORD');
   return password; // Passwords are never trimmed or Unicode-normalized.
 }
@@ -14,7 +14,7 @@ export async function hashPassword(password) {
   return `scrypt:32768:8:3:${salt}:${hash.toString('hex')}`;
 }
 export async function verifyPassword(password, encoded) {
-  if (typeof password !== 'string' || Buffer.byteLength(password) > 128) return false;
+  if (typeof password !== 'string' || !password.isWellFormed() || Buffer.byteLength(password) > 128) return false;
   const parts = typeof encoded === 'string' ? encoded.split(':') : [];
   if (parts.length !== 6 || parts.slice(0,4).join(':') !== 'scrypt:32768:8:3' ||
     !/^[a-f0-9]{32}$/.test(parts[4]) || !/^[a-f0-9]{128}$/.test(parts[5])) return false;

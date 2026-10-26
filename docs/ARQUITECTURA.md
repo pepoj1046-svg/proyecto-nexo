@@ -1,7 +1,8 @@
 # Arquitectura — Etapa 1
 
 **Estado:** núcleo PostgreSQL y adaptador de servidor implementados y probados localmente.
-Sin API HTTP, aplicaciones ni base desplegada. Fuente de reglas: [REQUISITOS_INICIALES](REQUISITOS_INICIALES.md).
+API HTTP solo de pruebas en loopback, sin aplicaciones ni base desplegada.
+Fuente de reglas: [REQUISITOS_INICIALES](REQUISITOS_INICIALES.md).
 El mapa de componentes siguiente sigue siendo el objetivo; el incremento ejecutable
 está descrito en [IMPLEMENTACION_ETAPA_1](IMPLEMENTACION_ETAPA_1.md).
 
@@ -69,3 +70,12 @@ sesiones revocables y recuperación de un uso. Conexiones separadas: nexo_app pa
 negocio con RLS, nexo_identity para el módulo confiable y nexo_provisioner para
 altas/bajas privilegiadas. Sin proveedor externo ni interfaz pública desplegada.
 [Contrato, protocolo y fronteras](LOCALIDADES_Y_AUTENTICACION.md).
+
+## Incremento 010–011
+
+HTTP local ejecutable con PostgreSQL efímero, sin credenciales externas ni interfaz
+de administración. Roles de runtime separados y comprobados por autoridad efectiva;
+mantenimiento offline acotado y con simulación por defecto; eventos de seguridad
+privados sin secretos. La conexión propietaria solo instala el laboratorio y se
+cierra antes de servir. [Uso y amenazas](HTTP_LOCAL_Y_MANTENIMIENTO.md) y
+[auditoría/criterios de cierre](REPORTES/ETAPA_1_AUDITORIA_HTTP.md).

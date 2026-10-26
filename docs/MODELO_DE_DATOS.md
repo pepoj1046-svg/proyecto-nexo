@@ -67,3 +67,12 @@ La tabla `sessions` anterior se reutiliza sin reescribir filas; no se añaden
 columnas a users/sessions ni se pierde la identidad de reservas antiguas.
 Las nuevas tablas no admiten DML ni lectura de credenciales desde nexo_app.
 [Roles, RLS y límites](LOCALIDADES_Y_AUTENTICACION.md).
+
+## Seguridad y mantenimiento 010–011
+
+`security_events` añade trazas tipadas de fallos, umbrales y mantenimiento, con
+sujeto opcional, hash de bucket y cantidades; RLS sin lectura de runtime y trigger
+de inmutabilidad. No almacena contraseñas, tokens, IPs ni cuerpos de solicitud.
+El mantenimiento solo alcanza sesiones/recuperación inválidas e intentos cuya
+ventana terminó, con cutoff obligatorio y lotes; las demás entidades se preservan.
+[Políticas técnicas y retención pendiente](HTTP_LOCAL_Y_MANTENIMIENTO.md).

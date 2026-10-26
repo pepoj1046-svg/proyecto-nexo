@@ -5,6 +5,7 @@ import { resolve, sep } from 'node:path';
 import { createServer } from 'node:net';
 import { spawn } from 'node:child_process';
 import pg from 'pg';
+import { launchLocalDemo } from './local-demo.mjs';
 
 // Always a fresh local cluster. No DATABASE_URL or remote database is consumed.
 const root = resolve('.local');
@@ -53,6 +54,17 @@ try {
   await setup.connect();
   try { await setup.query(`CREATE DATABASE ${setup.escapeIdentifier(database)}`); }
   finally { await setup.end(); }
+  if(process.argv.includes('--serve-http')) {
+    const local=await launchLocalDemo({host:'127.0.0.1',port,user:'postgres',password,database});
+    try {
+      console.log('Local test API: '+local.url);
+      await new Promise(resolveStop=>{
+        const stop=()=>{process.off('SIGINT',stop);process.off('SIGTERM',stop);process.off('message',message);resolveStop();};
+        const message=value=>{if(value==='stop-local-test')stop();};
+        process.once('SIGINT',stop);process.once('SIGTERM',stop);process.on('message',message);
+      });
+    } finally {await local.close();}
+  } else {
   const code = await new Promise((resolveCode, reject) => {
     const args = process.argv.includes('--verify-failure')
       ? ['--test','--nexo-invalid-test-option']
@@ -66,8 +78,10 @@ try {
     child.on('exit',resolveCode);
   });
   process.exitCode = code ?? 1;
+  }
 } finally {
   if (started) await control(['stop','-D',databaseDir,'-m','fast','-w','-t','30']);
+  if(started && process.argv.includes('--serve-http')) console.log('Local test API stopped; PostgreSQL stopped.');
   // Kept under ignored .local for diagnostics; no recursive deletion of computed paths.
 }
 

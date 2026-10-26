@@ -1,6 +1,7 @@
 # Plan de pruebas de Etapa 1
 
-Estado: **17 pruebas unitarias y 54 de integración PostgreSQL aprobadas localmente**.
+Estado: **23 pruebas unitarias y 66 de integración PostgreSQL aprobadas localmente**,
+más probe del ejecutor y smoke de arranque/cierre HTTP/PostgreSQL.
 Ver [RESULTADOS_ETAPA_1](RESULTADOS_ETAPA_1.md) para comandos, evidencia y límites.
 La tabla conserva los escenarios originales; no todos sus módulos están construidos.
 
@@ -76,3 +77,21 @@ y G12 verifica ahora SHA-256 de 001–007. Nuevas pruebas:
 Cuatro unitarias nuevas verifican validación de localidades y credenciales, scrypt,
 Unicode y rechazo de roles aportados por el cliente.
 [Resultados, plataformas y límites](REPORTES/ETAPA_1_LOCALIDADES_IDENTIDAD.md).
+
+## Auditoría y HTTP local 010–011
+
+S01–S09 prueban estado acotado bajo abuso, presupuestos separados, autoridad efectiva,
+mantenimiento concurrente/dry-run/filas bloqueadas, integridad de reservas, pg_temp,
+logout concurrente único, ACL exactas, auditoría sin secretos y caducidad tras lock.
+W01–W02 usan sockets HTTP y roles PostgreSQL reales para registro, login, consulta,
+recuperación, cierre, abuso y rechazo de escalamiento. P01 verifica índice de prefijo
+y resultados concurrentes con 20.000 localidades **ficticias**. H10 migra una base
+poblada 001–009 a 010–011; G12 comprueba ahora SHA-256 de las nueve migraciones previas.
+Las 54 integraciones anteriores se conservan y siguen pasando.
+
+Seis unitarias nuevas: cinco de transporte (configuración, límites, origen/Host,
+JSON/UTF-8/headers, autorización y sanitización) y una de trabajo de contraseña
+acotado con liberación tras fallos. Se amplía la validación Unicode de identidad.
+`npm run test:local-api` comprueba el launcher completo y cierre mediante IPC,
+también portable a Windows. La CI existente ejecuta todos los comandos.
+[Resultados y limitaciones reales](REPORTES/ETAPA_1_AUDITORIA_HTTP.md).

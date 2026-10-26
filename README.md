@@ -16,6 +16,8 @@ npm test
 npm run test:integration
 # Ambos conjuntos:
 npm run test:all
+# API de pruebas con un clúster nuevo; Ctrl+C cierra HTTP y PostgreSQL:
+npm run dev:local
 ```
 
 El ejecutor crea un clúster nuevo en `.local/`, escucha exclusivamente en loopback,
@@ -54,7 +56,8 @@ await service.reserve(sessionToken, actionKey, {
 El módulo local `src/auth/identity.mjs` implementa registro de pasajeros, login con
 scrypt y sesiones revocables. Usa un pool separado con `nexo_identity`; el negocio
 usa `nexo_app` y las altas privilegiadas requieren `nexo_provisioner`. No hay
-endpoint público, proveedor remoto ni aplicaciones publicadas.
+endpoint público, proveedor remoto ni aplicaciones publicadas. El adaptador HTTP de
+pruebas solo escucha en loopback y tiene launcher con base efímera propia.
 Consultar [operación y decisiones](docs/IMPLEMENTACION_ETAPA_1.md),
 [seguridad pendiente](docs/SEGURIDAD_PENDIENTE.md) y
 [resultados exactos](docs/RESULTADOS_ETAPA_1.md).
@@ -83,4 +86,10 @@ await service.suggestLocalities(sessionToken, {query: 'San José', limit: 10});
 [Pruebas y límites del incremento 008–009](docs/REPORTES/ETAPA_1_LOCALIDADES_IDENTIDAD.md).
 Las rutas previas no obtienen geografía ni permisos automáticamente. La actualización
 con reservas preexistentes está probada; consultar el procedimiento y límites.
-npm run test:all ejecuta 17 unitarias, 54 integraciones y la comprobación del ejecutor.
+npm run test:all ejecuta 23 unitarias, 66 integraciones, la comprobación del ejecutor
+y el smoke de arranque/cierre de la API local con PostgreSQL real.
+
+[API local y mantenimiento](docs/HTTP_LOCAL_Y_MANTENIMIENTO.md) ·
+[Auditoría y evaluación de cierre técnico](docs/REPORTES/ETAPA_1_AUDITORIA_HTTP.md).
+Migraciones nuevas 010–011; 001–009 intactas. La limpieza requiere cutoff explícito
+y por defecto solo simula. Etapa 1 preparada para revisión de cierre; sin iniciar Etapa 2.

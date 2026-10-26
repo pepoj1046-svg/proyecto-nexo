@@ -2,17 +2,13 @@
 // The identity provider must issue random opaque sessions via a trusted connection.
 import { validateSearch } from '../domain/search.mjs';
 import { validateLocalityQuery } from '../domain/localities.mjs';
+import { assertRuntime } from './runtime.mjs';
 export function createService(pool) {
   async function transaction(token, work) {
-    if (typeof token !== 'string' || token.length < 32) throw new Error('UNAUTHENTICATED');
+    if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{32,128}$/.test(token)) throw new Error('UNAUTHENTICATED');
     const client = await pool.connect();
     try {
-      const { rows: [role] } = await client.query(`SELECT rolsuper,rolbypassrls,rolcreaterole,rolcreatedb,
-        pg_has_role(current_user,'nexo_app','USAGE') AS runtime,
-        (SELECT pg_has_role(current_user,nspowner,'MEMBER') FROM pg_namespace WHERE nspname='nexo') AS owner
-        FROM pg_roles WHERE rolname=current_user`);
-      if (!role?.runtime || role.rolsuper || role.rolbypassrls || role.rolcreaterole || role.rolcreatedb || role.owner)
-        throw new Error('UNSAFE_RUNTIME_ROLE');
+      await assertRuntime(client,'nexo_app');
       await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
       await client.query("SELECT set_config('nexo.session_token',$1,true)", [token]);
       await client.query("SET LOCAL lock_timeout='10s'; SET LOCAL statement_timeout='15s'");

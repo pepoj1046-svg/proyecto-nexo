@@ -1,8 +1,10 @@
 # Localidades, identidad y aprovisionamiento — Etapa 1
 
-Implementación local mediante 008–009. No se ha elegido ni creado un proveedor
-remoto. No hay HTTP, frontend, cuentas remotas ni datos reales. Las migraciones
-001–007 se conservan byte por byte. [Encargo](ENCARGO_ETAPA_1_SIGUIENTE.md).
+Implementación local mediante 008–011. No se ha elegido ni creado un proveedor
+remoto. HTTP existe solo en el laboratorio loopback; no hay frontend, cuentas
+remotas ni datos reales. Las migraciones 001–009 se conservan byte por byte.
+[HTTP y mantenimiento actuales](HTTP_LOCAL_Y_MANTENIMIENTO.md) ·
+[Encargo anterior](ENCARGO_ETAPA_1_SIGUIENTE.md).
 
 ## Resolver nombres y buscar servicios
 
@@ -65,6 +67,7 @@ incluyendo planes preparados, latencia, homónimos masivos y concurrencia sosten
 | Login con pertenencia a `nexo_app` | Funciones de negocio y SELECT sujeto a RLS; sin DML ni secretos |
 | Login con pertenencia a `nexo_identity` | Solo funciones de registro, intentos, emisión y consumo de recuperación |
 | Login con pertenencia a `nexo_provisioner` | Solo altas/bajas de administrador/revisor, bloqueo de identidad y emisión de recuperación |
+| Login con pertenencia a `nexo_maintenance` | Solo limpieza acotada con cutoff explícito y simulación por defecto |
 | Propietario de migraciones | DDL y mantenimiento confiable; nunca conexión de una aplicación |
 
 Son roles de grupo NOLOGIN, sin superusuario, BYPASSRLS, CREATEDB ni CREATEROLE.
@@ -112,9 +115,10 @@ no puede crear una sesión con la versión anterior. Reactivar la identidad no
 reactiva tokens ni códigos antiguos.
 
 Límites compartidos en PostgreSQL: 5 intentos por identificador y 1000 globales
-por ventana fija de 15 minutos. Registro y login comparten presupuesto; también
-cuentan accesos correctos. Recuperación usa un presupuesto compartido separado
-de cinco consumos por 15 minutos y el global. Se guardan hashes de identificadores,
+por propósito en ventanas fijas de 15 minutos. Registro y login tienen presupuestos
+separados desde 010; también cuentan accesos correctos. Recuperación limita cada
+hash de código por separado y tiene un global propio de 1000 intentos por ventana.
+Se guardan hashes de identificadores,
 no textos ni contraseñas, y los intentos se confirman antes de verificar hashes:
 un login fallido no revierte sus contadores. Los errores de login son genéricos.
 Son límites conservadores para el módulo local; antes de exponerlo hay que diseñar
@@ -161,7 +165,8 @@ aprovisionamiento global se consulta por el proceso privilegiado de revisión.
 
 ## Seguridad y decisiones pendientes
 
-Todas las funciones SECURITY DEFINER fijan `search_path`. Se revoca EXECUTE a
+Todas las funciones SECURITY DEFINER fijan `search_path`, con pg_temp explícito al
+final desde 010. Se revoca EXECUTE a
 PUBLIC en todo el esquema; las funciones nuevas parten de un default global
 restrictivo para el creador. RLS usa un helper autenticado para elegibilidad;
 el helper interno y la implementación antigua de revisión quedan sin permiso
@@ -173,7 +178,7 @@ transacciones. La actualización de catálogo/permisos de ruta sí se serializa 
 reservas y confirmaciones por los bloqueos existentes; ninguna carrera nueva
 altera el inventario ni cancela automáticamente reservas anteriores.
 
-Mantener pendientes: proveedor y despliegue del piloto, HTTP/TLS, cookies seguras,
+Mantener pendientes: proveedor y despliegue del piloto, HTTP público/TLS, cookies seguras,
 CSRF/CORS, MFA para roles privilegiados, verificación documental, recuperación
 operativa, retención/borrado con plazos aprobados y revisión independiente. Las
 identidades de pruebas no validan identidad civil ni habilitación de transporte.

@@ -27,10 +27,12 @@ real no propietaria para comprobar permisos, además de una conexión de setup a
 
 1. Revisar y autorizar la autenticación pública/proveedor y el transporte HTTP/TLS.
    008–009 añaden módulo local con scrypt, sesiones opacas, revocación, recuperación
-   de un uso, contadores compartidos y aprovisionamiento separado. Faltan canal
-   real de recuperación, MFA, protección distribuida de abuso y controles HTTP.
-2. Limitar retención/duración y limpiar sesiones, claves de idempotencia y auditoría;
-   definir política de retención y protección de información personal.
+   de un uso, contadores compartidos y aprovisionamiento separado. 010–011 añaden
+   HTTP solo de laboratorio, límites y mantenimiento. Faltan canal real de
+   recuperación, MFA, protección distribuida de abuso y el transporte público autorizado.
+2. Aprobar retención/borrado y acceso a sesiones, intentos, recuperación, idempotencia,
+   auditoría y backups. Existe mantenimiento local de filas inválidas con cutoff
+   obligatorio y simulación por defecto; no hay cron ni política legal automática.
 3. Revisar particiones y vínculos verificados menores/responsables. En el prototipo
    solo se admiten solicitudes declaradas sin menores; no hay verificación de edades.
 4. Procedimiento real de altas/documentación (roles y bajas locales ya modelados), turnos con horarios, validación de terminales,
@@ -80,3 +82,20 @@ deliberado y requieren diseño de perímetro antes de exponer registro/login.
 No hay un nuevo estado de cancelación de reservas tras revocar permisos.
 [Contrato y pendientes](LOCALIDADES_Y_AUTENTICACION.md) y
 [evidencia actual](REPORTES/ETAPA_1_LOCALIDADES_IDENTIDAD.md).
+
+## Auditoría técnica 010–011
+
+Corregidos presupuestos de registro/login y recuperación compartida, asignación
+de buckets pese a global agotado, caducidad antes del lock y doble evento de logout.
+Guardas de runtime verifican autoridad efectiva, mezcla de grupos, roles elevados,
+CREATE/propiedad de objetos y SET ROLE. Identidad tiene timeout por llamada, scrypt
+con trabajo acotado y registro privado de fallos sin solicitudes/secretos.
+
+Se prueban RLS/ACL, pg_temp al final, shadowing temporal, cierres concurrentes,
+recuperación por código, filas bloqueadas y limpieza acotada. HTTP local rechaza
+Host/Origin no admitidos, cuerpos grandes y tokens inválidos, sin SQL ni provisión.
+La conexión `nexo_identity` conserva autoridad confiable de emisión; RLS no contiene
+una conexión comprometida con esa autoridad ni al propietario/administrador del SO.
+Las decisiones operativas y de piloto anteriores siguen pendientes del propietario.
+[Límites y mantenimiento](HTTP_LOCAL_Y_MANTENIMIENTO.md) ·
+[Auditoría y evaluación de cierre](REPORTES/ETAPA_1_AUDITORIA_HTTP.md).
