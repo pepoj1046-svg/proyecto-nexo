@@ -28,6 +28,7 @@ export async function migrate(client, directory = new URL('../database/migration
         applied.push(name);
       } catch (error) {
         await client.query('ROLLBACK');
+        error.message = name + ': ' + error.message;
         throw error;
       }
     }

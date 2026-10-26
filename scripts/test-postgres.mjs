@@ -54,7 +54,10 @@ try {
   try { await setup.query(`CREATE DATABASE ${setup.escapeIdentifier(database)}`); }
   finally { await setup.end(); }
   const code = await new Promise((resolveCode, reject) => {
-    const child = spawn(process.execPath, ['--test','--test-concurrency=1','tests/integration/postgres.test.mjs'], {
+    const args = process.argv.includes('--verify-failure')
+      ? ['--test','--nexo-invalid-test-option']
+      : ['--test','--test-concurrency=1','tests/integration/postgres.test.mjs'];
+    const child = spawn(process.execPath, args, {
       stdio: 'inherit', windowsHide: true,
       env: { ...process.env, NEXO_TEST_LOCAL: '1',
         NEXO_TEST_URL: `postgresql://postgres:${password}@127.0.0.1:${port}/${database}` }
@@ -67,3 +70,6 @@ try {
   if (started) await control(['stop','-D',databaseDir,'-m','fast','-w','-t','30']);
   // Kept under ignored .local for diagnostics; no recursive deletion of computed paths.
 }
+
+// async-exit-hook otherwise maps beforeExit to zero, masking a failing child.
+process.exit(process.exitCode ?? 0);

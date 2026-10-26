@@ -6,11 +6,16 @@
     "test": "node --test tests/*.test.mjs",
     "db:migrate": "node scripts/migrate.mjs",
     "test:integration": "node scripts/test-postgres.mjs",
-    "test:all": "npm test && npm run test:integration"
+    "test:all": "npm test && npm run test:integration && npm run test:runner",
+    "test:runner": "node scripts/verify-test-exit.mjs"
   },
   "engines": {
     "node": ">=20"
   },
-  "dependencies": { "pg": "8.23.1" },
-  "devDependencies": { "embedded-postgres": "18.4.0-beta.17" }
+  "dependencies": {
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "embedded-postgres": "18.4.0-beta.17"
+  }
 }

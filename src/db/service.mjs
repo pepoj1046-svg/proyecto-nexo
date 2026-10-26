@@ -1,5 +1,6 @@
 // Server-side adapter. Never accept actorId/associationId as authentication.
 // The identity provider must issue random opaque sessions via a trusted connection.
+import { validateSearch } from '../domain/search.mjs';
 export function createService(pool) {
   async function transaction(token, work) {
     if (typeof token !== 'string' || token.length < 32) throw new Error('UNAUTHENTICATED');
@@ -25,6 +26,13 @@ export function createService(pool) {
   });
   return Object.freeze({
     reserve: call('reserve', '$1::text,$2::jsonb'),
+    search: (token,request) => {
+      const q=validateSearch(request);
+      return call('search_services','$1::uuid,$2::uuid,$3::integer,$4::boolean')(
+        token,q.originLocalityId,q.destinationLocalityId,q.seats,q.express);
+    },
+    submitAuthorization: call('submit_authorization','$1::text,$2::uuid,$3::text,$4::text,$5::timestamptz,$6::timestamptz'),
+    reviewAuthorization: call('review_authorization','$1::text,$2::uuid,$3::text,$4::text'),
     respond: call('respond_offer', '$1::text,$2::uuid,$3::boolean'),
     cancel: call('cancel', '$1::text,$2::uuid'),
     depart: call('depart', '$1::text,$2::uuid'),

@@ -1,12 +1,13 @@
 import { test, before, beforeEach, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdtemp, writeFile, readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { resolve, sep } from 'node:path';
 import pg from 'pg';
 import { migrate } from '../../scripts/migrate.mjs';
 import { createService } from '../../src/db/service.mjs';
+import { seedGeography,mapRoute,permit } from '../helpers/geography.mjs';
 
 const url = new URL(process.env.NEXO_TEST_URL || 'postgres://invalid');
 if (process.env.NEXO_TEST_LOCAL !== '1' || url.hostname !== '127.0.0.1' || !/^\/nexo_test_[a-f0-9]+$/.test(url.pathname)) {
@@ -19,7 +20,7 @@ before(async () => {
   await admin.connect();
   const version = await admin.query('SHOW server_version');
   console.log(`PostgreSQL real: ${version.rows[0].server_version}`);
-  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql']);
+  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql','005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql']);
   // A real non-owner, non-superuser login exercises grants and RLS.
   await admin.query(`CREATE ROLE nexo_test_runtime LOGIN PASSWORD '${runtimePassword}'
     NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS INHERIT;
@@ -32,12 +33,14 @@ after(async () => { if(pool) await pool.end(); await admin.end(); });
 
 beforeEach(async () => {
   await admin.query(`TRUNCATE nexo.audit_events,nexo.bookings,nexo.actions,nexo.fares,nexo.trips,
-    nexo.vehicles,nexo.stops,nexo.routes,nexo.memberships,nexo.sessions,nexo.users,nexo.associations`);
+    nexo.vehicles,nexo.stops,nexo.routes,nexo.memberships,nexo.sessions,nexo.users,nexo.associations,
+    nexo.authorization_events,nexo.route_authorizations,nexo.operation_reviewers,
+    nexo.localities,nexo.municipalities,nexo.provinces,nexo.departments,nexo.geo_catalogs`);
   const f = {A:randomUUID(),B:randomUUID(),ra:randomUUID(),rb:randomUUID(),
-    adminA:randomUUID(),adminB:randomUUID(),p:randomUUID(),other:randomUUID(),
+    adminA:randomUUID(),adminB:randomUUID(),p:randomUUID(),other:randomUUID(),reviewer:randomUUID(),
     drivers:Array.from({length:4},randomUUID),vehicles:Array.from({length:4},randomUUID),
     trips:Array.from({length:4},randomUUID),tokens:{}};
-  for(const key of ['adminA','adminB','p','other']) {
+  for(const key of ['adminA','adminB','p','other','reviewer']) {
     await admin.query('INSERT INTO nexo.users VALUES($1,$2)',[f[key],`fictional-${key}`]);
     f.tokens[key]=randomBytes(32).toString('hex');
     await session(f[key],f.tokens[key]);
@@ -47,11 +50,15 @@ beforeEach(async () => {
     f.tokens[`d${i}`]=randomBytes(32).toString('hex');
     await session(f.drivers[i],f.tokens[`d${i}`]);
   }
-  for(const a of [f.A,f.B]) await admin.query('INSERT INTO nexo.associations(id,name) VALUES($1,$2)',[a,'Asociación ficticia']);
+  for(const a of [f.A,f.B]) await admin.query("INSERT INTO nexo.associations(id,name,adherence_status,operating_status) VALUES($1,$2,'ADHERED','OPERATING')",[a,'Asociación ficticia']);
+  await admin.query('INSERT INTO nexo.operation_reviewers VALUES($1)',[f.reviewer]);
+  f.geo=await seedGeography(admin);
+  f.authorizations={};
   await admin.query(`INSERT INTO nexo.memberships VALUES($1,$2,'ASSOCIATION_ADMIN',true),($3,$4,'ASSOCIATION_ADMIN',true)`,[f.A,f.adminA,f.B,f.adminB]);
   for(const [route,a] of [[f.ra,f.A],[f.rb,f.B]]) {
     await admin.query("INSERT INTO nexo.routes(id,association_id,name,direction,version,stop_count,origin_code,destination_code) VALUES($1,$2,'Ruta ficticia','OUT',1,4,'Y-FICTICIO','V-FICTICIO')",[route,a]);
-    for(let s=0;s<4;s++) await admin.query('INSERT INTO nexo.stops(association_id,route_id,stop_index,name) VALUES($1,$2,$3,$4)',[a,route,s,`Parada ficticia ${s}`]);
+    await mapRoute(admin,route,a,f.geo);
+    f.authorizations[route]=await permit(admin,route,a,f.adminA,f.reviewer);
     for(let from=0;from<3;from++) for(let to=from+1;to<4;to++) for(const express of [false,true]) {
       await admin.query(`INSERT INTO nexo.fares(association_id,route_id,from_stop,to_stop,express,version,amount_bob,valid_from)
         VALUES($1,$2,$3,$4,$5,1,$6,now()-interval '1 day')`,[a,route,from,to,express,express?60:10]);
@@ -99,7 +106,7 @@ async function occupancy() {
 
 test('migrations: second application is a no-op, registry checksums match',async()=>{
   assert.deepEqual(await migrate(admin),[]);
-  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,4);
+  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,7);
 });
 test('migrations: failed DDL rolls back; checksum drift is rejected',async()=>{
   const dir=await mkdtemp(resolve('.local','migration-test-'));
@@ -285,6 +292,8 @@ test('queue: after arrival, own driver requests destination tail once; no forced
   const target=randomUUID();
   await admin.query(`INSERT INTO nexo.routes(id,association_id,name,direction,version,stop_count,origin_code,destination_code)
     VALUES($1,$2,'Regreso ficticio','IN',1,4,'V-FICTICIO','Y-FICTICIO')`,[target,fixture.A]);
+  await mapRoute(admin,target,fixture.A,fixture.geo,fixture.geo.localities[1],fixture.geo.localities[0]);
+  await permit(admin,target,fixture.A,fixture.adminA,fixture.reviewer);
   await rejects(api.requestQueue(fixture.tokens.d0,key(),fixture.trips[0],target),/NOT_AVAILABLE/);
   const g=await fixed(6); await acceptAll(g);
   await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);
@@ -337,4 +346,236 @@ test('direct RPC cannot bypass fresh inventory snapshots with a different isolat
     } finally {await client.query('ROLLBACK'); client.release();}
   }
   assert.equal((await admin.query('SELECT * FROM nexo.bookings')).rowCount,0);
+});
+
+const search=(seats=1,more={})=>api.search(fixture.tokens.p,{
+  originLocalityId:fixture.geo.localities[0],destinationLocalityId:fixture.geo.localities[1],seats,...more
+});
+async function addService(destination) {
+  const route=randomUUID(),driver=randomUUID(),vehicle=randomUUID();
+  await admin.query("INSERT INTO nexo.routes(id,association_id,name,direction,version,stop_count) VALUES($1,$2,'Servicio ficticio','OUT',1,2)",[route,fixture.A]);
+  await mapRoute(admin,route,fixture.A,fixture.geo,fixture.geo.localities[0],destination,2);
+  await permit(admin,route,fixture.A,fixture.adminA,fixture.reviewer);
+  await admin.query("INSERT INTO nexo.users VALUES($1,'Chofer ficticio adicional')",[driver]);
+  await admin.query("INSERT INTO nexo.memberships VALUES($1,$2,'DRIVER',true)",[fixture.A,driver]);
+  await admin.query("INSERT INTO nexo.vehicles(id,association_id,label) VALUES($1,$2,'FICTICIO-NACIONAL')",[vehicle,fixture.A]);
+  await admin.query('INSERT INTO nexo.trips(association_id,route_id,vehicle_id,driver_id,position_no) VALUES($1,$2,$3,$4,1)',[fixture.A,route,vehicle,driver]);
+  await admin.query("INSERT INTO nexo.fares(association_id,route_id,from_stop,to_stop,version,amount_bob,valid_from) VALUES($1,$2,0,1,1,20,now()-interval '1 day')",[fixture.A,route]);
+  return route;
+}
+async function waitForReservationLock() {
+  for(let i=0;i<200;i++) {
+    const {rows:[row]}=await admin.query("SELECT EXISTS(SELECT FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%nexo.reserve(%') AS waiting");
+    if(row.waiting) return;
+    await new Promise(resolve=>setTimeout(resolve,10));
+  }
+  throw new Error('Reservation did not reach expected database lock');
+}
+test('G01: geographic hierarchy classifies all three coverage types, without a client selector',async()=>{
+  const g=fixture.geo;
+  for(const [i,expected] of [[1,'INTERMUNICIPAL'],[2,'INTERPROVINCIAL'],[3,'INTERDEPARTAMENTAL'],[4,null]]) {
+    const {rows:[r]}=await admin.query('SELECT nexo.classify_journey($1,$2) AS coverage',[g.localities[0],g.localities[i]]);
+    assert.equal(r.coverage,expected);
+  }
+  await addService(g.localities[2]); await addService(g.localities[3]);
+  for(const [i,expected] of [[1,'INTERMUNICIPAL'],[2,'INTERPROVINCIAL'],[3,'INTERDEPARTAMENTAL']]) {
+    const result=await search(1,{destinationLocalityId:g.localities[i]});
+    assert.equal(result.coverage,expected); assert.ok(result.results.length>0);
+    assert.ok(result.results.every(r=>r.coverage===expected));
+  }
+});
+test('G02: origin/destination search returns only actual services, prices and boarding points',async()=>{
+  const result=await search(2);
+  assert.equal(result.status,'FOUND'); assert.equal(result.results.length,2);
+  for(const r of result.results) {
+    assert.equal(r.priceBOB,20); assert.equal(r.currency,'BOB');
+    assert.equal(r.availableSeats,6); assert.equal(r.from,0); assert.equal(r.to,3);
+    assert.ok(r.boardingName); assert.equal('driverId' in r,false); assert.equal('tripId' in r,false);
+  }
+  const intermediate=await search(1,{destinationLocalityId:fixture.geo.localities[4]});
+  assert.equal(intermediate.status,'FOUND'); assert.equal(intermediate.coverage,null);
+  assert.ok(intermediate.results.every(r=>r.coverage==='INTERMUNICIPAL'));
+  const reverse=await search(1,{originLocalityId:fixture.geo.localities[1],destinationLocalityId:fixture.geo.localities[0]});
+  assert.deepEqual(reverse,{status:'NO_DIRECT_SERVICE',coverage:'INTERMUNICIPAL',results:[]});
+  await rejects(sql('x'.repeat(64),'SELECT nexo.search_services($1,$2,1,false)',fixture.geo.localities.slice(0,2)),/UNAUTHENTICATED/);
+});
+test('G03: no valid authorization means no offer and direct reservations are denied',async()=>{
+  await admin.query("UPDATE nexo.route_authorizations SET status='REVOKED'");
+  assert.deepEqual((await search()).results,[]);
+  assert.equal((await search()).status,'NO_DIRECT_SERVICE');
+  await rejects(hold(),/ROUTE_NOT_ELIGIBLE/);
+  for(const [status,start,end] of [
+    ['PENDING','2000-01-01','2100-01-01'],
+    ['VERIFIED','2000-01-01','2001-01-01'],
+    ['VERIFIED','2100-01-01','2101-01-01']
+  ]) {
+    const {rows:[a]}=await admin.query(
+      "INSERT INTO nexo.route_authorizations(association_id,route_id,issuer,reference,status,valid_from,valid_until,requested_by,reviewed_by,review_reason) VALUES($1,$2,'Emisor ficticio',$3,$4,$5,$6,$7,$8,'Prueba') RETURNING id",
+      [fixture.A,fixture.ra,key(),status,start,end,fixture.adminA,fixture.reviewer]);
+    assert.deepEqual((await search()).results,[]);
+    await rejects(hold(),/ROUTE_NOT_ELIGIBLE/);
+    await admin.query("UPDATE nexo.route_authorizations SET status='REVOKED' WHERE id=$1",[a.id]);
+  }
+  assert.equal((await admin.query('SELECT * FROM nexo.bookings')).rowCount,0);
+});
+test('G04: adherence, operational suspension and commercial access are independent gates',async()=>{
+  for(const [field,value] of [['adherence_status','WITHDRAWN'],['operating_status','SUSPENDED'],['status','SUSPENDED']]) {
+    await admin.query('UPDATE nexo.associations SET '+field+'=$1 WHERE id=$2',[value,fixture.A]);
+    const result=await search(); assert.equal(result.results.length,1); assert.equal(result.results[0].associationId,fixture.B);
+    await rejects(hold(),/ROUTE_NOT_ELIGIBLE|ASSOCIATION_SUSPENDED/);
+    const active=field==='adherence_status'?'ADHERED':field==='operating_status'?'OPERATING':'ACTIVE';
+    await admin.query('UPDATE nexo.associations SET '+field+'=$1 WHERE id=$2',[active,fixture.A]);
+  }
+});
+test('G05: authorization submission is tenant-scoped; only a trusted reviewer can verify',async()=>{
+  await admin.query("UPDATE nexo.route_authorizations SET status='REVOKED' WHERE route_id=$1",[fixture.ra]);
+  const args=[key(),fixture.ra,'Emisor ficticio','Referencia ficticia','2000-01-01T00:00:00Z','2100-01-01T00:00:00Z'];
+  const a=await api.submitAuthorization(fixture.tokens.adminA,...args);
+  assert.deepEqual(await api.submitAuthorization(fixture.tokens.adminA,...args),a);
+  assert.equal(a.status,'PENDING');
+  await rejects(api.submitAuthorization(fixture.tokens.adminB,key(),...args.slice(1)),/FORBIDDEN/);
+  await rejects(api.reviewAuthorization(fixture.tokens.adminA,key(),a.authorizationId,'VERIFIED','Autoverificación'),/FORBIDDEN/);
+  assert.equal((await search()).results.length,1);
+  const reviewKey=key();
+  assert.equal((await api.reviewAuthorization(fixture.tokens.reviewer,reviewKey,a.authorizationId,'VERIFIED','Documentación ficticia revisada')).status,'VERIFIED');
+  await api.reviewAuthorization(fixture.tokens.reviewer,reviewKey,a.authorizationId,'VERIFIED','Documentación ficticia revisada');
+  assert.equal((await search()).results.length,2);
+  assert.equal((await admin.query('SELECT * FROM nexo.authorization_events WHERE authorization_id=$1',[a.authorizationId])).rowCount,2);
+  await rejects(sql(fixture.tokens.adminA,'UPDATE nexo.route_authorizations SET status=$1',['VERIFIED']),/permission denied/);
+  await rejects(sql(fixture.tokens.adminA,'INSERT INTO nexo.operation_reviewers VALUES($1)',[fixture.adminA]),/permission denied/);
+  await rejects(admin.query("UPDATE nexo.authorization_events SET reason='alterado'"),/IMMUTABLE_AUDIT/);
+});
+test('G06: RLS hides unauthorized catalog and permit metadata while preserving own booking history',async()=>{
+  const g=await hold();
+  await admin.query("UPDATE nexo.route_authorizations SET status='REVOKED' WHERE route_id=$1",[fixture.ra]);
+  const a=await sql(fixture.tokens.adminA,'SELECT * FROM nexo.route_authorizations');
+  const b=await sql(fixture.tokens.adminB,'SELECT * FROM nexo.route_authorizations');
+  assert.ok(a.rows.every(r=>r.association_id===fixture.A));
+  assert.ok(b.rows.every(r=>r.association_id===fixture.B));
+  assert.equal((await sql(fixture.tokens.p,'SELECT * FROM nexo.route_authorizations')).rowCount,0);
+  assert.equal((await sql(fixture.tokens.other,'SELECT * FROM nexo.routes WHERE id=$1',[fixture.ra])).rowCount,0);
+  assert.equal((await sql(fixture.tokens.other,'SELECT * FROM nexo.stops WHERE route_id=$1',[fixture.ra])).rowCount,0);
+  assert.equal((await sql(fixture.tokens.other,'SELECT * FROM nexo.fares WHERE route_id=$1',[fixture.ra])).rowCount,0);
+  assert.equal((await sql(fixture.tokens.p,'SELECT * FROM nexo.routes WHERE id=$1',[fixture.ra])).rowCount,1);
+  assert.equal((await api.bookings(fixture.tokens.p))[0].id,g.bookingIds[0]);
+  await rejects(sql(fixture.tokens.p,"SELECT nexo.reserve_inventory('bypass','{}')"),/permission denied/);
+  await rejects(api.respond(fixture.tokens.d0,key(),g.bookingIds[0],true),/ROUTE_NOT_ELIGIBLE/);
+  await api.cancel(fixture.tokens.p,key(),g.bookingIds[0]);
+});
+test('G07: search honors capacity, stop permissions, fare uniqueness and live driver eligibility',async()=>{
+  await fixed(6,0); await fixed(6,1); await fixed(6,2);
+  assert.deepEqual((await search()).results.map(r=>r.associationId),[fixture.B]);
+  await admin.query('UPDATE nexo.stops SET boarding_allowed=false WHERE route_id=$1 AND stop_index=0',[fixture.rb]);
+  assert.deepEqual((await search()).results,[]);
+  await admin.query('UPDATE nexo.stops SET boarding_allowed=true WHERE route_id=$1 AND stop_index=0',[fixture.rb]);
+  await admin.query('UPDATE nexo.memberships SET active=false WHERE user_id=$1',[fixture.drivers[3]]);
+  assert.deepEqual((await search()).results,[]);
+  await admin.query('UPDATE nexo.memberships SET active=true WHERE user_id=$1',[fixture.drivers[3]]);
+  await admin.query("INSERT INTO nexo.fares(association_id,route_id,from_stop,to_stop,version,amount_bob,valid_from) VALUES($1,$2,0,3,2,99,now()-interval '1 day')",[fixture.B,fixture.rb]);
+  assert.deepEqual((await search()).results,[]);
+});
+test('G08: geographic versions, route endpoints and stop_count cannot be mixed or rewritten',async()=>{
+  await rejects(admin.query('UPDATE nexo.routes SET stop_count=2 WHERE id=$1',[fixture.ra]),/ROUTE_VERSION_IN_USE/);
+  await rejects(admin.query('UPDATE nexo.localities SET municipality_id=$1 WHERE id=$2',[fixture.geo.municipalities[3],fixture.geo.localities[0]]),/GEOGRAPHY_VERSION_IN_USE/);
+  const route=randomUUID();
+  await admin.query("INSERT INTO nexo.routes(id,association_id,name,direction,version,stop_count,catalog_id,origin_locality_id,destination_locality_id) VALUES($1,$2,'Prueba','OUT',1,2,$3,$4,$5)",[route,fixture.A,fixture.geo.catalog,...fixture.geo.localities.slice(0,2)]);
+  const insert='INSERT INTO nexo.stops(association_id,route_id,stop_index,name,catalog_id,locality_id) VALUES($1,$2,$3,$4,$5,$6)';
+  await rejects(admin.query(insert,[fixture.A,route,2,'Fuera de rango',fixture.geo.catalog,fixture.geo.localities[1]]),/INVALID_STOP_INDEX/);
+  await rejects(admin.query(insert,[fixture.A,route,0,'Extremo incorrecto',fixture.geo.catalog,fixture.geo.localities[1]]),/STOP_ENDPOINT_MISMATCH/);
+  const otherCatalog=randomUUID();
+  await admin.query("INSERT INTO nexo.geo_catalogs VALUES($1,'Otro catálogo ficticio','v1','fixture','SYNTHETIC','ACTIVE')",[otherCatalog]);
+  await rejects(admin.query("INSERT INTO nexo.provinces VALUES($1,$2,$3,'X','Provincia ficticia')",[randomUUID(),otherCatalog,fixture.geo.departments[0]]),/foreign key/);
+  await rejects(admin.query(insert,[fixture.B,route,0,'Asociación incorrecta',fixture.geo.catalog,fixture.geo.localities[0]]),/foreign key/);
+});
+test('G09: reservations recheck both association switches after waiting for concurrent updates',async()=>{
+  for(const field of ['status','operating_status']) {
+    const blocker=new pg.Client({connectionString:url.href}); await blocker.connect();
+    let result;
+    try {
+      await blocker.query('BEGIN');
+      await blocker.query("UPDATE nexo.associations SET "+field+"='SUSPENDED' WHERE id=$1",[fixture.A]);
+      result=hold().then(value=>({value}),error=>({error}));
+      await waitForReservationLock();
+      await blocker.query('COMMIT');
+      assert.match((await result).error.message,/ASSOCIATION_SUSPENDED|ROUTE_NOT_ELIGIBLE/);
+    } finally {await blocker.query('ROLLBACK'); await blocker.end(); if(result) await result;}
+    await admin.query('UPDATE nexo.associations SET '+field+'=$1 WHERE id=$2',[field==='status'?'ACTIVE':'OPERATING',fixture.A]);
+  }
+  assert.equal((await admin.query('SELECT * FROM nexo.bookings')).rowCount,0);
+});
+test('G10: concurrent permit revocation wins before a waiting reservation reads inventory',async()=>{
+  const blocker=new pg.Client({connectionString:url.href}); await blocker.connect();
+  let result;
+  try {
+    await blocker.query('BEGIN');
+    await blocker.query("UPDATE nexo.route_authorizations SET status='REVOKED' WHERE route_id=$1",[fixture.ra]);
+    result=hold().then(value=>({value}),error=>({error}));
+    await waitForReservationLock(); await blocker.query('COMMIT');
+    assert.match((await result).error.message,/ROUTE_NOT_ELIGIBLE/);
+  } finally {await blocker.query('ROLLBACK'); await blocker.end(); if(result) await result;}
+  assert.equal((await admin.query('SELECT * FROM nexo.bookings')).rowCount,0);
+});
+test('G11: authorization revocation preserves active trips, cancellation and terminal completion',async()=>{
+  const g=await fixed(6); await acceptAll(g); await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);
+  await api.reviewAuthorization(fixture.tokens.reviewer,key(),fixture.authorizations[fixture.ra],'REVOKED','Revocación ficticia');
+  await rejects(hold(),/ROUTE_NOT_ELIGIBLE/);
+  assert.equal((await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3)).status,'COMPLETED');
+});
+test('G12: applied migrations 001-004 remain byte-identical',async()=>{
+  const expected={
+    '001_core.sql':'9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059',
+    '002_operations.sql':'787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4',
+    '003_queue.sql':'4fe53741452e3008a82690838d3f86e8308d3ddda322896ba723e94a7f4dd620',
+    '004_isolation_guard.sql':'2ecd12ef4230f29a94a6bc915f8be31f2f3d5e2e1b395cc3c15555442951d401'
+  };
+  for(const [name,digest] of Object.entries(expected)) {
+    const bytes=await readFile(new URL('../../database/migrations/'+name,import.meta.url));
+    assert.equal(createHash('sha256').update(bytes).digest('hex'),digest);
+  }
+});
+test('G13: additive upgrade of a populated 001-004 database preserves bookings and running operations',async()=>{
+  const name='nexo_test_upgrade_'+randomBytes(6).toString('hex');
+  await admin.query('CREATE DATABASE '+admin.escapeIdentifier(name));
+  const upgradedUrl=new URL(url); upgradedUrl.pathname='/'+name;
+  const db=new pg.Client({connectionString:upgradedUrl.href}); await db.connect();
+  try {
+    const dir=await mkdtemp(resolve('.local','old-migrations-'));
+    for(const file of ['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql'])
+      await writeFile(resolve(dir,file),await readFile(new URL('../../database/migrations/'+file,import.meta.url)));
+    assert.equal((await migrate(db,pathToFileURL(dir+sep))).length,4);
+    const a=randomUUID(),u=randomUUID(),d=randomUUID(),r=randomUUID(),v=randomUUID(),t=randomUUID(),fare=randomUUID(),b=randomUUID();
+    const token=randomBytes(32).toString('hex');
+    await db.query("INSERT INTO nexo.users VALUES($1,'Pasajero antiguo ficticio'),($2,'Chofer antiguo ficticio')",[u,d]);
+    await db.query("INSERT INTO nexo.sessions VALUES($1,$2,now()+interval '1 hour',NULL)",[createHash('sha256').update(token).digest('hex'),d]);
+    await db.query("INSERT INTO nexo.associations(id,name) VALUES($1,'Asociación antigua ficticia')",[a]);
+    await db.query("INSERT INTO nexo.memberships VALUES($1,$2,'DRIVER',true)",[a,d]);
+    await db.query("INSERT INTO nexo.routes(id,association_id,name,direction,version,stop_count) VALUES($1,$2,'Ruta anterior','OUT',1,2)",[r,a]);
+    await db.query("INSERT INTO nexo.stops(association_id,route_id,stop_index,name) VALUES($1,$2,0,'Origen antiguo'),($1,$2,1,'Destino antiguo')",[a,r]);
+    await db.query("INSERT INTO nexo.vehicles(id,association_id,label) VALUES($1,$2,'ANTIGUO-FICTICIO')",[v,a]);
+    await db.query('INSERT INTO nexo.trips(id,association_id,route_id,vehicle_id,driver_id,position_no) VALUES($1,$2,$3,$4,$5,1)',[t,a,r,v,d]);
+    await db.query("INSERT INTO nexo.fares(id,association_id,route_id,from_stop,to_stop,version,amount_bob,valid_from) VALUES($1,$2,$3,0,1,1,10,now())",[fare,a,r]);
+    await db.query("INSERT INTO nexo.bookings(id,association_id,trip_id,route_id,passenger_id,created_by,group_id,source,seats,from_stop,to_stop,fare_id,price_bob,fare_version,status,expires_at,driver_accepted) VALUES($1,$2,$3,$4,$5,$5,$1,'APP',2,0,1,$6,20,1,'CONFIRMED',now()+interval '1 hour',true)",[b,a,t,r,u,fare]);
+    const before=(await db.query('SELECT * FROM nexo.bookings')).rows;
+    assert.deepEqual(await migrate(db),['005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql']);
+    assert.deepEqual((await db.query('SELECT * FROM nexo.bookings')).rows,before);
+    assert.deepEqual(await migrate(db),[]);
+    assert.equal((await db.query('SELECT * FROM nexo.route_authorizations')).rowCount,0);
+    assert.equal((await db.query('SELECT catalog_id FROM nexo.routes')).rows[0].catalog_id,null);
+    await db.query("SELECT set_config('nexo.session_token',$1,false)",[token]);
+    await rejects(db.query('SELECT nexo.reserve($1,$2::jsonb)',[key(),{routeId:r,from:0,to:1,seats:1}]),/ROUTE_NOT_ELIGIBLE/);
+    const geography=await seedGeography(db);
+    await db.query('BEGIN');
+    try {
+      await db.query('UPDATE nexo.routes SET catalog_id=$2,origin_locality_id=$3,destination_locality_id=$4 WHERE id=$1',[r,geography.catalog,...geography.localities.slice(0,2)]);
+      for(let index=0;index<2;index++) await db.query('UPDATE nexo.stops SET catalog_id=$3,locality_id=$4 WHERE route_id=$1 AND stop_index=$2',[r,index,geography.catalog,geography.localities[index]]);
+      await db.query("UPDATE nexo.associations SET adherence_status='ADHERED',operating_status='OPERATING' WHERE id=$1",[a]);
+      await permit(db,r,a,u,d);
+      await db.query('COMMIT');
+    } catch(error) {await db.query('ROLLBACK'); throw error;}
+    const held=(await db.query('SELECT nexo.reserve($1,$2::jsonb) AS r',[key(),{routeId:r,from:0,to:1,seats:4}])).rows[0].r;
+    await db.query('SELECT nexo.respond_offer($1,$2,true)',[key(),held.bookingIds[0]]);
+    assert.equal((await db.query('SELECT seats,price_bob FROM nexo.bookings WHERE id=$1',[b])).rows[0].seats,2);
+    assert.equal((await db.query('SELECT nexo.depart($1,$2) AS r',[key(),t])).rows[0].r.status,'IN_TRANSIT');
+    assert.equal((await db.query('SELECT nexo.progress($1,$2,1) AS r',[key(),t])).rows[0].r.status,'COMPLETED');
+  } finally {await db.end();}
 });
