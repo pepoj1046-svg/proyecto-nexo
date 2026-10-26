@@ -8,9 +8,10 @@ auditoría HTTP y el [dictamen ChatGPT más reciente](https://github.com/pepoj10
 
 ## Dictamen y alcance del cierre
 
-**La Etapa 1 está técnicamente completa en su alcance de laboratorio local**, una
-vez comprobada la matriz final indicada abajo. No se identificaron errores técnicos
-demostrables pendientes que impidan cerrar ese alcance. Se entrega el cierre para
+**La Etapa 1 está técnicamente completa en su alcance de laboratorio local**.
+La matriz final Node 22/24 × Ubuntu/Windows está aprobada y sus logs fueron
+verificados. No se identificaron errores técnicos demostrables pendientes que
+impidan cerrar ese alcance. Se entrega el cierre para
 aceptación formal del propietario; no se fusiona ni se cierra el PR y no se inicia
 Etapa 2. Este dictamen no declara preparación para producción ni cierre comercial.
 
@@ -132,9 +133,20 @@ git diff --check
 exit: 0
 ```
 
-La matriz remota final es Node 22/24 × Ubuntu/Windows. Su enlace/resultado se
-incorporará tras observar los cuatro jobs; no se da por aprobada de antemano.
-No se han probado otras versiones PostgreSQL ni una base productiva.
+Commit de implementación final **`41b0873`**, [ejecución CI verificada](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40366626764):
+
+| Plataforma | Node observado en logs | Unitarias | PostgreSQL 18.4 | Runner y launcher |
+|---|---|---|---|---|
+| Ubuntu | 22.23.3 | 23/23 | 66/66 | Aprobados |
+| Ubuntu | 24.21.0 | 23/23 | 66/66 | Aprobados |
+| Windows | 22.23.4 | 23/23 | 66/66 | Aprobados |
+| Windows | 24.22.1 | 23/23 | 66/66 | Aprobados |
+
+Los cuatro jobs finalizaron en success; se inspeccionaron sus logs. La matriz
+usa las familias 22 y 24, por eso las versiones de parche observadas pueden variar
+entre plataformas/ejecuciones. Esta evidencia corresponde al commit de implementación;
+un commit documental posterior tiene sus propios checks en el PR.
+No se han probado otras familias Node, otras versiones PostgreSQL ni una base productiva.
 
 Cobertura que permite evaluar el cierre:
 
