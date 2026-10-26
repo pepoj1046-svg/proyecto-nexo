@@ -66,8 +66,8 @@ export async function startLocalHttpApi({localTest,service,identity,rateLimit=60
         if(seen.has(name)) throw failure(400,'DUPLICATE_HEADER');
         seen.add(name);
       }
-      if(req.socket.remoteAddress!=='127.0.0.1' || req.headers.host!==expectedHost || req.headers.origin ||
-        (req.headers['sec-fetch-site'] && req.headers['sec-fetch-site']!=='none') || req.headers['x-nexo-local-test']!=='1')
+      if(req.socket.remoteAddress!=='127.0.0.1' || req.headers.host!==expectedHost || req.headers.origin!==undefined ||
+        (req.headers['sec-fetch-site']!==undefined && req.headers['sec-fetch-site']!=='none') || req.headers['x-nexo-local-test']!=='1')
         throw failure(403,'LOCAL_REQUEST_REQUIRED');
       if(req.method!=='POST') throw failure(405,'METHOD_NOT_ALLOWED');
       const routes={

@@ -13,7 +13,7 @@ test('HTTP enforces loopback Host, Origin, JSON and browser request controls bef
   let calls=0;const config=fake();config.identity.register=async()=>{calls++;return {};};
   const api=await startLocalHttpApi(config);
   try {
-    for(const headers of [{Host:'evil.example'},{Origin:'https://evil.example'},{'Sec-Fetch-Site':'cross-site'},
+    for(const headers of [{Host:'evil.example'},{Origin:'https://evil.example'},{Origin:''},{'Sec-Fetch-Site':'cross-site'},{'Sec-Fetch-Site':''},
       {'X-Nexo-Local-Test':''},{'Content-Type':'text/plain'},{'Content-Encoding':'gzip'}]) {
       assert.ok([403,415].includes((await postJson(api.url,'/v1/register',{},headers)).status));
     }

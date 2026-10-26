@@ -99,3 +99,16 @@ una conexión comprometida con esa autoridad ni al propietario/administrador del
 Las decisiones operativas y de piloto anteriores siguen pendientes del propietario.
 [Límites y mantenimiento](HTTP_LOCAL_Y_MANTENIMIENTO.md) ·
 [Auditoría y evaluación de cierre](REPORTES/ETAPA_1_AUDITORIA_HTTP.md).
+
+## Revisión final del laboratorio
+
+Migraciones 001–011 conservadas. Se revisaron de nuevo 010–011, transporte local,
+emisión/revocación, mantenimiento y privilegios efectivos. No se identificaron
+otros defectos demostrables bloqueantes dentro del alcance local revisado.
+Se corrigió un detalle HTTP: encabezados Origin/Sec-Fetch-Site presentes pero
+vacíos ya no se interpretan como ausentes. La regresión falló antes del arreglo
+y la batería completa aprobó después. No se modifica la frontera de confianza
+de nexo_identity ni se convierte la API local en pública.
+
+[Cierre técnico y límites](CIERRE_TECNICO_ETAPA_1.md). Permanecen las decisiones
+comerciales, legales, de identidad pública y de piloto enumeradas arriba.

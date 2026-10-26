@@ -95,3 +95,13 @@ acotado con liberación tras fallos. Se amplía la validación Unicode de identi
 `npm run test:local-api` comprueba el launcher completo y cierre mediante IPC,
 también portable a Windows. La CI existente ejecuta todos los comandos.
 [Resultados y limitaciones reales](REPORTES/ETAPA_1_AUDITORIA_HTTP.md).
+
+## Verificación final de cierre
+
+Se amplían pruebas existentes, manteniendo 23 unitarias y 66 integraciones:
+rechazo HTTP de Origin/Sec-Fetch-Site vacíos, SHA-256 de 001–011 y reaplicación
+sin cambios sobre todas las tablas de una base poblada con reserva confirmada
+y cuenta/sesión gestionada. Siguen las actualizaciones históricas 001–004 y 001–009,
+RLS A/B, grupos, tarifas, seis plazas/segmentos, filas y despacho concurrentes.
+El workflow ahora ejecuta Node 22/24 × Ubuntu/Windows, incluidos runner y launcher.
+[Evidencia final y alcance evaluado](CIERRE_TECNICO_ETAPA_1.md).

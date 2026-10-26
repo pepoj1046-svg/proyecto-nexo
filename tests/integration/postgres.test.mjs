@@ -116,8 +116,18 @@ async function occupancy() {
     AND b.from_stop<=s AND b.to_stop>s GROUP BY t.id,s ORDER BY t.id,s`)).rows;
 }
 
-test('migrations: second application is a no-op, registry checksums match',async()=>{
+test('migrations: populated 001-011 reapplication preserves every table and registry checksums',async()=>{
+  const group=await fixed(2);await acceptAll(group);
+  const account=await managedAccount('closure.fixture');await identity.login({login:account.login_key,password});
+  const {rows:tables}=await admin.query("SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='nexo' AND c.relkind='r' ORDER BY c.relname");
+  const snapshot=async()=>{
+    const result={};
+    for(const {relname} of tables) result[relname]=(await admin.query('SELECT * FROM nexo.'+admin.escapeIdentifier(relname)+' t ORDER BY to_jsonb(t)::text')).rows;
+    return result;
+  };
+  const before=await snapshot();
   assert.deepEqual(await migrate(admin),[]);
+  assert.deepEqual(await snapshot(),before);
   assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,11);
 });
 test('migrations: failed DDL rolls back; checksum drift is rejected',async()=>{
@@ -533,7 +543,7 @@ test('G11: authorization revocation preserves active trips, cancellation and ter
   await rejects(hold(),/ROUTE_NOT_ELIGIBLE/);
   assert.equal((await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3)).status,'COMPLETED');
 });
-test('G12: applied migrations 001-009 remain byte-identical',async()=>{
+test('G12: applied migrations 001-011 remain byte-identical',async()=>{
   const expected={
     '001_core.sql':'9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059',
     '002_operations.sql':'787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4',
@@ -543,7 +553,9 @@ test('G12: applied migrations 001-009 remain byte-identical',async()=>{
     '006_search_authorization_functions.sql':'e156c33c62f08e6c9bb2a9c0605fc6a841ca888fca0476f5424b99fa62d4d4de',
     '007_eligibility_rls.sql':'3fef73dc7ec20fce98505206bdc61426ba2cba321aaf83ea2fecd0b789105b03',
     '008_locality_lookup.sql':'ab3e82713198f078fbda5e424239900c41ecfa73a400aa923ead457e64e884b5',
-    '009_identity_and_provisioning.sql':'e0401515ae8f564cb2d17561e960a56e6472e67085ab82fec34e41ffae41a4b6'
+    '009_identity_and_provisioning.sql':'e0401515ae8f564cb2d17561e960a56e6472e67085ab82fec34e41ffae41a4b6',
+    '010_security_and_abuse.sql':'dace616e2de098a700035e4b61beb6d45ce722678729cb3255c92ca8c0268067',
+    '011_identity_maintenance.sql':'d1c11a95fd5fec0dbb2136c13a2d6b915473ec0ea02013f2698ece0df2e4187d'
   };
   for(const [name,digest] of Object.entries(expected)) {
     const bytes=await readFile(new URL('../../database/migrations/'+name,import.meta.url));

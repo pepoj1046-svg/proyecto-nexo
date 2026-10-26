@@ -12,7 +12,10 @@ npm ci --no-fund
 npm run dev:local
 ```
 
-Requiere Node 22+ y un usuario no root en Linux. El ejecutor crea un clúster
+Requiere Node **22.x o 24.x** (mínimo 22.0.0) y un usuario no root en Linux.
+Son las familias declaradas en package.json/lockfile y en la matriz CI Ubuntu/Windows.
+No se declara soporte para Node 20 ni para otras familias no verificadas.
+El ejecutor crea un clúster
 PostgreSQL real nuevo en `.local/`, una base `nexo_test_<aleatorio>` y dos logins
 aleatorios separados para aplicación e identidad. Aplica las migraciones y cierra
 la conexión de setup antes de servir. Solo imprime la URL `http://127.0.0.1:<puerto>`.
@@ -62,8 +65,9 @@ Una sesión válida en login se entrega solo en su respuesta con `Cache-Control:
 ## Límites y amenazas del transporte
 
 - Escucha exclusivamente en IPv4 127.0.0.1 y puerto efímero; sin host configurable.
-- Host debe ser exactamente la IP/puerto de escucha. Se rechazan Origin de navegador
-  y Sec-Fetch-Site distintos de none, sin permisos CORS. Host no acredita identidad.
+- Host debe ser exactamente la IP/puerto de escucha. Se rechaza cualquier encabezado
+  Origin presente, incluso vacío. Sec-Fetch-Site solo admite ausencia o none;
+  el valor vacío se rechaza. Sin permisos CORS. Host no acredita identidad.
 - Cuerpos de hasta 4096 bytes, también si llegan fragmentados; headers de hasta
   8192 bytes y 32 campos. Tiempo de solicitud/headers de 5 s; keep-alive de 1 s.
 - Máximo 32 conexiones, 4 operaciones en curso, sin cola de solicitudes, y 60

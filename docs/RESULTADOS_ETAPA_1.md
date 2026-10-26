@@ -1,6 +1,22 @@
 # Resultados de Etapa 1
 
-## Incremento actual: auditoría, HTTP local y mantenimiento (010–011)
+## Revisión final y cierre técnico del laboratorio
+
+Base de revisión: `023a18f`. **23 unitarias y 66 integraciones PostgreSQL 18.4
+aprobadas**, más probe del runner y smoke HTTP/PostgreSQL; código global 0.
+Linux x64, Node 24.19.0, npm 11.9.0. Se preservan **001–011**, sin migración nueva.
+G12 verifica las once mediante SHA-256; la reaplicación sobre una base poblada
+con reservas confirmadas e identidades gestionadas conserva todas las tablas.
+
+Soporte declarado alineado: Node **22.x o 24.x**, mínimo 22.0.0, con matriz
+Ubuntu/Windows para ambas familias. Se corrige el rechazo de Origin/Sec-Fetch-Site
+vacíos mediante regresión demostrada antes del arreglo. No se amplía el negocio.
+[Acta técnica, evidencia CI y condiciones de cierre](CIERRE_TECNICO_ETAPA_1.md) ·
+[Propuesta de Etapa 2, sin ejecutar](PROPUESTA_ETAPA_2.md).
+El resultado técnico local se distingue de la aceptación formal del propietario
+y de la preparación comercial/productiva.
+
+## Evidencia del incremento de auditoría, HTTP local y mantenimiento (010–011)
 
 **23 unitarias y 66 integraciones PostgreSQL 18.4 aprobadas**, cero fallos,
 omitidas o canceladas, más probe del ejecutor y smoke del launcher HTTP/PostgreSQL.

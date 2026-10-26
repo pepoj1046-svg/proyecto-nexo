@@ -6,7 +6,10 @@ Trabajo en `desarrollo/etapa-1`; [PR de revisión #1](https://github.com/pepoj10
 
 ## Ejecutar
 
-Requisitos: Node.js 22 o superior, npm, usuario local sin privilegios root en Linux.
+Requisitos: Node.js **22.x o 24.x**, npm, usuario local sin privilegios root en Linux.
+Mínimo soportado: 22.0.0; package.json/lockfile y CI admiten esas dos familias.
+La matriz completa ejecuta Node 22 y 24 sobre Ubuntu y Windows. Node 20 y otras
+familias no forman parte del soporte declarado; no se afirma que todas fallen.
 No hace falta instalar PostgreSQL ni Docker: las pruebas usan binarios PostgreSQL
 reales fijados en el lockfile, descargados desde npm.
 
@@ -93,3 +96,8 @@ y el smoke de arranque/cierre de la API local con PostgreSQL real.
 [Auditoría y evaluación de cierre técnico](docs/REPORTES/ETAPA_1_AUDITORIA_HTTP.md).
 Migraciones nuevas 010–011; 001–009 intactas. La limpieza requiere cutoff explícito
 y por defecto solo simula. Etapa 1 preparada para revisión de cierre; sin iniciar Etapa 2.
+
+[Cierre técnico de Etapa 1](docs/CIERRE_TECNICO_ETAPA_1.md) ·
+[Propuesta de Etapa 2, sin implementación](docs/PROPUESTA_ETAPA_2.md).
+La revisión final conserva **001–011 intactas**, alinea Node y refuerza el rechazo
+de encabezados HTTP vacíos. El PR permanece abierto hasta autorización del propietario.
