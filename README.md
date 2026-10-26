@@ -16,11 +16,13 @@ operadores reales ni un catálogo nacional.
 
 [Contratos y endpoints](docs/ETAPA_2_CONTRATOS.md) ·
 [Decisiones pendientes](docs/DECISIONES_PENDIENTES_ETAPA_2.md) ·
-[Reporte y pruebas del incremento](docs/REPORTES/ETAPA_2_INCREMENTO_1.md).
+[Primer incremento](docs/REPORTES/ETAPA_2_INCREMENTO_1.md) ·
+[Segundo incremento y pruebas](docs/REPORTES/ETAPA_2_INCREMENTO_2.md).
 
-Se mantienen 001–011 intactas y se añade 012: reserva con precio esperado opcional
-y bitácora de recogida/descenso por reserva. El núcleo de capacidad/fila/tarifas
-se reutiliza. Suite actual: **26 unitarias, 79 integraciones PostgreSQL real**,
+Se mantienen 001–012 intactas. 013 añade integrantes técnicos, movimientos
+individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
+sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
+**27 unitarias, 95 integraciones PostgreSQL real**,
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar
@@ -114,9 +116,9 @@ actualización poblada y escenarios APP/presencial/despacho HTTP de Etapa 2.
 [API local y mantenimiento](docs/HTTP_LOCAL_Y_MANTENIMIENTO.md) ·
 [Auditoría y evaluación de cierre técnico](docs/REPORTES/ETAPA_1_AUDITORIA_HTTP.md).
 Migraciones nuevas 010–011; 001–009 intactas. La limpieza requiere cutoff explícito
-y por defecto solo simula. Etapa 1 preparada para revisión de cierre; sin iniciar Etapa 2.
+y por defecto solo simula. Cierre de laboratorio de Etapa 1 aceptado; Etapa 2 en desarrollo local.
 
 [Cierre técnico de Etapa 1](docs/CIERRE_TECNICO_ETAPA_1.md) ·
-[Propuesta de Etapa 2, sin implementación](docs/PROPUESTA_ETAPA_2.md).
+[Propuesta original de Etapa 2](docs/PROPUESTA_ETAPA_2.md).
 La revisión final conserva **001–011 intactas**, alinea Node y refuerza el rechazo
 de encabezados HTTP vacíos. El PR permanece abierto hasta autorización del propietario.

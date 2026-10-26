@@ -7,18 +7,44 @@ local y pruebas independientes usando datos ficticios. No autoriza un piloto rea
 | Decisión | Comportamiento conservado | Falta acordar antes de completar la política |
 |---|---|---|
 | Plazo de aceptar propuestas | TTL técnico previo de dos minutos; vencimiento libera retenciones | Plazo definitivo, avisos, reintentos y criterios tras rechazo/no respuesta |
-| Ausencias/tolerancias | No hay cancelación por ausencia ni cron; cancelación explícita previa al inicio libera grupo | Evidencia de ausencia, avisos, tolerancias, recursos económicos y revisión |
+| Ausencias/tolerancias | Borradores manuales inactivos, referencia 10+5 minutos; sin envío/cron/efectos de ausencia | Evidencia de ausencia, avisos, tolerancias, recursos económicos y revisión |
 | Menores | División solo con declaración explícita containsMinors=false; no se recopilan edades/personas | Verificar edad/vínculos, quién autoriza, casos de grupo y privacidad |
 | Manifiesto y recogidas posteriores | Salida con seis plazas confirmadas según núcleo previo, incluso en paradas posteriores; bitácora de movimientos no altera esa regla | Interpretación definitiva de ocupación/manifiesto, abordaje previo y qué hacer con observaciones incompletas |
 | Reservas futuras tras revocación | Nuevas reservas/confirmaciones revalidan; no cancelación masiva ni interrupción de viajes iniciados | Aviso, revisión de reservas futuras, alternativas y consecuencias económicas |
 | Recorrido completo intramunicipal | Clasificación NULL no crea un servicio completo; los tramos locales de rutas habilitadas continúan | Si soportarlo, categoría/condiciones y permisos correspondientes |
 
 No se atribuye carácter definitivo a los plazos de laboratorio ni a los supuestos
-de salida. Las observaciones BOARD/ALIGHT son por reserva y parada, no acreditación
-personal, de edad ni de ausencia. No se sustituye una observación faltante por un
+de salida. Las observaciones BOARD/ALIGHT pueden ser grupales heredadas o individuales mediante
+UUIDs ficticios, sin mezclar modos en una reserva. No acreditan identidad, edad ni ausencia. No se sustituye una observación faltante por un
 evento ficticio para poder cerrar un viaje.
 
 También requieren aprobación para uso real: fuente geográfica y permisos oficiales,
 altas documentales, proveedor de identidad, TLS/MFA/canal de recuperación,
 retención/backups y operación. Cobros/QR/GPS/comunicaciones y gastos no se activan.
 Etapa 3 no está autorizada. PR #1 permanece abierto y main no se modifica.
+
+
+## Condiciones operativas pendientes del incremento 2
+
+- **Ausencias 10+5**: aprobar o cambiar los valores, el hecho que inicia el reloj,
+  si el vehículo debe haber llegado/esperado, quién certifica, casos de menores y
+  accesibilidad, canales/consentimiento, excepciones y revisión. Decidir retención
+  y efectos por separado. Los borradores actuales no habilitan efectos automáticos.
+- **Salida/manifiesto**: alternativas para decisión: mantener seis plazas confirmadas
+  incluidas recogidas posteriores (comportamiento actual), exigir abordaje observado
+  en origen, o definir un manifiesto por tramo con mínimos propios. La última opción
+  necesita definir cómo se autoriza la salida con recogidas posteriores; no se
+  modifica la regla actual ni se crean excepciones automáticas.
+- **Secuencia/correcciones**: decidir responsabilidad, evidencia y evento compensatorio
+  inmutable si faltó/erró una observación y ya pasó la parada. Actualmente se rechaza
+  el registro fuera de parada y no se permite reescribir historia ni sobreabordar.
+- **Expreso e itinerarios individuales**: seis UUIDs representan capacidad reservada,
+  no seis personas verificadas. Cada integrante hereda el segmento de su reserva.
+  Diferentes destinos dentro de una misma reserva requieren acordar precio/inventario.
+- **Ofertas/revocación**: 120 segundos siguen siendo provisionales; las aceptaciones
+  parciales también revalidan permisos. Falta definir reasignación tras rechazo/no
+  respuesta y tratamiento de reservas futuras ya confirmadas tras revocación.
+
+Retención de las nuevas bitácoras y su acceso/depuración comercial requieren decisión;
+no se fija un plazo legal ni se añade limpieza destructiva automática. No hay entrega
+de avisos reales ni un modelo de identidad de personas. Etapa 2 sigue en revisión.

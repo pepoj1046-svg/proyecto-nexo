@@ -115,10 +115,10 @@ bloquean en el mismo orden que despacho/progreso; un movimiento no puede registr
 como actual una parada ya pasada durante la espera.
 
 Los registros antiguos empiezan **UNRECORDED**, nunca se inventa que abordaron o
-que faltaron. Los estados de observación son UNRECORDED/BOARDED/ALIGHTED. No se
-implementa aquí abordaje de personas individuales, corrección retroactiva de registros,
-abordaje antes de salida, aviso de ausencia, liberación por ausencia o políticas
-económicas. Progreso/salida no quedan condicionados a completar esta nueva bitácora:
+que faltaron. Los estados de observación son UNRECORDED/BOARDED/ALIGHTED. El incremento 1 no incluía movimientos individuales ni borradores de ausencia;
+el incremento 2 los añade según el contrato al final de este documento. Siguen sin
+implementarse correcciones retroactivas, abordaje antes de salida, liberación por
+ausencia ni políticas económicas. Progreso/salida no quedan condicionados a completar esta nueva bitácora:
 se preservan los supuestos previos hasta decisión del propietario.
 La revocación de ruta no cancela ni impide terminar las reservas confirmadas ya
 iniciadas; no se decide el tratamiento de reservas futuras.
@@ -135,3 +135,93 @@ finalizar después de revocar su sesión, según la frontera documentada previam
 
 Proveedor público, protección distribuida, TLS/MFA, operación real y verificación
 documental siguen fuera de este laboratorio. [Decisiones pendientes](DECISIONES_PENDIENTES_ETAPA_2.md).
+
+## Incremento 2: integrantes, ofertas y borradores de ausencia
+
+La migración **013** conserva 001–012 y añade `booking_members`, `member_movements`
+y `absence_drafts`. Cada reserva tiene `seats` identificadores UUID y ordinales
+1–6, creados transaccionalmente incluso para datos anteriores. Son **plazas técnicas
+reservadas**: un expreso tiene seis identificadores de capacidad, sin afirmar que
+viajan seis personas. No contienen nombres, documentos, edades ni comprobación de
+menores. Una parte de un grupo dividido tiene sus propios identificadores.
+
+`roster` y `booking.members` muestran `UNRECORDED`, `BOARDED` o `ALIGHTED`, historial
+individual y marca `legacy_aggregate`. UNRECORDED significa que no existe evidencia
+individual; no certifica ausencia. Migrar una observación grupal previa no inventa
+observaciones de cada integrante. Una reserva que ya tiene movimientos grupales
+continúa exclusivamente con `movement`; una que inicia movimientos individuales
+continúa con `member-movement`. Las operaciones concurrentes no pueden mezclar ambos
+modos. Reservas sin movimientos pueden elegir cualquiera; no se convierten modos
+con historia ni se corrigen eventos mediante UPDATE/DELETE.
+
+| Ruta /business/... | Cuerpo | Permiso/resultado |
+|---|---|---|
+| roster | bookingId | Reserva visible por RLS; hasta seis integrantes técnicos |
+| member-movement | memberId, kind BOARD/ALIGHT | Chofer asignado activo; Idempotency-Key; parada exacta y habilitada |
+| absence-draft | memberId, kind WAITING/WARNING_DRAFT/GRACE_DRAFT/RESOLVED | Chofer asignado o administrador propio; Idempotency-Key; borrador sin envío |
+| absence-preview | memberId | Integrante visible por RLS; lectura de referencia sin insertar eventos |
+| offers | tripId, limit/offset opcionales | Chofer propio o administrador; estado persistido y effective_status |
+| refresh-offers | tripId | Chofer propio o administrador; Idempotency-Key; materializa vencimientos de retenciones de la ruta |
+
+BOARD individual exige reserva CONFIRMED, viaje IN_TRANSIT, `current_stop=from_stop`
+y `boarding_allowed`. ALIGHT exige BOARD previo de ese integrante, parada de destino
+habilitada y viaje IN_TRANSIT/COMPLETED. El itinerario y precio son los de su reserva:
+no se admiten paradas diferentes por integrante dentro de la misma reserva. Los
+itinerarios distintos se representan con reservas por segmento; admitirlos dentro
+de un mismo grupo requiere definir reparto de tarifas/capacidad y permanece pendiente.
+Reintentar el mismo movimiento con otra clave no duplica hechos ni auditoría; usar
+una clave para otro integrante/payload produce IDEMPOTENCY_CONFLICT.
+
+El manifiesto añade integrantes, `segments[].reserved` y `observedOnboard` de todo
+el viaje, incluso si la lista de reservas está paginada. El último combina eventos
+individuales con eventos grupales heredados, evitando doble conteo. No es evidencia
+de identidad ni un contador de reservas. Las lecturas operativas usan READ COMMITTED;
+varias consultas/páginas pueden observar cambios concurrentes y no son un documento
+firmado ni una autorización para salir. Toda mutación revalida estado bajo locks.
+
+Un nuevo BOARD que superaría seis observados se rechaza, incluso entre reservas
+individuales y grupales de segmentos disjuntos. Hay que registrar los descensos en
+su parada antes de observar las nuevas subidas. Una observación faltante no libera
+inventario ni se inventa automáticamente. Si ya se pasó la parada, la corrección
+requiere un procedimiento aprobado: el prototipo no permite falsear la parada ni
+editar la bitácora. Salida/progreso conservan su regla previa de plazas confirmadas,
+incluidas recogidas posteriores; `departurePolicy` la identifica como
+EXISTING_CONFIRMED_INVENTORY. Esto no resuelve todavía la política comercial.
+
+### Ofertas
+
+Se reutiliza `respond_offer` mediante un wrapper de validación, conservando su
+implementación interna con ejecución revocada para nexo_app. Una aceptación HELD
+no vencida revalida elegibilidad de ruta **también si es la primera parte de un grupo
+dividido**. Tras esperar el lock vuelve a comprobar quién conduce. Rechazo y
+vencimiento siguen disponibles tras revocar permisos de ruta; no resucitan el grupo.
+
+TTL técnico: **120 segundos, provisional y sin aprobación comercial**. `offers`
+expone EXPIRED como effective_status si el plazo pasó aunque el estado persistido
+siga HELD. La lectura no renueva el plazo ni libera plazas por ausencia.
+`refresh-offers` reutiliza el vencimiento existente de toda la ruta (puede alcanzar
+otros viajes/grupos vinculados de esa ruta). `expiredBookings` cuenta el total ya
+EXPIRED del viaje solicitado, no solo los vencidos por esa llamada. La respuesta
+idempotente es un recibo histórico; consultar `offers` para el estado observado.
+No hay reasignación, cron ni avisos reales nuevos.
+
+### Ausencias: infraestructura inactiva
+
+Todos los registros tienen `delivery=DISABLED` y respuestas `policyActive=false`.
+No existe scheduler, canal de envío ni efecto sobre estado, precio o plazas.
+WAITING se registra manualmente en la parada de recogida habilitada, con reserva
+confirmada y vehículo QUEUED/IN_TRANSIT, sin BOARD previo. Ese instante del servidor
+es una referencia técnica de simulación, no evidencia de llegada/ausencia de una
+persona. WARNING_DRAFT requiere al menos **10 minutos** desde WAITING; GRACE_DRAFT
+requiere al menos **15 minutos** y un WARNING_DRAFT explícito. No se adelantan relojes
+mediante el cliente. RESOLVED cierra manualmente la referencia iniciada. Un BOARD
+hace que la lectura sugiera RESOLVED sin fabricar un evento de ausencia adicional.
+
+La vista previa no crea avisos: su sugerencia temporal puede requerir revisión del
+estado/parada actual antes de registrar el borrador; SQL siempre lo revalida.
+No se reutiliza una referencia resuelta ni se reinicia su reloj con reintentos.
+Los valores 10+5 son referencias pendientes de aprobación. Antes de activar una
+política se deben acordar inicio del reloj, presencia/llegada, quién observa,
+verificación, comunicación/consentimiento, accesibilidad, excepciones, revisión,
+retención y consecuencias. Ninguna cancelación, sanción, devolución, cobro o
+liberación automática por ausencia está implementada.

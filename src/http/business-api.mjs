@@ -11,8 +11,15 @@ export async function startBusinessRuntime(pool) {
   const route=(keys,fn)=>async(body,token,key)=>{object(body,keys);return [200,await fn(token,key,body)];};
   return startLocalTransport({localTest:true,allProtected:true,mutations:[
     '/business/reserve','/business/walk-in','/business/respond','/business/cancel',
-    '/business/depart','/business/progress','/business/request-queue','/business/movement'
+    '/business/depart','/business/progress','/business/request-queue','/business/movement',
+    '/business/member-movement','/business/absence-draft','/business/refresh-offers'
   ],routes:{
+    '/business/roster':route(['bookingId'],(t,_k,b)=>service.roster(t,b.bookingId)),
+    '/business/member-movement':route(['memberId','kind'],(t,k,b)=>service.memberMovement(t,k,b.memberId,b.kind)),
+    '/business/absence-draft':route(['memberId','kind'],(t,k,b)=>service.absenceDraft(t,k,b.memberId,b.kind)),
+    '/business/absence-preview':route(['memberId'],(t,_k,b)=>service.absencePreview(t,b.memberId)),
+    '/business/offers':route(['tripId','limit','offset'],(t,_k,b)=>service.offers(t,b)),
+    '/business/refresh-offers':route(['tripId'],(t,k,b)=>service.refreshOffers(t,k,b.tripId)),
     '/business/quote':route(['routeId','from','to','seats','express'],(t,_k,b)=>service.quote(t,b)),
     '/business/reserve':route(['routeId','from','to','seats','express','parts','splitConsent','containsMinors','quote'],(t,k,b)=>service.reserve(t,k,b)),
     '/business/walk-in':route(['routeId','from','to','seats','express','parts','splitConsent','containsMinors','quote'],(t,k,b)=>service.walkIn(t,k,b)),

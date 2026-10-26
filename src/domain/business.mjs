@@ -51,3 +51,9 @@ export function page(request,key) {
   if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0||offset>10000)throw new Error('INVALID_PAGE');
   return {...request,limit,offset};
 }
+
+export function memberCommand(request,kinds) {
+  object(request,['memberId','kind']);id(request.memberId);
+  if(!kinds.includes(request.kind))throw new Error('INVALID_MEMBER_COMMAND');
+  return request;
+}

@@ -10,7 +10,7 @@ Trabaja **solo** en este repositorio, `pepoj1046-svg/proyecto-nexo`. Nunca uses,
 - PR independiente hacia `desarrollo/etapa-1`; no fusionar ni cerrar PR #1.
 - Solo datos ficticios y entorno local. No iniciar Etapa 3, aplicaciones móviles,
   integraciones bancarias, GPS real ni despliegues.
-- Conservar 001–011 intactas; nuevas migraciones desde 012. Reutilizar el núcleo
+- Conservar 001–012 intactas; nuevas migraciones desde 013. Reutilizar el núcleo
   transaccional probado y documentar decisiones de negocio pendientes por separado.
 - Antes de editar, leer `docs/REQUISITOS_INICIALES.md`, `docs/ARQUITECTURA.md`, `docs/MODELO_DE_DATOS.md`, `docs/SEGURIDAD_PENDIENTE.md` y `docs/PRUEBAS_ETAPA_1.md`.
 - Implementar incrementos pequeños con pruebas automatizadas reproducibles. Documentar cómo ejecutar cada prueba y su salida.

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateReservation,actionKey,page } from '../src/domain/business.mjs';
+import { validateReservation,actionKey,page,memberCommand } from '../src/domain/business.mjs';
 const routeId='10000000-0000-4000-8000-000000000001',tripId='10000000-0000-4000-8000-000000000002';
 const base={routeId,from:0,to:3,seats:2};
 test('business reservations validate all six seat counts and preserve explicit money preconditions',()=>{
@@ -25,4 +25,12 @@ test('business idempotency keys and pagination are bounded',()=>{
   for(const k of ['',null,'a'.repeat(129),'space key'])assert.throws(()=>actionKey(k));
   assert.equal(page({routeId},'routeId').limit,50);
   for(const q of [{routeId,limit:101},{routeId,offset:-1},{routeId,actorId:tripId}])assert.throws(()=>page(q,'routeId'));
+});
+
+test('individual commands accept technical IDs and reject personal data, stop overrides and unknown states',()=>{
+  for(const kind of ['BOARD','ALIGHT'])assert.equal(memberCommand({memberId:tripId,kind},['BOARD','ALIGHT']).kind,kind);
+  for(const extra of [{name:'fictional'},{age:12},{document:'fictional'},{stop:2},{associationId:routeId}])
+    assert.throws(()=>memberCommand({memberId:tripId,kind:'BOARD',...extra},['BOARD','ALIGHT']));
+  for(const bad of [{memberId:'bad',kind:'BOARD'},{memberId:tripId,kind:'CANCEL'}])
+    assert.throws(()=>memberCommand(bad,['BOARD','ALIGHT']));
 });
