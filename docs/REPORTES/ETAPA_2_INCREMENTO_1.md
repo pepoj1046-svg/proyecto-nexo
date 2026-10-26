@@ -6,6 +6,8 @@ Rama `desarrollo/etapa-2`, creada desde **`918813947267ff0a2353b8154729a07d1c15a
 limpio, ramas comprobadas, documentos requeridos y revisión de ChatGPT
 [6422855684](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1#issuecomment-6422855684) leídos.
 El propietario acepta el cierre técnico de Etapa 1 y autoriza este trabajo local.
+[PR independiente #2](https://github.com/pepoj1046-svg/proyecto-nexo/pull/2):
+`desarrollo/etapa-2` → `desarrollo/etapa-1`, abierto para revisión.
 
 ## 1. Funciones nuevas o completadas
 
@@ -79,8 +81,13 @@ exit: 0
 - G12 conserva SHA-256 de **001–011**; siguen las actualizaciones desde 001–004 y
   001–009, inventario concurrente, permisos, precio/segmentos, sesiones y mantenimiento.
 
-La CI remota Node 22/24 × Ubuntu/Windows se verificará sobre el commit publicado
-y se incorporará el enlace/resultado observado. No se acredita antes de ejecutarla.
+Commit de implementación **`6034d4b`**: [CI del PR #2 verificada](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40372552787).
+Los cuatro jobs Node 22/24 × Ubuntu/Windows finalizaron en **success**; se inspeccionaron
+sus logs: **26/26 unitarias y 79/79 integraciones PostgreSQL 18.4 por combinación**,
+runner y launcher de ambos listeners aprobados. También aprobó la ejecución del push
+[40372406298](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40372406298).
+La evidencia corresponde al commit de implementación; commits documentales posteriores
+tienen sus propios checks en el PR. No se han probado otras versiones PostgreSQL.
 
 ## 3. Problemas encontrados y corregidos
 

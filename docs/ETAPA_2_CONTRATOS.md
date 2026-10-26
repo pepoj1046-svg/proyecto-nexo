@@ -86,7 +86,11 @@ vigente al retener. No hay cobro ni un contrato legal de aceptación implementad
 La respuesta contiene groupId, bookingIds, initialStatus, bookings, totalPriceBOB y
 currency. El dinero de este contrato se devuelve en decimales de dos posiciones como
 texto. initialStatus describe el recibo original (HELD); bookings[].status describe
-el estado observado en el reintento. booking devuelve el estado actual. Esto evita
+el estado persistido observado en el reintento. booking devuelve ese estado y su
+expires_at. El núcleo materializa EXPIRED al operar (por ejemplo, al responder o
+despachar); una lectura sola no muta reservas. Un HELD con expires_at pasado no
+consume capacidad y no puede confirmarse: el consumidor debe considerar ambos
+campos, sin interpretar la lectura como una renovación del plazo. Esto evita
 mostrar HELD como si fuera estado actual después de una aceptación ya completada.
 
 El núcleo conserva una clave por actor/payload de reserva; el mismo payload y clave
