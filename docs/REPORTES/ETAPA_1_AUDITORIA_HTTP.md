@@ -93,10 +93,14 @@ pruebas pendientes ni se confunde el fallo intencional del runner con un fallo d
 
 ### CI remota
 
-Se conserva el workflow Node 22 / Ubuntu y Windows y ahora ejecuta también el smoke
-del launcher. El enlace y los resultados del commit publicado se incorporarán tras
-observar su ejecución; el éxito local no acredita por sí solo Windows.
-No se han probado otras versiones PostgreSQL ni se ha ejecutado sobre producción.
+El workflow Node 22 ejecuta la suite completa y el smoke del launcher. Para el
+commit de implementación **`f1c4d84`**, [CI del PR verificada](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40364176149):
+**Ubuntu y Windows aprobados**. Se inspeccionaron jobs y logs: cada plataforma
+registró **23/23 unitarias, 66/66 integraciones PostgreSQL 18.4**, probe del ejecutor
+y arranque/cierre del launcher HTTP/PostgreSQL, todos aprobados. Los commits solo
+documentales posteriores tienen sus propios checks en el PR; esta evidencia
+corresponde al commit de implementación. No se han probado otras versiones
+PostgreSQL ni se ha ejecutado sobre producción.
 
 ## 4. Compatibilidad y fronteras
 
@@ -130,7 +134,7 @@ El alcance técnico **local y autorizado** queda implementado y preparado para
 revisión de cierre: arquitectura y fronteras documentadas, migraciones repetibles,
 aislamiento/RLS/ACL comprobados, identidad/recuperación/mantenimiento y HTTP local
 ejecutables, compatibilidad/concurrencia verificadas y reporte reproducible.
-La confirmación de Windows/Ubuntu depende de la CI del commit publicado.
+Windows y Ubuntu se verificaron en la ejecución enlazada del commit de implementación.
 
 Esto permite proponer el cierre técnico del laboratorio tras revisar la entrega;
 no se da por cerrada formalmente la etapa ni se autoriza iniciar Etapa 2. Los puntos
