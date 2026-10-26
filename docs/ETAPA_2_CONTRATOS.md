@@ -225,3 +225,34 @@ política se deben acordar inicio del reloj, presencia/llegada, quién observa,
 verificación, comunicación/consentimiento, accesibilidad, excepciones, revisión,
 retención y consecuencias. Ninguna cancelación, sanción, devolución, cobro o
 liberación automática por ausencia está implementada.
+
+## Incremento 3: terminal y reasignación supervisada
+
+Contrato detallado, condiciones y límites en
+[reporte 3](REPORTES/ETAPA_2_INCREMENTO_3.md). Todas las rutas conservan Bearer,
+JSON estricto y loopback. Las mutaciones requieren Idempotency-Key.
+
+| Ruta /business/... | Cuerpo | Alcance |
+|---|---|---|
+| terminal-config | associationId, declarationSeconds | Admin propio configura vencimiento de declaración; sin valor comercial predeterminado |
+| terminal-command | bookingId, command, confirmed=true | DECLARED, VERIFIED, READY, PICKUP, TRANSFER_REQUEST, PICKUP_ARRIVED; permisos según operación |
+| terminal-evaluation | bookingId | Pasajero/creador, administrador propio o chofer; evaluación sin efectos |
+| transfer-candidates | bookingId, direction LATER/EARLIER | Admin propio; destinos por fila, sin retención |
+| advancement-candidates | tripId | Admin propio; propuestas verificadas de las primeras 50 reservas posteriores |
+| transfer | bookingId, targetTripId, direction LATER/EARLIER | Confirmación del administrador; solo primer candidato compatible, transacción atómica |
+
+VERIFIED representa que el administrador comprobó presencialmente la reserva,
+destino/código y la identidad ficticia del laboratorio; no hace validación documental.
+No requiere conexión del pasajero ni DECLARED previo. No verifica pagos ni BOARD.
+La referencia de terminal 0/5/8 se evalúa desde READY explícito y auditado; los
+borradores 10+5 previos siguen inactivos y separados. Recogida inicia su espera
+solo con PICKUP_ARRIVED en la parada real discreta, sin GPS.
+
+Transferencias conservan grupo completo de una parte, integrantes, segmento y
+precio; no reasignan pasajeros con movimientos ni grupos divididos previamente.
+Destino exige nueva aceptación del chofer (HELD con TTL provisional anterior).
+Error transaccional o falta de destino conserva original; rechazo/vencimiento de
+la nueva oferta sigue el núcleo y requiere una política posterior de recuperación.
+Las propuestas se revalidan al ejecutar; varias propuestas no garantizan capacidad
+conjunta. Las transferencias repetidas desde un viaje ya abandonado se omiten hasta
+modelar episodios de llegada/reasignación sin reutilizar relojes.

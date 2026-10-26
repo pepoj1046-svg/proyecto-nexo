@@ -48,3 +48,14 @@ Etapa 3 no está autorizada. PR #1 permanece abierto y main no se modifica.
 Retención de las nuevas bitácoras y su acceso/depuración comercial requieren decisión;
 no se fija un plazo legal ni se añade limpieza destructiva automática. No hay entrega
 de avisos reales ni un modelo de identidad de personas. Etapa 2 sigue en revisión.
+
+## Actualización autorizada en el incremento 3
+
+La simulación de terminal usa ahora 0/5/8 desde READY verificable y la recogida
+cinco minutos desde PICKUP_ARRIVED. Se mantienen desactivadas cancelaciones por
+ausencia y notificaciones. 10+5 es historia de borradores, no la política nueva.
+Pendientes: TTL comercial de declaración, excepciones/evidencia/retención, retirada
+de verificación presencial, recomponer grupos previamente divididos, episodios de
+traslado repetido y recuperación si el nuevo chofer rechaza o vence su oferta.
+Ver límites en REPORTES/ETAPA_2_INCREMENTO_3.md. Ningún plazo técnico activa efectos
+reales ni da por aprobados sanciones/cobros/cancelaciones definitivas.

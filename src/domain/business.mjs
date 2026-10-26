@@ -57,3 +57,13 @@ export function memberCommand(request,kinds) {
   if(!kinds.includes(request.kind))throw new Error('INVALID_MEMBER_COMMAND');
   return request;
 }
+
+export function terminalInput(operation,b) {
+ const fields={command:['bookingId','command','confirmed'],config:['associationId','declarationSeconds'],evaluation:['bookingId'],candidates:['bookingId','direction'],transfer:['bookingId','targetTripId','direction'],advancement:['tripId']}[operation];
+ object(b,fields);
+ for(const field of fields.filter(f=>f.endsWith('Id')))id(b[field]);
+ if(fields.includes('direction') && !['LATER','EARLIER'].includes(b.direction))throw new Error('INVALID_DIRECTION');
+ if(operation==='command' && (b.confirmed!==true || !['DECLARED','VERIFIED','READY','PICKUP','TRANSFER_REQUEST','PICKUP_ARRIVED'].includes(b.command)))throw new Error('INVALID_TERMINAL_COMMAND');
+ if(operation==='config' && (!Number.isInteger(b.declarationSeconds)||b.declarationSeconds<1||b.declarationSeconds>86400))throw new Error('INVALID_DURATION');
+ return b;
+}

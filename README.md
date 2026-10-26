@@ -17,12 +17,14 @@ operadores reales ni un catálogo nacional.
 [Contratos y endpoints](docs/ETAPA_2_CONTRATOS.md) ·
 [Decisiones pendientes](docs/DECISIONES_PENDIENTES_ETAPA_2.md) ·
 [Primer incremento](docs/REPORTES/ETAPA_2_INCREMENTO_1.md) ·
-[Segundo incremento y pruebas](docs/REPORTES/ETAPA_2_INCREMENTO_2.md).
+[Segundo incremento](docs/REPORTES/ETAPA_2_INCREMENTO_2.md) ·
+[Tercer incremento: terminal y reasignación](docs/REPORTES/ETAPA_2_INCREMENTO_3.md).
 
-Se mantienen 001–012 intactas. 013 añade integrantes técnicos, movimientos
+Se mantienen 001–013 intactas; 014 añade llegadas, simulación 0/5/8 y traslados
+supervisados. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**27 unitarias, 95 integraciones PostgreSQL real**,
+**28 unitarias, 106 integraciones PostgreSQL real**,
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar

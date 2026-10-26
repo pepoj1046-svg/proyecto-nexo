@@ -37,7 +37,14 @@ export function createBusinessService(pool) {
     actionKey(key);memberCommand({memberId,kind},kinds);
     return transaction(token,async c=>(await c.query(`SELECT nexo.${fn}($1,$2,$3) AS result`,[key,memberId,kind])).rows[0].result);
   };
+  const terminalCall=(fn,args)=>(token,...values)=>transaction(token,async c=>(await c.query(`SELECT nexo.${fn}(${args}) AS result`,values)).rows[0].result);
   return Object.freeze({
+    advancementCandidates:(token,trip)=>transaction(token,async c=>(await c.query('SELECT * FROM nexo.advancement_candidates($1) AS proposal',[trip])).rows.map(r=>r.proposal)),
+    configureTerminal:terminalCall('configure_terminal','$1,$2,$3'),
+    terminalCommand:terminalCall('terminal_command','$1,$2,$3,$4'),
+    terminalEvaluation:terminalCall('terminal_evaluation','$1'),
+    transferCandidates:(token,booking,direction)=>transaction(token,async c=>(await c.query('SELECT * FROM nexo.transfer_candidates($1,$2) AS trip_id',[booking,direction])).rows),
+    transferBooking:terminalCall('transfer_booking','$1,$2,$3,$4'),
     reserve:reserve('APP'),walkIn:reserve('WALK_IN'),
     quote:(token,request)=>{
       object(request,['routeId','from','to','seats','express']);const q=segment(request);

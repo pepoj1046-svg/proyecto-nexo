@@ -34,3 +34,11 @@ test('individual commands accept technical IDs and reject personal data, stop ov
   for(const bad of [{memberId:'bad',kind:'BOARD'},{memberId:tripId,kind:'CANCEL'}])
     assert.throws(()=>memberCommand(bad,['BOARD','ALIGHT']));
 });
+
+test('terminal arrival and reassignment contracts require explicit confirmation and bounded configuration',async()=>{
+ const {terminalInput}=await import('../src/domain/business.mjs');
+ assert.equal(terminalInput('command',{bookingId:tripId,command:'DECLARED',confirmed:true}).confirmed,true);
+ for(const body of [{bookingId:tripId,command:'DECLARED',confirmed:false},{bookingId:tripId,command:'DECLARED',confirmed:true,name:'FICTICIO'}])assert.throws(()=>terminalInput('command',body));
+ for(const n of [0,86401,'120',null])assert.throws(()=>terminalInput('config',{associationId:routeId,declarationSeconds:n}));
+ assert.throws(()=>terminalInput('transfer',{bookingId:tripId,targetTripId:routeId,direction:'AUTO'}));
+});

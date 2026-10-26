@@ -26,7 +26,7 @@ before(async () => {
   await admin.connect();
   const version = await admin.query('SHOW server_version');
   console.log(`PostgreSQL real: ${version.rows[0].server_version}`);
-  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql','005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql']);
+  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql','005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql']);
   // A real non-owner, non-superuser login exercises grants and RLS.
   await admin.query(`CREATE ROLE nexo_test_runtime LOGIN PASSWORD '${runtimePassword}'
     NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS INHERIT;
@@ -45,7 +45,7 @@ before(async () => {
 after(async () => { for(const p of [pool,identityPool,provisionPool,maintenancePool]) if(p) await p.end(); await admin.end(); });
 
 beforeEach(async () => {
-  await admin.query(`TRUNCATE nexo.absence_drafts,nexo.member_movements,nexo.booking_members,nexo.booking_movements,nexo.security_events,nexo.identity_recovery,nexo.identity_accounts,nexo.identity_attempts,nexo.identity_events,
+  await admin.query(`TRUNCATE nexo.terminal_events,nexo.terminal_config,nexo.absence_drafts,nexo.member_movements,nexo.booking_members,nexo.booking_movements,nexo.security_events,nexo.identity_recovery,nexo.identity_accounts,nexo.identity_attempts,nexo.identity_events,
     nexo.audit_events,nexo.bookings,nexo.actions,nexo.fares,nexo.trips,
     nexo.vehicles,nexo.stops,nexo.routes,nexo.memberships,nexo.sessions,nexo.users,nexo.associations,
     nexo.authorization_events,nexo.route_authorizations,nexo.operation_reviewers,
@@ -130,7 +130,7 @@ test('migrations: populated schema reapplication preserves every table and regis
   const before=await snapshot();
   assert.deepEqual(await migrate(admin),[]);
   assert.deepEqual(await snapshot(),before);
-  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,13);
+  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,14);
 });
 test('migrations: failed DDL rolls back; checksum drift is rejected',async()=>{
   const dir=await mkdtemp(resolve('.local','migration-test-'));
@@ -545,7 +545,7 @@ test('G11: authorization revocation preserves active trips, cancellation and ter
   await rejects(hold(),/ROUTE_NOT_ELIGIBLE/);
   assert.equal((await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3)).status,'COMPLETED');
 });
-test('G12: applied migrations 001-012 remain byte-identical',async()=>{
+test('G12: applied migrations 001-013 remain byte-identical',async()=>{
   const expected={
     '001_core.sql':'9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059',
     '002_operations.sql':'787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4',
@@ -557,6 +557,7 @@ test('G12: applied migrations 001-012 remain byte-identical',async()=>{
     '008_locality_lookup.sql':'ab3e82713198f078fbda5e424239900c41ecfa73a400aa923ead457e64e884b5',
     '009_identity_and_provisioning.sql':'e0401515ae8f564cb2d17561e960a56e6472e67085ab82fec34e41ffae41a4b6',
     '010_security_and_abuse.sql':'dace616e2de098a700035e4b61beb6d45ce722678729cb3255c92ca8c0268067',
+    '013_individual_operations.sql':'e111f11211fb8153d08cc96ebe45fbc7b628efed9bf5ac5d8a48ce1ca94d92b5',
     '012_business_operations.sql':'080065cf039ddb2971f68a787a96abb4d6382f538d3ead829181ebd3d3280649',
     '011_identity_maintenance.sql':'d1c11a95fd5fec0dbb2136c13a2d6b915473ec0ea02013f2698ece0df2e4187d'
   };
@@ -588,7 +589,7 @@ test('G13: additive upgrade of a populated 001-004 database preserves bookings a
     await db.query("INSERT INTO nexo.fares(id,association_id,route_id,from_stop,to_stop,version,amount_bob,valid_from) VALUES($1,$2,$3,0,1,1,10,now())",[fare,a,r]);
     await db.query("INSERT INTO nexo.bookings(id,association_id,trip_id,route_id,passenger_id,created_by,group_id,source,seats,from_stop,to_stop,fare_id,price_bob,fare_version,status,expires_at,driver_accepted) VALUES($1,$2,$3,$4,$5,$5,$1,'APP',2,0,1,$6,20,1,'CONFIRMED',now()+interval '1 hour',true)",[b,a,t,r,u,fare]);
     const before=(await db.query('SELECT * FROM nexo.bookings')).rows;
-    assert.deepEqual(await migrate(db),['005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql']);
+    assert.deepEqual(await migrate(db),['005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql']);
     assert.deepEqual((await db.query('SELECT * FROM nexo.bookings')).rows,before);
     assert.deepEqual(await migrate(db),[]);
     assert.equal((await db.query('SELECT * FROM nexo.route_authorizations')).rowCount,0);
@@ -871,7 +872,7 @@ test('H10: populated 001-009 upgrade preserves sessions, tenant roles, permits, 
     assert.equal((await db.query("SELECT nexo.identity_attempt('blocked.fixture','LOGIN') AS r")).rows[0].r.allowed,false);
     assert.equal((await db.query('SELECT count(*)::integer AS n FROM nexo.identity_attempts')).rows[0].n,countBefore+1);
     const before=await snapshot();
-    assert.deepEqual(await migrate(db),['010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql']);
+    assert.deepEqual(await migrate(db),['010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql']);
     assert.deepEqual(await snapshot(),before); assert.deepEqual(await migrate(db),[]);
     await db.query("SELECT set_config('nexo.session_token',$1,false)",[managed.token]);
     assert.equal((await db.query('SELECT nexo.actor() AS actor')).rows[0].actor,account.user_id);
@@ -1227,7 +1228,7 @@ test('B12: populated Stage 1 (001-011) upgrades additively, preserving old booki
     const snapshot=async()=>{
       const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
     };
-    const before=await snapshot();assert.deepEqual(await migrate(db),['012_business_operations.sql','013_individual_operations.sql']);
+    const before=await snapshot();assert.deepEqual(await migrate(db),['012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql']);
     assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
     assert.equal((await db.query('SELECT * FROM nexo.booking_movements')).rowCount,0);
     await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.d0]);
@@ -1474,7 +1475,7 @@ test('I12: populated 001-012 upgrade preserves every old row and aggregate histo
     const snapshot=async()=>{
       const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
     };
-    const before=await snapshot();assert.deepEqual(await migrate(db),['013_individual_operations.sql']);assert.deepEqual(await snapshot(),before);
+    const before=await snapshot();assert.deepEqual(await migrate(db),['013_individual_operations.sql','014_terminal_operations.sql']);assert.deepEqual(await snapshot(),before);
     assert.equal((await db.query('SELECT * FROM nexo.booking_members')).rowCount,6);
     assert.equal((await db.query('SELECT * FROM nexo.member_movements')).rowCount,0);
     assert.equal((await db.query('SELECT * FROM nexo.absence_drafts')).rowCount,0);
@@ -1534,4 +1535,163 @@ test('I16: new composite keys reject cross-association members/events and roster
   await rejects(admin.query("INSERT INTO nexo.absence_drafts(association_id,booking_id,member_id,kind,actor_id) VALUES($1,$2,$3,'WAITING',$4)",[fixture.B,g.bookingIds[0],m,fixture.drivers[3]]),/foreign key/);
   await rejects(admin.query('UPDATE nexo.booking_members SET ordinal=6 WHERE id=$1',[m]),/IMMUTABLE/);
   await rejects(sql(fixture.tokens.adminA,'INSERT INTO nexo.booking_members(association_id,booking_id,ordinal) VALUES($1,$2,6)',[fixture.A,g.bookingIds[0]]),/permission denied/);
+});
+
+test('J01: declared arrival requires confirmation/config; verified offline arrival is admin-only and distinct from boarding',async()=>{
+ const g=await individualFixture(),b=business(),id=g.bookingIds[0];
+ await rejects(b.terminalCommand(fixture.tokens.p,key(),id,'DECLARED',false),/INVALID/);
+ await rejects(b.terminalCommand(fixture.tokens.p,key(),id,'DECLARED',true),/CONFIG_REQUIRED/);
+ await b.configureTerminal(fixture.tokens.adminA,key(),fixture.A,120);
+ await b.terminalCommand(fixture.tokens.p,key(),id,'DECLARED',true);
+ let e=await b.terminalEvaluation(fixture.tokens.p,id);assert.equal(e.declaredActive,true);assert.equal(e.verified,false);
+ await rejects(b.terminalCommand(fixture.tokens.p,key(),id,'VERIFIED',true),/FORBIDDEN/);
+ await b.terminalCommand(fixture.tokens.adminA,key(),id,'VERIFIED',true);
+ e=await b.terminalEvaluation(fixture.tokens.p,id);assert.equal(e.verified,true);
+ assert.equal((await b.roster(fixture.tokens.p,id)).members[0].state,'UNRECORDED');
+ assert.equal((await admin.query('SELECT * FROM nexo.booking_movements')).rowCount,0);
+ await rejects(b.terminalEvaluation(fixture.tokens.adminB,id),/FORBIDDEN/);
+});
+test('J02: explicit ready event anchors 0/5/8 simulation, declarations expire without renewal and never cancel',async()=>{
+ const g=await individualFixture(),b=business(),id=g.bookingIds[0];
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,id)).readyAt,null);
+ await b.terminalCommand(fixture.tokens.d0,key(),id,'READY',true);
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,id)).simulatedReadyNotice,true);
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,id)).cancellationEligibleSimulation,false);
+ // Seed a past READY in an isolated fixture transaction, not a runtime clock override.
+ const other=await fixed(6,1);await acceptAll(other);const oid=other.bookingIds[0];
+ await admin.query("INSERT INTO nexo.terminal_events(association_id,booking_id,trip_id,kind,actor_id,created_at) VALUES($1,$2,$3,'READY',$4,clock_timestamp()-interval '9 minutes')",[fixture.A,oid,fixture.trips[1],fixture.drivers[1]]);
+ let e=await b.terminalEvaluation(fixture.tokens.p,oid);assert.equal(e.offerAlternatives,true);assert.equal(e.cancellationEligibleSimulation,true);assert.equal(e.automaticCancellationEnabled,false);
+ await b.configureTerminal(fixture.tokens.adminA,key(),fixture.A,1);
+ await b.terminalCommand(fixture.tokens.p,key(),oid,'DECLARED',true);
+ const expiration=(await admin.query("SELECT expires_at FROM nexo.terminal_events WHERE booking_id=$1 AND kind='DECLARED'",[oid])).rows[0].expires_at;
+ await new Promise(resolve=>setTimeout(resolve,1100));
+ await b.terminalCommand(fixture.tokens.p,key(),oid,'DECLARED',true);
+ assert.deepEqual((await admin.query("SELECT expires_at FROM nexo.terminal_events WHERE booking_id=$1 AND kind='DECLARED'",[oid])).rows[0].expires_at,expiration);
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,oid)).declaredActive,false);
+ await b.terminalCommand(fixture.tokens.p,key(),oid,'TRANSFER_REQUEST',true);
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,oid)).cancellationEligibleSimulation,false);
+ assert.equal((await b.booking(fixture.tokens.p,oid)).status,'CONFIRMED');
+});
+test('J03: pickup five-minute clock starts only on recorded arrival at the actual pickup stop',async()=>{
+ const g=await individualFixture(6,{from:1}),b=business(),id=g.bookingIds[0];
+ await b.terminalCommand(fixture.tokens.p,key(),id,'PICKUP',true);
+ await b.terminalCommand(fixture.tokens.d0,key(),id,'READY',true);
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,id)).simulatedReadyNotice,true);
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,id)).pickupWaitStartedAt,null);
+ await rejects(b.terminalCommand(fixture.tokens.d0,key(),id,'PICKUP_ARRIVED',true),/INVALID/);
+ await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);await api.progress(fixture.tokens.d0,key(),fixture.trips[0],1);
+ await b.terminalCommand(fixture.tokens.d0,key(),id,'PICKUP_ARRIVED',true);
+ const e=await b.terminalEvaluation(fixture.tokens.p,id);assert.ok(e.pickupWaitStartedAt);assert.equal(e.pickupFiveMinutesElapsed,false);assert.equal(e.cancellationEligibleSimulation,false);
+});
+test('J04: supervised A to C skips full B, preserves group/price/member IDs and reoffers to the destination driver',async()=>{
+ const g=await individualFixture(2),fill=await fixed(4);await acceptAll(fill);
+ const fullB=await fixed(6,1);await acceptAll(fullB);const b=business(),id=g.bookingIds[0];
+ await b.terminalCommand(fixture.tokens.p,key(),id,'TRANSFER_REQUEST',true);
+ assert.equal((await b.transferCandidates(fixture.tokens.adminA,id,'LATER'))[0].trip_id,fixture.trips[2]);
+ const before=await b.booking(fixture.tokens.p,id),k=key();
+ await Promise.all(Array.from({length:8},()=>b.transferBooking(fixture.tokens.adminA,k,id,fixture.trips[2],'LATER')));
+ const after=await b.booking(fixture.tokens.p,id);assert.equal(after.trip_id,fixture.trips[2]);assert.equal(after.price_bob,before.price_bob);assert.equal(after.seats,2);assert.equal(after.status,'HELD');assert.deepEqual(after.members,before.members);
+ await rejects(b.respond(fixture.tokens.d0,key(),id,true),/FORBIDDEN/);
+ await b.respond(fixture.tokens.d2,key(),id,true);assert.equal((await b.booking(fixture.tokens.p,id)).status,'CONFIRMED');
+ assert.equal((await admin.query("SELECT * FROM nexo.audit_events WHERE action='BOOKING_TRANSFERRED'")).rowCount,1);
+ assert.ok((await occupancy()).every(r=>r.used<=6));
+});
+test('J05: verified group can advance B to A only by admin confirmation; capacity and queue positions survive',async()=>{
+ const a=await individualFixture(6),b=business();await b.terminalCommand(fixture.tokens.p,key(),a.bookingIds[0],'TRANSFER_REQUEST',true);
+ await b.transferBooking(fixture.tokens.adminA,key(),a.bookingIds[0],fixture.trips[1],'LATER');await acceptAll(a);
+ await b.terminalCommand(fixture.tokens.adminA,key(),a.bookingIds[0],'VERIFIED',true);
+ const proposals=await b.advancementCandidates(fixture.tokens.adminA,fixture.trips[0]);assert.equal(proposals[0].bookingId,a.bookingIds[0]);
+ await rejects(b.transferBooking(fixture.tokens.p,key(),a.bookingIds[0],fixture.trips[0],'EARLIER'),/FORBIDDEN/);
+ await b.transferBooking(fixture.tokens.adminA,key(),a.bookingIds[0],fixture.trips[0],'EARLIER');await acceptAll(a);
+ await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);
+ assert.equal((await b.queue(fixture.tokens.adminA,{routeId:fixture.ra}))[0].id,fixture.trips[1]);
+ await b.memberMovement(fixture.tokens.d0,key(),a.members[0].id,'BOARD');
+ await rejects(b.transferBooking(fixture.tokens.adminA,key(),a.bookingIds[0],fixture.trips[1],'LATER'),/NO_COMPATIBLE/);
+});
+test('J06: no alternative and concurrent competing transfers preserve original reservations atomically',async()=>{
+ const g=await individualFixture(4),other=await fixed(2);await acceptAll(other);const b=business();
+ for(const id of [g.bookingIds[0],other.bookingIds[0]])await b.terminalCommand(fixture.tokens.p,key(),id,'TRANSFER_REQUEST',true);
+ const fill=await fixed(4,1);await acceptAll(fill);const full=await fixed(6,2);await acceptAll(full);
+ await rejects(b.transferBooking(fixture.tokens.adminA,key(),g.bookingIds[0],fixture.trips[1],'LATER'),/NO_COMPATIBLE/);
+ assert.equal((await b.booking(fixture.tokens.p,g.bookingIds[0])).trip_id,fixture.trips[0]);
+ const results=await Promise.allSettled(Array.from({length:8},()=>b.transferBooking(fixture.tokens.adminA,key(),other.bookingIds[0],fixture.trips[1],'LATER')));
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.ok((await occupancy()).every(r=>r.used<=6));
+ await admin.query('UPDATE nexo.sessions SET revoked_at=clock_timestamp() WHERE user_id=$1',[fixture.adminA]);
+ await rejects(b.transferBooking(fixture.tokens.adminA,key(),g.bookingIds[0],fixture.trips[1],'LATER'),/UNAUTHENTICATED/);
+});
+
+test('J09: populated 001-013 upgrade preserves every old row and aggregate history, without inferred member events',async()=>{
+  const g=await fixed(6);await acceptAll(g);await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);
+  await business().movement(fixture.tokens.d0,key(),g.bookingIds[0],'BOARD');
+  const name='nexo_test_upgrade_'+randomBytes(6).toString('hex');await admin.query('CREATE DATABASE '+admin.escapeIdentifier(name));
+  const upgradeUrl=new URL(url);upgradeUrl.pathname='/'+name;const db=new pg.Client({connectionString:upgradeUrl.href});await db.connect();
+  try {
+    const dir=await mkdtemp(resolve('.local','stage2-migrations-'));
+    const files=(await admin.query("SELECT name FROM public.nexo_migrations WHERE name<'014' ORDER BY name")).rows.map(x=>x.name);
+    for(const file of files)await writeFile(resolve(dir,file),await readFile(new URL('../../database/migrations/'+file,import.meta.url)));
+    assert.equal((await migrate(db,pathToFileURL(dir+sep))).length,13);
+    const tables=['users','identity_accounts','identity_recovery','identity_attempts','sessions','associations','memberships',
+      'geo_catalogs','departments','provinces','municipalities','localities','routes','stops','operation_reviewers',
+      'route_authorizations','vehicles','trips','fares','bookings','actions','audit_events','identity_events','security_events','booking_movements','booking_members','member_movements','absence_drafts'];
+    await db.query('ALTER TABLE nexo.bookings DISABLE TRIGGER create_booking_members');
+    for(const table of tables)for(const row of (await admin.query('SELECT * FROM nexo.'+table)).rows) {
+      const columns=Object.keys(row);await db.query(`INSERT INTO nexo.${table} (${columns.map(k=>db.escapeIdentifier(k)).join(',')}) VALUES (${columns.map((_,i)=>'$'+(i+1)).join(',')})`,Object.values(row));
+    }
+    await db.query('ALTER TABLE nexo.bookings ENABLE TRIGGER create_booking_members');
+    const snapshot=async()=>{
+      const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
+    };
+    const before=await snapshot();assert.deepEqual(await migrate(db),['014_terminal_operations.sql']);assert.deepEqual(await snapshot(),before);
+    assert.equal((await db.query('SELECT * FROM nexo.booking_members')).rowCount,6);
+    assert.equal((await db.query('SELECT * FROM nexo.member_movements')).rowCount,0);
+    assert.equal((await db.query('SELECT * FROM nexo.absence_drafts')).rowCount,0);
+    assert.deepEqual(await migrate(db),[]);
+    await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.d0]);
+    await db.query('SELECT nexo.progress($1,$2,3)',[key(),fixture.trips[0]]);
+    await db.query("SELECT nexo.record_movement($1,$2,'ALIGHT')",[key(),g.bookingIds[0]]);
+    assert.equal((await db.query('SELECT price_bob FROM nexo.bookings')).rows[0].price_bob,'60.00');
+  } finally {await db.end();}
+});
+test('J07: offline WALK_IN verification works; NULL passenger never permits foreign cancellation or arrival',async()=>{
+ const b=business(),g=await b.walkIn(fixture.tokens.adminA,key(),request(6));await acceptAll(g);const id=g.bookingIds[0];
+ for(const token of [fixture.tokens.other,fixture.tokens.adminB]) {
+  await rejects(b.cancel(token,key(),id),/FORBIDDEN/);
+  await rejects(b.terminalCommand(token,key(),id,'VERIFIED',true),/FORBIDDEN/);
+  await rejects(b.terminalEvaluation(token,id),/FORBIDDEN/);
+ }
+ await b.terminalCommand(fixture.tokens.adminA,key(),id,'VERIFIED',true);
+ assert.equal((await b.terminalEvaluation(fixture.tokens.adminA,id)).verified,true);
+ await rejects(sql(fixture.tokens.p,"SELECT nexo.cancel_internal('x',$1)",[id]),/permission denied/);
+});
+test('J08: arrival, explicit cancellation and dispatch serialize; no automatic absence effect is applied',async()=>{
+ const g=await individualFixture(),b=business(),id=g.bookingIds[0];
+ const results=await Promise.allSettled([
+ b.terminalCommand(fixture.tokens.adminA,key(),id,'VERIFIED',true),
+ b.cancel(fixture.tokens.p,key(),id),b.depart(fixture.tokens.d0,key(),fixture.trips[0])]);
+ assert.ok(results.some(r=>r.status==='fulfilled'));
+ const booking=await b.booking(fixture.tokens.p,id),trip=(await admin.query('SELECT status FROM nexo.trips WHERE id=$1',[fixture.trips[0]])).rows[0];
+ assert.ok((booking.status==='CANCELLED' && trip.status==='QUEUED') || (booking.status==='CONFIRMED' && trip.status==='IN_TRANSIT'));
+ assert.equal((await b.terminalEvaluation(fixture.tokens.p,id)).cancellationEligibleSimulation,false);
+ assert.ok((await occupancy()).every(r=>r.used<=6));
+});
+test('J10: HTTP terminal operations reject personal fields, forged verification and malformed IDs',async()=>{
+ const g=await individualFixture(),http=await startBusinessRuntime(pool),bookingId=g.bookingIds[0];
+ const command=(path,body,token=fixture.tokens.p)=>postJson(http.url,'/business/'+path,body,{Authorization:'Bearer '+token,'Idempotency-Key':key()});
+ try {
+  assert.equal((await command('terminal-config',{associationId:fixture.A,declarationSeconds:120},fixture.tokens.adminA)).status,200);
+  assert.equal((await command('terminal-command',{bookingId,command:'DECLARED',confirmed:true})).status,200);
+  assert.equal((await command('terminal-command',{bookingId,command:'VERIFIED',confirmed:true})).status,403);
+  assert.equal((await command('terminal-command',{bookingId,command:'DECLARED',confirmed:true,name:'FICTICIO'})).status,400);
+  assert.equal((await command('terminal-evaluation',{bookingId:'bad'})).status,400);
+  assert.equal((await command('terminal-evaluation',{bookingId})).body.declaredActive,true);
+ }finally{await http.close();}
+});
+test('J11: two independent groups compete for one destination capacity without partial reassignment',async()=>{
+ const a=await individualFixture(3),bgroup=await fixed(3);await acceptAll(bgroup);const b=business();
+ const occupied=await fixed(3,1);await acceptAll(occupied);const full=await fixed(6,2);await acceptAll(full);
+ for(const id of [a.bookingIds[0],bgroup.bookingIds[0]])await b.terminalCommand(fixture.tokens.p,key(),id,'TRANSFER_REQUEST',true);
+ const results=await Promise.allSettled([a,bgroup].map(g=>b.transferBooking(fixture.tokens.adminA,key(),g.bookingIds[0],fixture.trips[1],'LATER')));
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
+ assert.ok((await occupancy()).every(r=>r.used<=6));
+ assert.equal((await admin.query('SELECT * FROM nexo.bookings WHERE trip_id=$1',[fixture.trips[0]])).rowCount,1);
 });
