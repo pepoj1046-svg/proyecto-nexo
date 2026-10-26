@@ -105,8 +105,15 @@ Resultado local ejecutado: **28/28 unitarias y 106/106 integraciones**, cero fal
 omitidas o canceladas; runner conserva salida intencional 9 y detiene PostgreSQL;
 smoke de identidad y negocio aprobados, ambos listeners detenidos. npm run test:all
 finalizó con salida 0; git diff --check con salida 0. Se conservan las 122 pruebas
-anteriores y se añaden 12. La CI Node 22/24 × Ubuntu/Windows se verificará sobre
-este nuevo commit antes de entregar; no se atribuyen checks anteriores a 014.
+anteriores y se añaden 12. El commit de implementación **7c3c5813fd7a64022b3510405410c7b551788035** aprobó
+[CI del PR #2](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40384260152):
+**cuatro jobs success**, Node 22 y 24 en Ubuntu y Windows. Se inspeccionaron sus
+logs: **28/28 unitarias y 106/106 integraciones PostgreSQL 18.4 por combinación**,
+runner y ambos listeners aprobados. El commit documental posterior registra esa
+evidencia y conserva el código exacto; sus propios checks están visibles en el PR.
+Una ejecución intermedia del smoke local terminó con salida 1; la batería final
+completa y los cuatro entornos CI lo ejecutaron satisfactoriamente. No se atribuye
+una causa no comprobada a ese fallo intermedio.
 
 ## Archivos
 
