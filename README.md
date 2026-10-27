@@ -9,7 +9,7 @@ permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 3.
 ## Etapa 2: reservas y negocio local
 
 [Cierre técnico propuesto, alcance y evidencia](docs/REPORTES/ETAPA_2_CIERRE_TECNICO.md).
-018–020 añaden rescate interurbano, reservas durante el viaje, condiciones de ruta,
+018–021 añaden rescate interurbano, reservas durante el viaje, condiciones de ruta,
 permisos por ruta/terminal y contratos administrativos mínimos. Cierre formal
 pendiente de revisión; no es una autorización de producción.
 

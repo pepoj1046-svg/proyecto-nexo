@@ -168,6 +168,7 @@ Es una instantánea; la transacción de reserva vuelve a validar capacidad.
 | database/migrations/018_operating_contracts.sql | Condiciones/historial de ruta, decisiones, contacto ficticio, menores, alcances y disponibilidad pública; puertas de abordaje |
 | database/migrations/019_journey_recovery.sql | Reasignación de terminal, rescate ROAD, exclusividad, incidentes/eventos, reserva durante viaje y progreso/aceptación seguros |
 | database/migrations/020_scoped_administration.sql | Provisioning de alcances auditado, revisión de asociaciones, decisiones/resolución tardía, RLS restrictiva y RPC privados, historial, estado ROAD y suspensión de nuevas salidas |
+| database/migrations/021_scope_read_boundaries.sql | Lectura restringida de eventos de permisos/identidad, avisos por viaje y consulta de propuestas de la propia ruta |
 | src/domain/stage2-closure.mjs | Contratos estrictos, comandos/estados/UUIDs, sin información personal ni source impuesto por cliente |
 | src/db/business-service.mjs | Adaptador parametrizado sobre funciones SQL; proyección anónima con nexo_app sin sesión, sin acceso privilegiado |
 | src/http/business-api.mjs, local-transport.mjs | Rutas locales, única excepción anónima de disponibilidad, Bearer/resto y claves, conflictos seguros |
@@ -207,7 +208,7 @@ git diff --check
 exit: 0
 ```
 
-CI Ubuntu/Windows × Node22/24: pendiente de la publicación de este commit.
+CI Ubuntu/Windows × Node22/24: pendiente del commit final con 021.
 No se atribuye aprobación a ejecuciones no completadas.
 
 Cobertura nueva Q01–Q31:
@@ -229,11 +230,11 @@ Cobertura nueva Q01–Q31:
   sin resucitar reserva ni crear cobro/reembolso real.
 - HTTP anónimo de disponibilidad sin campos personales, resto autenticado,
   rechazo de GPS/IDs de actor, paginación e inmutabilidad de historia.
-- Base ficticia poblada 001–017 → 018–020 sin cambio de ninguna fila anterior.
+- Base ficticia poblada 001–017 → 018–021 sin cambio de ninguna fila anterior.
 
 Se conservan las **177 pruebas de los cinco incrementos anteriores** y se añaden
 **33**: dos unitarias y 31 integraciones. Actualizar listas de migraciones, registro
-a 20 y whitelist exacta de provisioner refleja el esquema nuevo; no se suprimen
+a 21 y whitelist exacta de provisioner refleja el esquema nuevo; no se suprimen
 aserciones de negocio, seguridad ni pruebas para obtener un resultado satisfactorio.
 G12 fija SHA-256 de 001–017 y siguen las actualizaciones pobladas anteriores.
 
@@ -252,6 +253,9 @@ G12 fija SHA-256 de 001–017 y siguen las actualizaciones pobladas anteriores.
 - Dar un ámbito a un administrador sin cubrir RPC y RLS heredados permitiría eludir
   la limitación. Se añadieron puertas a las firmas antiguas y políticas restrictivas,
   aliases privados y lock de revocación; Q15/Q24 prueban acceso y recibo denegados.
+  La revisión posterior al primer commit detectó lecturas heredadas de eventos de
+  identidad/permisos sin alcance y una denegación excesiva de propuestas de ruta
+  propia. 021 conserva 018–020 publicadas y cierra esas fronteras, con Q15 ampliada.
 - Las correcciones de observación podían dejar inconsistente un acompañamiento
   recién declarado: guardia compensatoria y progreso evitan dejar solo al menor.
 - Durante desarrollo: política restrictiva duplicada para admin_route_grants,
