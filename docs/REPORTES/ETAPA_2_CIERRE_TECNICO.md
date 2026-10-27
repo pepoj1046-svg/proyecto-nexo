@@ -194,8 +194,8 @@ filas para no duplicarlas; las migraciones no hacen ese procedimiento en bases r
 Local: Linux x64, Node **24.19.0**, npm **11.9.0**, **PostgreSQL 18.4 real** del lockfile,
 clúster efímero en 127.0.0.1 con datos ficticios. No conexión a producción ni datos reales.
 
-Pasada final local completada con código de salida 0. La evidencia de CI se añadirá
-tras publicar; mientras tanto las cuatro combinaciones remotas constan pendientes.
+Pasada final local completada con código de salida 0; CI final verificada en las
+cuatro combinaciones, con logs inspeccionados. Evidencia abajo.
 
 ```text
 npm run test:all
@@ -209,8 +209,23 @@ git diff --check
 exit: 0
 ```
 
-CI Ubuntu/Windows × Node22/24: pendiente del commit final con 022.
-No se atribuye aprobación a ejecuciones no completadas.
+Implementación final **`7edacb2300a12dcc3c5d1a10311ab6085c49490c`**:
+[CI del PR #2 completada en success](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40428448611).
+Se inspeccionaron los logs de los cuatro jobs:
+
+| Plataforma | Node observado | Unitarias | PostgreSQL 18.4 real | Runner / smoke |
+|---|---|---|---|---|
+| Ubuntu | 22.23.3 | 33/33 | 177/177 | Aprobados |
+| Ubuntu | 24.21.0 | 33/33 | 177/177 | Aprobados |
+| Windows | 22.23.4 | 33/33 | 177/177 | Aprobados |
+| Windows | 24.22.1 | 33/33 | 177/177 | Aprobados |
+
+Cero fallos, omitidas o canceladas. El código final conserva los cinco incrementos;
+commits de este cierre: **`431656f`** (018–020 y contratos),
+**`eac118c`** (021 y alcances) y **`7edacb2`** (022 y privacidad del manifiesto).
+Este registro documental posterior tiene sus propios checks en el PR.
+No se afirman pruebas con otras familias Node/PostgreSQL, datos reales u operadores.
+
 
 Cobertura nueva Q01–Q31:
 
@@ -290,8 +305,9 @@ backups y operación. Sin períodos legales ni penalizaciones inventadas.
 
 ## 8. Riesgos conocidos y evaluación de cierre
 
-El backend implementa el alcance técnico **de laboratorio**, con las fronteras
-explícitas anteriores. La evaluación se basa también en coherencia de selección,
+**Dictamen propuesto: backend de Etapa 2 técnicamente completo en su alcance de
+laboratorio**, con las fronteras explícitas anteriores. No quedan fallos técnicos
+conocidos que impidan ejecutar ese alcance en las combinaciones verificadas. La evaluación se basa también en coherencia de selección,
 custodia, precio, inventario, grupos, ausencia manual y permisos, además de pruebas.
 El cierre formal lo decide el propietario después de revisión independiente de este
 PR. No se declara listo para producción ni se inicia Etapa 3.
