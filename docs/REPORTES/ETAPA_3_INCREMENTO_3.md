@@ -123,8 +123,16 @@ Resultados ejecutados localmente en Node **24.19.0** y PostgreSQL real **18.4**:
 - **293 casos** en total, incluidos los 268 anteriores. Smokes del runner/transporte,
   cierre y reinicio se contabilizan aparte. El diagnóstico de cierres fallidos se
   conserva solo en `.local`, sin volcar credenciales en logs públicos.
-- CI Ubuntu/Windows × Node 22/24: pendiente para el commit que se publica; no se
-  atribuyen al incremento 3 los resultados de los commits anteriores.
+- CI del commit funcional **22b7ffb30076fc5f95ebb5f36075b31ea751b058**:
+  [ejecución verificada del PR #3](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40524785360),
+  **4/4 trabajos completed/success**, sin reintentos: Ubuntu Node 22, Ubuntu Node 24,
+  Windows Node 22 y Windows Node 24. Cada combinación ejecutó test:all y test:web,
+  incluidos cierre/reinicio. En Ubuntu se comprueba SIGINT real y en Windows IPC.
+  No se atribuyen a este incremento los resultados de commits anteriores.
+
+El commit posterior de documentación únicamente registra esta evidencia. El código
+funcional probado es el hash anterior. Main se conserva en `cac056b`, Etapa 1 en
+`9188139` y Etapa 2 en `820fd1f`; PR #1/#2/#3 continúan abiertos y sin fusionar.
 
 Durante el desarrollo se corrigió un identificador de login de fixture con mayúscula
 (rechazado correctamente por la restricción existente, sin relajarla). La copia de
