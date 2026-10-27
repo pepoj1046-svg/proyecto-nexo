@@ -1,17 +1,19 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 1,
+asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 2,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 2.
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 3.
 
 ## Etapa 3: interfaz web local
 
 React + TypeScript, búsqueda por origen/destino conectada a PostgreSQL, plazas por
-tramo y tres estados de ruta. Selección de reserva **demostrativa**, sin escrituras.
-Estructuras de pasajero, administrador y chofer pendientes de conexión; APIs privadas
-bloqueadas en servidor. No OAuth ni despliegue. Migraciones 001–022 intactas.
+tramo y estados independientes por ruta. Inicio/cierre de sesión de prueba, puntos
+intermedios autorizados, solicitudes persistidas con idempotencia y «Mis reservas».
+`HELD` significa **pendiente**; solo el chofer asignado acepta en `/operador`.
+Administración y el panel completo de chofer siguen pendientes. Sin OAuth ni despliegue.
+001–022 intactas; 023 añade proyecciones de lectura, sin reconstruir el inventario.
 
 ```sh
 npm ci --no-fund
@@ -20,7 +22,15 @@ npm run dev:web
 # Ctrl+C detiene HTTP y PostgreSQL. Datos ficticios nuevos en cada arranque.
 ```
 
-[Informe, pantallas, capturas y límites](docs/REPORTES/ETAPA_3_INCREMENTO_1.md).
+La terminal muestra también la ruta de `.local/accesos-<identificador>.json`.
+En una segunda terminal PowerShell: `Get-Content -Raw <ruta-del-archivo>`.
+Usar `viajero0` para reservar; abrir otra sesión de navegador con `driver0` en
+`/operador` para aceptar su oferta al primer trufi de Horizonte. No compartir ni
+subir ese archivo: sus contraseñas se generan en cada arranque y se elimina al cerrar.
+**La base es efímera: reiniciar pierde cuentas, sesiones y reservas.**
+
+[Procedimiento completo, capturas y límites del incremento 2](docs/REPORTES/ETAPA_3_INCREMENTO_2.md).
+[Informe histórico del incremento 1](docs/REPORTES/ETAPA_3_INCREMENTO_1.md).
 Para pruebas de navegador: `npx --no-install playwright install chromium` si hace
 falta, y `npm run test:web`. Escritorio y móvil emulado, solo en loopback.
 
@@ -51,7 +61,8 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**36 unitarias, 181 integraciones PostgreSQL real**, más 28 pruebas web de escritorio/móvil,
+**40 unitarias y 192 integraciones PostgreSQL real**. La batería web ampliada
+ejecuta 36 casos de escritorio/móvil (resultados y CI en el informe del incremento 2),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar

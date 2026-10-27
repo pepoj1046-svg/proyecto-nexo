@@ -70,7 +70,7 @@ try {
     const isWeb=process.argv.includes('--serve-web');
     const local=await (isWeb?launchWebDemo:launchLocalDemo)({host:'127.0.0.1',port,user:'postgres',password,database});
     try {
-      if(isWeb){console.log('Trufis Bolivia web local: '+local.url);process.send?.({type:'web-ready',url:local.url,postgresPort:port});}
+      if(isWeb){console.log('Trufis Bolivia web local: '+local.url);process.send?.({type:'web-ready',url:local.url,postgresPort:port,credentialsFile:local.credentialsFile});}
       else{console.log('Local test API: '+local.url);console.log('Local business API: '+local.businessUrl);}
       await stopRequested;
     } finally {await local.close();}

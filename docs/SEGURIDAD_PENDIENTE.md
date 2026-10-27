@@ -124,3 +124,27 @@ Los pendientes operativos/legales anteriores se concretan en
 [decisiones actuales](DECISIONES_PENDIENTES_ETAPA_2.md) y el
 [informe de cierre](REPORTES/ETAPA_2_CIERRE_TECNICO.md); los informes previos conservan
 sus resultados históricos y no constituyen habilitación de producción.
+
+
+## Etapa 3, incremento 2: sesiones del navegador local
+
+La fachada web conserva el listener CLI anterior y sus contratos. El navegador
+recibe una cookie opaca HttpOnly/SameSite=Strict y un CSRF; el token de PostgreSQL
+permanece en memoria del servidor. Login rota ambos valores; las consultas privadas
+validan la sesión en SQL en cada operación. Logout revoca SQL y elimina el contexto.
+Los pools `nexo_identity` y `nexo_app` son distintos y no tienen aprovisionamiento.
+No se admiten identidades, roles ni asociaciones enviados por el cliente como autoridad.
+
+La cookie HTTP carece de Secure exclusivamente porque el laboratorio solo escucha
+127.0.0.1 con Host/Origin exactos, sin proxy ni CORS. Esto NO es una configuración
+para Internet: necesitaría HTTPS y política de cookies, identidad pública, protección
+de infraestructura y auditoría antes de cualquier propuesta de despliegue.
+Los puertos no aíslan cookies frente a otro proceso local hostil ni al administrador
+del SO. Los accesos generados son datos ficticios privados de una ejecución y se
+eliminan al detenerla; .local está excluido de Git. Una detención abrupta puede dejar
+archivos locales que el propietario deberá retirar. Nada debe contener datos reales.
+
+023 expone solo paradas/segmentos públicos elegibles y reservas APP propias mediante
+proyecciones con SECURITY DEFINER, search_path fijado y permisos explícitos.
+El historial propio excluye pasajeros ajenos aunque el actor tenga rol administrativo.
+No se habilitan nuevos permisos de escritura SQL ni se modifican 001–022.

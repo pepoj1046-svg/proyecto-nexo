@@ -1,0 +1,6 @@
+export interface WebSession{authenticated:boolean;csrf:string;accountRef?:string;operator?:boolean}
+const messages:Record<string,string>={AUTHENTICATION_REQUIRED:'Tu sesión caducó o fue revocada. Inicia sesión de nuevo.',UNAUTHENTICATED:'Tu sesión caducó o fue revocada. Inicia sesión de nuevo.',INVALID_CREDENTIALS:'Acceso no válido. Comprueba los datos ficticios o espera antes de reintentar.',CSRF_REQUIRED:'Actualiza tu sesión antes de continuar.',FORBIDDEN:'Esta cuenta no tiene permiso para esta operación.',RATE_LIMITED:'Demasiados intentos. Espera antes de reintentar.'};
+export async function privateApi<T>(path:string,body?:unknown,csrf?:string,key?:string):Promise<T>{
+ const c=new AbortController(),timer=setTimeout(()=>c.abort(),18000);
+ try{const r=await fetch(path,{method:body===undefined?'GET':'POST',credentials:'same-origin',signal:c.signal,headers:body===undefined?{}:{'Content-Type':'application/json',...(csrf?{'X-CSRF-Token':csrf}:{}),...(key?{'Idempotency-Key':key}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});const data=await r.json();if(!r.ok)throw new Error(messages[data.error]??`La operación no pudo completarse (${data.error??'error del servicio'}).`);return data;}finally{clearTimeout(timer);}
+}

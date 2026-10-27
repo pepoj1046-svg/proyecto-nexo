@@ -1,4 +1,5 @@
 import { randomUUID,randomBytes,createHash } from 'node:crypto';
+import {hashPassword}from'../src/auth/passwords.mjs';
 import { createService } from '../src/db/service.mjs';
 import { createBusinessService } from '../src/db/business-service.mjs';
 
@@ -57,5 +58,17 @@ export async function seedWebDemo(db,pool) {
   await reserve(runs[1],runs[1].trips[0],2);
   await business.closure(users.admin.token,randomUUID(),'route-condition',{routeId:runs[1].route,state:'DESVIO',reason:'BLOCKADE',description:'Desvío de prueba declarado por la asociación. Confirmar las condiciones antes de viajar.',affectedStops:[],confirmed:true});
   await business.closure(users.admin.token,randomUUID(),'route-condition',{routeId:runs[2].route,state:'SUSPENDIDA',reason:'LANDSLIDE',description:'Salida suspendida en esta simulación. La asociación mantiene atención administrativa.',affectedStops:[],confirmed:true});
-  return {catalogToken:users.catalog.token};
+  // A second route in the same association deliberately has different conditions.
+  const extra=randomUUID();await db.query("INSERT INTO nexo.routes(id,association_id,name,direction,version,stop_count,origin_code,destination_code,catalog_id,origin_locality_id,destination_locality_id)VALUES($1,$2,'Alternativa de prueba','OUT',1,2,'LAB-Y2','LAB-V2',$3,$4,$5)",[extra,a.association,catalog,localities.yacuiba,localities.villa]);
+  for(const[index,name]of ['Terminal alternativa (ficticia)','Destino alternativo (ficticio)'].entries())await db.query('INSERT INTO nexo.stops(association_id,route_id,stop_index,name,catalog_id,locality_id)VALUES($1,$2,$3,$4,$5,$6)',[a.association,extra,index,name,catalog,index?localities.villa:localities.yacuiba]);
+  await db.query("INSERT INTO nexo.route_authorizations(association_id,route_id,issuer,reference,status,valid_from,valid_until,requested_by,reviewed_by,review_reason)VALUES($1,$2,'Emisor ficticio','ALTERNATIVA FICTICIA','VERIFIED',clock_timestamp()-interval '1 hour',clock_timestamp()+interval '1 day',$3,$4,'Ejemplo')",[a.association,extra,users.admin.id,users.reviewer.id]);
+  await business.closure(users.admin.token,randomUUID(),'route-condition',{routeId:extra,state:'SUSPENDIDA',reason:'LANDSLIDE',description:'Solo la ruta alternativa está suspendida en esta simulación.',affectedStops:[],confirmed:true});
+  const accounts={};
+  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),'driver0','driver1','driver2','driver3','driver4']){
+    const password=randomBytes(24).toString('base64url'),login='lab-'+label;
+    const user=users[label]?.id??randomUUID();if(!users[label])await db.query('INSERT INTO nexo.users VALUES($1,$2)',[user,'FICTICIO-WEB-'+label]);
+    await db.query('INSERT INTO nexo.identity_accounts(user_id,login_key,password_hash)VALUES($1,$2,$3)',[user,login,await hashPassword(password)]);
+    accounts[label]={login,password};
+  }
+  return {catalogToken:users.catalog.token,accounts};
 }
