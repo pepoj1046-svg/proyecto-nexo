@@ -58,6 +58,7 @@ try {
     const local=await launchLocalDemo({host:'127.0.0.1',port,user:'postgres',password,database});
     try {
       console.log('Local test API: '+local.url);
+      console.log('Local business API: '+local.businessUrl);
       await new Promise(resolveStop=>{
         const stop=()=>{process.off('SIGINT',stop);process.off('SIGTERM',stop);process.off('message',message);resolveStop();};
         const message=value=>{if(value==='stop-local-test')stop();};

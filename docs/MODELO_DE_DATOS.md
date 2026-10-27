@@ -76,3 +76,12 @@ de inmutabilidad. No almacena contraseñas, tokens, IPs ni cuerpos de solicitud.
 El mantenimiento solo alcanza sesiones/recuperación inválidas e intentos cuya
 ventana terminó, con cutoff obligatorio y lotes; las demás entidades se preservan.
 [Políticas técnicas y retención pendiente](HTTP_LOCAL_Y_MANTENIMIENTO.md).
+
+## Etapa 2: migración 012
+
+`booking_movements` registra BOARD/ALIGHT por asociación/reserva, índice de parada,
+actor y fecha. FK compuesta, unicidad, inmutabilidad y RLS a través de la reserva.
+No cambia filas previas ni inventario; las reservas antiguas carecen de observaciones
+hasta registrarlas válidamente. `reserve_business` reutiliza `reserve` y valida la
+instantánea de precio esperada dentro de la misma transacción.
+[Semántica, datos y límites](ETAPA_2_CONTRATOS.md).

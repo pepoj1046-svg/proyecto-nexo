@@ -1,6 +1,9 @@
 # Propuesta de alcance y plan — Etapa 2 de 10
 
-**Estado: propuesta documental, no iniciada ni autorizada para implementación.**
+**Estado histórico:** propuesta entregada al cerrar Etapa 1. El propietario aceptó
+ese cierre y autorizó iniciar Etapa 2 el 26/10/2026, exclusivamente con datos ficticios.
+La implementación actual y sus límites están en [contratos de Etapa 2](ETAPA_2_CONTRATOS.md).
+El texto siguiente conserva el plan propuesto original; no autoriza Etapa 3 ni despliegues.
 Se entrega junto al [cierre técnico de Etapa 1](CIERRE_TECNICO_ETAPA_1.md).
 No se crean módulos, migraciones, ramas, interfaces o infraestructura de Etapa 2.
 

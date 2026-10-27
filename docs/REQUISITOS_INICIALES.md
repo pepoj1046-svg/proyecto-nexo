@@ -2,6 +2,20 @@
 
 **Estado:** borrador de requisitos acordados el 25 de octubre de 2026. Proyecto desde cero, independiente de Ruta 35, Meteo Chaco y ATLAS-AI-Lab. Nombre comercial: **Trufis Bolivia**; repositorio técnico: **proyecto-nexo**. **No hay despliegue ni pagos reales autorizados.**
 
+## Vigencia tras la revisión de Etapa 2
+
+Este documento conserva el encargo inicial como antecedente. Para el backend actual
+prevalecen [los contratos vigentes](ETAPA_2_CONTRATOS.md) y el
+[informe de cierre propuesto](REPORTES/ETAPA_2_CIERRE_TECNICO.md).
+La referencia inicial **10+5** de ausencia fue sustituida por **READY → aviso al
+minuto 5 → elegibilidad para revisión al minuto 8**, solo en simulación; Ya llegué
+usa 120 segundos provisionales y recogida cinco minutos desde PICKUP_ARRIVED.
+No se envían avisos ni se cancela automáticamente. La plataforma no procesa dinero.
+Se excluyen rutas exclusivamente urbanas/intramunicipales como producto. Paradas
+urbanas de recorridos intermunicipales/provinciales/departamentales autorizados sí
+se conservan. Búsqueda exclusivamente por origen y destino, sin selector de categoría.
+No se implementan Google OAuth, pantallas, navegación, GPS ni mensajería externos.
+
 ## 1. Propósito y alcance
 Plataforma SaaS multi-asociación de cobertura nacional para trufis y vagonetas en Bolivia. Lanzamiento progresivo **intermunicipal → interprovincial → interdepartamental**, con las tres categorías admitidas desde el modelo. Primera prueba: Yacuiba ↔ Villamontes, con asociaciones, cuentas y viajes ficticios. La integración con minibuses queda para después. Cuatro roles: pasajero, chofer, administrador de asociación y administrador general. Cada asociación controla sus datos, choferes, vehículos, filas, rutas, paradas y tarifas, separados de los de otras asociaciones.
 
@@ -16,7 +30,7 @@ Plataforma SaaS multi-asociación de cobertura nacional para trufis y vagonetas 
 - Si un vehículo no puede alojar al grupo, proponer el siguiente compatible sin romper la fila de quienes permanecen esperando.
 - Cada pasajero escoge **ir a parada/terminal** o **ser recogido en punto autorizado** de la ruta. Mostrar dirección de parada, referencia y enlace de navegación Google Maps. No ofrecer recogidas donde el vehículo ya pasó ni en puntos inseguros.
 - Tramos intermedios: pasajero indica comunidad, cruce, referencia o un punto de mapa para subida/bajada. Asignar el punto al **tramo válido de la ruta** definido por la asociación; no simplemente al punto más próximo en línea recta. Mostrar el precio antes de confirmar. Verificar disponibilidad por segmento de ruta.
-- Si un vehículo listo para salir espera a pasajero reservado en terminal, advertir a los **10 minutos** y liberar su plaza **5 minutos después** si la ausencia queda acreditada. Ofrecer contacto/recogida viable, registro de incidencias y revisión por errores de notificación. Políticas económicas de no presentación aún pendientes.
+- **Antecedente sustituido por 0/5/8 en Etapa 2; no activar:** si un vehículo listo para salir espera a pasajero reservado en terminal, advertir a los **10 minutos** y liberar su plaza **5 minutos después** si la ausencia queda acreditada. Ofrecer contacto/recogida viable, registro de incidencias y revisión por errores de notificación. Políticas económicas de no presentación aún pendientes.
 - Cancelación libera plazas sin quitar arbitrariamente el orden al vehículo.
 
 ## 3. Viajes, choferes y seguridad

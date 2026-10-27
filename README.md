@@ -1,8 +1,40 @@
 # Trufis Bolivia — Proyecto Nexo
 
-Backend local de Etapa 1 con datos ficticios: PostgreSQL, aislamiento por asociación,
-reservas por segmentos, aceptación del chofer y despacho. Sin despliegue, pagos ni GPS.
-Trabajo en `desarrollo/etapa-1`; [PR de revisión #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1), sin fusionar.
+Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
+asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 2 activa
+en `desarrollo/etapa-2`, desde el cierre aceptado de Etapa 1. PR de esta etapa hacia
+`desarrollo/etapa-1`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 3.
+
+## Etapa 2: reservas y negocio local
+
+[Cierre técnico propuesto, alcance y evidencia](docs/REPORTES/ETAPA_2_CIERRE_TECNICO.md).
+018–022 añaden rescate interurbano, reservas durante el viaje, condiciones de ruta,
+permisos por ruta/terminal y contratos administrativos mínimos. Cierre formal
+pendiente de revisión; no es una autorización de producción.
+
+`npm run dev:local` muestra dos puertos loopback: identidad/catálogo y negocio.
+El segundo requiere Bearer salvo la proyección anónima local de disponibilidad,
+y claves Idempotency-Key en mutaciones; no tiene login,
+SQL ni aprovisionamiento. Ambas superficies usan la misma base nueva de pruebas.
+Los tests crean fixtures ficticios para todos los escenarios; el launcher no crea
+operadores reales ni un catálogo nacional.
+
+[Contratos y endpoints](docs/ETAPA_2_CONTRATOS.md) ·
+[Decisiones pendientes](docs/DECISIONES_PENDIENTES_ETAPA_2.md) ·
+[Primer incremento](docs/REPORTES/ETAPA_2_INCREMENTO_1.md) ·
+[Segundo incremento](docs/REPORTES/ETAPA_2_INCREMENTO_2.md) ·
+[Tercer incremento](docs/REPORTES/ETAPA_2_INCREMENTO_3.md) ·
+[Cuarto incremento](docs/REPORTES/ETAPA_2_INCREMENTO_4.md) ·
+[Quinto incremento: terminal y sustitución urbana](docs/REPORTES/ETAPA_2_INCREMENTO_5.md).
+
+Se mantienen 001–015 intactas. 016 añade terminal, consentimiento grupal y
+correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
+distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
+individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
+sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
+**33 unitarias, 177 integraciones PostgreSQL real**,
+probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar
 
@@ -89,15 +121,15 @@ await service.suggestLocalities(sessionToken, {query: 'San José', limit: 10});
 [Pruebas y límites del incremento 008–009](docs/REPORTES/ETAPA_1_LOCALIDADES_IDENTIDAD.md).
 Las rutas previas no obtienen geografía ni permisos automáticamente. La actualización
 con reservas preexistentes está probada; consultar el procedimiento y límites.
-npm run test:all ejecuta 23 unitarias, 66 integraciones, la comprobación del ejecutor
-y el smoke de arranque/cierre de la API local con PostgreSQL real.
+npm run test:all conserva la cobertura de Etapa 1 y ejecuta también los contratos,
+actualización poblada y escenarios APP/presencial/despacho HTTP de Etapa 2.
 
 [API local y mantenimiento](docs/HTTP_LOCAL_Y_MANTENIMIENTO.md) ·
 [Auditoría y evaluación de cierre técnico](docs/REPORTES/ETAPA_1_AUDITORIA_HTTP.md).
 Migraciones nuevas 010–011; 001–009 intactas. La limpieza requiere cutoff explícito
-y por defecto solo simula. Etapa 1 preparada para revisión de cierre; sin iniciar Etapa 2.
+y por defecto solo simula. Cierre de laboratorio de Etapa 1 aceptado; Etapa 2 en desarrollo local.
 
 [Cierre técnico de Etapa 1](docs/CIERRE_TECNICO_ETAPA_1.md) ·
-[Propuesta de Etapa 2, sin implementación](docs/PROPUESTA_ETAPA_2.md).
+[Propuesta original de Etapa 2](docs/PROPUESTA_ETAPA_2.md).
 La revisión final conserva **001–011 intactas**, alinea Node y refuerza el rechazo
 de encabezados HTTP vacíos. El PR permanece abierto hasta autorización del propietario.

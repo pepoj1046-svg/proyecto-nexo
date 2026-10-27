@@ -19,6 +19,11 @@ try {
   const credentials={login:'pasajero.demo.ficticio',password:'Clave de prueba ficticia 42'};
   assert.equal((await postJson(url,'/v1/register',credentials)).status,202);
   const session=await postJson(url,'/v1/login',credentials);assert.equal(session.status,200);
+  const business=/Local business API: (http:\/\/127\.0\.0\.1:\d+)/.exec(output)?.[1];
+  assert.ok(business);
+  assert.equal((await postJson(business,'/business/queue',{routeId:'10000000-0000-4000-8000-000000000001'},
+    {Authorization:'Bearer '+session.body.token})).status,200);
+  assert.equal((await postJson(business,'/v1/login',credentials)).status,404);
   assert.equal((await postJson(url,'/v1/logout',{}, {Authorization:'Bearer '+session.body.token})).status,200);
 } catch(e) {failed=e;} finally {if(child.connected)child.send('stop-local-test');}
 try {
@@ -26,4 +31,5 @@ try {
   assert.match(output,/Local test API stopped; PostgreSQL stopped\./);
   if(failed)throw failed;
   console.log('Local HTTP launcher: register/login/logout passed; HTTP and PostgreSQL stopped.');
+  console.log('Local business listener: separate authenticated surface passed; both listeners stopped.');
 } finally {clearTimeout(timeout);}
