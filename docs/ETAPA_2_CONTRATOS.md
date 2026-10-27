@@ -4,6 +4,10 @@ El propietario aceptó el cierre de laboratorio de Etapa 1 y autorizó Etapa 2.
 Base: `9188139`, rama `desarrollo/etapa-2`, revisión hacia `desarrollo/etapa-1`.
 PR #1 y main se conservan. Sin Etapa 3, producción, gastos ni datos reales.
 
+**Vigencia:** las secciones de incrementos conservan la evolución del contrato.
+Para el cierre propuesto prevalece «Cierre técnico: contratos adicionales 018–020»
+al final. En particular, 10+5 es antecedente inactivo; rige simulación 0/5/8.
+
 ## Superficies y ejecución
 
 ```sh
@@ -362,3 +366,98 @@ La avería sin sustituto permanece AWAITING_REPLACEMENT. Una incidencia de termi
 sin contexto urbano no se convierte en rescate automáticamente. Fuera de ciudad,
 riesgo físico o lesiones requieren coordinación humana; la aplicación no reemplaza
 la asistencia de emergencia. Ver límites de manifiesto/corrección en el informe.
+
+## Cierre técnico: contratos adicionales 018–020
+
+[Informe completo, pruebas, riesgos y matriz de requisitos](REPORTES/ETAPA_2_CIERRE_TECNICO.md).
+Migraciones 001–017 intactas; 018–020 aditivas. Reutilizan bloqueos, inventario vivo,
+episodios, movimientos, identidad y primitivas de auditoría. No despliegue ni Etapa 3.
+Todas las rutas nuevas son POST `/business/closure/<operación>`, JSON estricto y
+loopback. Bearer e Idempotency-Key para mutaciones, excepto disponibilidad anónima
+local (sin Bearer); las demás lecturas requieren sesión. La proyección anónima no
+expone tablas ni credenciales y no convierte el listener en un servicio de Internet.
+
+| Operación | Cuerpo | Autoridad / efecto |
+|---|---|---|
+| public-availability | originLocalityId, destinationLocalityId, seats opcional | Anónima local; asociación/ruta/estado/contacto LAB-*, próximos 20 vehículos por ruta, confirmados, libres por tramo y faltantes; sin pasajeros/choferes ni hora prometida |
+| terminal-replacement | incidentId | Admin con alcance; primer vehículo siguiente con capacidad para todas las reservas de la incidencia confirmada |
+| terminal-reassign | incidentId, targetTripId, consentIds[], safeTransfer boolean, confirmed=true | Admin; valida cada grupo/consentimiento, episodios, permisos, cupo e inventario conjunto; todo o nada, sin nueva aceptación discrecional |
+| road-candidates | incidentId, priority opcional ORIGIN/DESTINATION | Admin; unidades libres en terminales autorizadas de ambos extremos; sin prioridad no deduce tiempos, requiere elección administrativa |
+| road-command | tripId, version, command, confirmed=true; targetTripId y priority solo ASSIGN; onboard solo SAFE_TRANSFER | REPORT chofer (version=0), CONFIRM/ASSIGN/ESCALATE admin, SAFE_TRANSFER chofer actual/admin; versiones posteriores explícitas |
+| reserve-enroute | tripId, routeId, from, to, seats, quote opcional | Pasajero; un grupo de 1–6 juntos, HELD 120 s provisional, tarifa congelada, aceptación del chofer, mismo inventario |
+| walk-in-enroute | igual a reserve-enroute | Admin del ámbito; mismo inventario, source fijado en servidor |
+| route-condition | routeId, state, reason, description, affectedStops[], confirmed=true; fareId y amountBOB opcionales juntos | Admin del ámbito; NORMAL/DESVIO/SUSPENDIDA; reason NORMAL/BLOCKADE/STRIKE/LANDSLIDE/OTHER_DECLARED, descripción sintética <=500 caracteres; cambia solo tarifa informada para nuevas reservas |
+| condition-decision | bookingId, revision, decision ACCEPT/ADMIN_REVIEW, confirmed=true | ACCEPT solo responsable; ADMIN_REVIEW solo admin propio; revisión no sustituye aceptación |
+| minor-review | memberId, kind, companionId si acompañado, result, confirmed=true | Admin del ámbito; kind PARENT_ACCOMPANIED/AUTHORIZED_COMPANION/UNACCOMPANIED; PENDING/VERIFIED_SIMULATED/REJECTED; sin edades, nombres, documentos ni fotos |
+| association-review | associationId, state PENDING/ACTIVE/SUSPENDED, confirmed=true | Solo revisor general aprovisionado offline; no acredita habilitación legal real |
+| association-contact | associationId, contactCode LAB-*, confirmed=true | Admin completo propio; código ficticio, no teléfono/correo real |
+| resolution-options | bookingId | Responsable/admin; alternativas actuales sin retención, precio original, validación administrativa y contacto de devolución |
+| passenger-decision | bookingId, decision REQUEST_ALTERNATIVE/CANCEL_REQUEST/REFUND_CONTACT_REQUESTED, confirmed=true | Responsable; registra su elección y devuelve opciones/contacto; no cancelación automática ni dinero |
+| late-resolution | bookingId, cancelOnly boolean, confirmed=true; targetTripId si no cancela | Admin propio tras decisión explícita; cancela original sin resucitarla y, si procede, crea reemplazo confirmado con inventario verificado y precio original |
+| operating-history | routeId, limit/offset opcionales | Admin del ámbito; bitácora paginada, límite 100, sin política destructiva de retención |
+
+En terminal se exige incidencia TERMINAL confirmada y todos sus grupos confirmados
+sin partes fuera del vehículo. Hasta 50 consentimientos por solicitud como cota
+técnica del adaptador; no es un límite de seis reservas por viaje: seis es capacidad
+**simultánea por segmento**. Consentimientos ligados a instantánea vigente del grupo
+completo y destino. B puede tener reservas propias si alcanzan las plazas en **cada
+segmento**; si no, C. Grupo dividido entre vehículos pasa a revisión administrativa,
+no se divide ni se recompone a ciegas. Si hay BOARD efectivo, safeTransfer=true declara
+un traslado real de laboratorio y registra la instantánea original; no fabrica otros
+BOARD/ALIGHT. Se retira A de fila como WITHDRAWN y permanece bloqueado hasta reparación
+administrativa. Los estados y el historial de B permanecen. Reintentos no duplican.
+
+En carretera, REPORT requiere viaje IN_TRANSIT; si usa begin-urban, exige MAIN_TRIP.
+Ambas colas de terminales se bloquean en orden UUID antes de viajes/vehículos. Se
+excluyen unidades con reservas, ocupación observada histórica, incidencias, otra
+carrera o permisos incompatibles. La prioridad la declara el administrador, nunca
+un cálculo de distancia ficticia. ASSIGN revalida la primera unidad de la terminal
+prioritaria o alternativa, retira su entrada y conserva el trip_id original, grupos,
+precios, recogidas y descensos. Queda exclusivo. Hasta SAFE_TRANSFER no admite progreso
+ni nuevas observaciones. Sin unidad, ESCALATE persiste URGENT_REVIEW; no promete rescate.
+Una incompatibilidad de manifiesto produce ADMIN_REVIEW_REQUIRED. Siempre priorizar
+asistencia humana ante accidentes; posición/punto seguro declarados, sin GPS.
+
+En ruta no se ofrecen recogidas ya superadas. Las solicitudes nuevas no admiten
+desvío, espera obligatoria ni división implícita: from/to deben ser puntos habilitados
+del recorrido. La ocupación se comprueba en todos los segmentos con el lock de ruta.
+Si el chofer pasa una recogida HELD, expira esa oferta atómicamente; una recogida
+confirmada no observada genera MISSED_PICKUP_REVIEW, conserva la reserva y no aplica
+sanción/cancelación por ausencia. La capacidad física sigue exigiendo ALIGHT observado
+antes de nuevos BOARD cuando excederían seis. No se fabrica descenso para vender.
+
+Desvíos son declaraciones humanas: ninguna comprobación de transitabilidad. Para
+reservas anteriores afectadas, la aceptación del responsable es explícita y separada
+de la revisión administrativa; el importe aceptado no se cambia. Los puntos marcados
+afectados bloquean ventas allí. Reservas existentes no se borran por suspender la ruta.
+
+late-resolution se limita a un grupo de una parte, sin movimientos, sin reemplazo
+anterior y con decisión del responsable. No asume ausencia desde un temporizador.
+Recomprueba cupo y primer destino; cualquier fallo revierte cancelación/reemplazo.
+El nuevo registro enlaza al original CANCELLED y mantiene precio, sin registro de
+cobro nuevo. Casos de menores copiados quedan PENDING nuevamente. Grupos divididos
+requieren revisión. cancel heredado también devuelve contacto y moneyProcessed=false.
+Contacto no configurado se señala pendiente; no se inventa uno ni un reembolso.
+
+Los administradores internos se aprovisionan con nexo_provisioner; no desde HTTP.
+configure_admin_scope restringe a rutas dirigidas (cada sentido identifica terminal
+operadora) y audita en identity_events con performed_by técnico. Una cuenta limitada
+no administra otros sentidos ni cambia su propio ámbito. En rescates entre terminales
+necesita alcance en ambas rutas; un administrador completo puede coordinarlas.
+RLS añade políticas restrictivas y los RPC antiguos reciben una puerta de alcance;
+aliases internos sin EXECUTE para nexo_app/PUBLIC. La revocación se serializa con las
+operaciones mediante lock compartido/exclusivo por usuario antes de acciones/rutas.
+La configuración restringida es conservadora para toda la cuenta; no concede acceso
+implícito a otra asociación aunque tenga una membresía distinta. Sin paneles nuevos.
+
+Los casos especiales de menores bloquean BOARD mientras no estén verificados en la
+simulación. Se valida acompañante técnico del mismo grupo/viaje; otro slot declarado
+menor no puede usarse como acompañante. En observación individual aborda primero el
+acompañante. No puede retirarse su BOARD efectivo mientras siga a bordo el menor;
+progreso no puede dejarlo sin él. La marca no acredita edad, parentesco ni autorización
+legal; no exige datos personales al resto de pasajeros.
+
+Contratos de futuras aplicaciones: consulta de rutas/tarifas sin cuenta; reservar APP
+con cuenta; registro previsto Google, nombre/celular, sin edad/carnet obligatorios;
+notificaciones dentro de app. Solo son requisitos de integración futura. No se añade
+Google OAuth real, interfaces móviles/web completas ni envíos de ninguna clase.

@@ -1,105 +1,69 @@
-# Decisiones reservadas — Etapa 2
+# Etapa 2 — Decisiones vigentes y pendientes
 
-Estas cuestiones se documentan sin inventar reglas comerciales o legales. La
-autorización actual permite avanzar con contratos, inventario, permisos, adaptador
-local y pruebas independientes usando datos ficticios. No autoriza un piloto real.
+Actualización del cierre técnico propuesto, 26/10/2026, America/La_Paz.
+Las revisiones de los [incrementos 1–5](REPORTES/ETAPA_2_INCREMENTO_5.md) conservan
+sus decisiones históricas. Este registro y los contratos actuales prevalecen sobre
+propuestas anteriores. No se autoriza operación real ni Etapa 3.
 
-| Decisión | Comportamiento conservado | Falta acordar antes de completar la política |
+## Reglas aprobadas e implementadas en laboratorio
+
+- Búsqueda solo por origen y destino. Clasificación interna intermunicipal,
+  interprovincial e interdepartamental según jerarquía y permisos. **Se excluyen
+  servicios exclusivamente urbanos/intramunicipales como producto**. Se mantienen
+  recogidas/descensos locales de rutas entre localidades autorizadas.
+- Seis plazas simultáneas, inventario por segmentos; cuatro abordados y dos recogidas
+  posteriores válidas pueden salir. El chofer registra salida/progreso, sin esperar
+  a llenar otra vez ni regresar por nuevas solicitudes. Las ofertas en ruta pendientes
+  vencen al sobrepasar su parada; una recogida confirmada omitida genera revisión,
+  sin cancelación automática ni devolución inventada.
+- Grupo junto por defecto, división voluntaria original con declaración sin menores.
+  Los casos especiales declarados quedan pendientes de revisión administrativa
+  simulada; nunca se separa un menor declarado de su acompañante al reasignar.
+- Terminal: reasignación administrativa vinculante, consentimiento vigente de cada
+  responsable, primer vehículo siguiente con capacidad conjunta suficiente. B puede
+  tener reservas propias; se omite si no alcanza. A queda fuera de servicio. El
+  traslado de quienes ya abordaron exige declaración explícita de traslado seguro.
+- Rescate urbano o interurbano: una unidad completamente libre, sin compromisos,
+  misma asociación, permisos de ruta vigentes, exclusividad y traslado seguro.
+  En carretera el administrador declara terminal prioritaria; se ofrece alternativa
+  si no hay unidad allí. Sin tiempos reales no se deduce conveniencia por distancia.
+  Sin sustituto, incidencia urgente para gestión humana, sin promesa de rescate.
+- Reserva, presencia, abordaje y pago siguen separados. Reasignar no inventa aceptación
+  personal del chofer, un pago ni otro BOARD/ALIGHT; conserva importe e historial.
+- Ausencia nueva: READY → 5 minutos aviso simulado → 8 elegibilidad para revisión.
+  Ya llegué: 120 segundos provisionales. Recogida: cinco minutos desde llegada
+  declarada a la parada. **10+5 es antecedente técnico inactivo**, conservado solo
+  para compatibilidad histórica. Ninguno activa cron, envío o cancelación.
+- NORMAL/DESVIO/SUSPENDIDA por ruta. Suspensión bloquea ventas nuevas y conserva
+  reservas y contacto visible. Desvíos declaran condiciones y tarifa nueva; los
+  importes aceptados no se recalculan. Aceptación del responsable separada de revisión
+  administrativa; puntos declarados afectados bloquean nuevas reservas allí.
+- Alternativas y cancelación a petición del responsable; devolución siempre de la
+  asociación. El laboratorio solo muestra un código de contacto LAB-* y registra
+  decisiones. No recibe, concilia ni devuelve dinero.
+
+## Decisiones pendientes para cualquier uso real
+
+| Tema | Contrato implementado / frontera | Decisión o validación necesaria |
 |---|---|---|
-| Plazo de aceptar propuestas | TTL técnico previo de dos minutos; vencimiento libera retenciones | Plazo definitivo, avisos, reintentos y criterios tras rechazo/no respuesta |
-| Ausencias/tolerancias | Borradores manuales inactivos, referencia 10+5 minutos; sin envío/cron/efectos de ausencia | Evidencia de ausencia, avisos, tolerancias, recursos económicos y revisión |
-| Menores | División solo con declaración explícita containsMinors=false; no se recopilan edades/personas | Verificar edad/vínculos, quién autoriza, casos de grupo y privacidad |
-| Manifiesto y recogidas posteriores | Salida con seis plazas confirmadas según núcleo previo, incluso en paradas posteriores; bitácora de movimientos no altera esa regla | Interpretación definitiva de ocupación/manifiesto, abordaje previo y qué hacer con observaciones incompletas |
-| Reservas futuras tras revocación | Nuevas reservas/confirmaciones revalidan; no cancelación masiva ni interrupción de viajes iniciados | Aviso, revisión de reservas futuras, alternativas y consecuencias económicas |
-| Recorrido completo intramunicipal | Clasificación NULL no crea un servicio completo; los tramos locales de rutas habilitadas continúan | Si soportarlo, categoría/condiciones y permisos correspondientes |
+| Ausencia y comunicación | 0/5/8 y recogida cinco minutos, solo evaluación; entrega DISABLED | Evidencia, excepciones, accesibilidad, consentimiento/comunicación dentro de app, revisión de errores; autorización separada para cualquier consecuencia |
+| Plazos | Oferta y declaración 120 s provisionales; históricos conservados | Plazo comercial definitivo; condiciones offline; sin renovar relojes por reintento |
+| Menores | PARENT_ACCOMPANIED, AUTHORIZED_COMPANION, UNACCOMPANIED y revisión PENDING/VERIFIED_SIMULATED/REJECTED | Normativa por recorrido/modalidad y documentación oficial, quién puede verificar y responsabilidad; la marca de laboratorio no acredita parentesco ni autorización legal |
+| Terminales y rescate | Prioridad declarada, paradas discretas ficticias, permisos del modelo | Terminales oficiales, acceso al punto seguro, tiempos/vías reales, asistencia ante accidentes; no verificación de transitabilidad ni navegación |
+| Revisión especial | Sin alternativa o grupo ligado entre varios vehículos: incidencia/revisión, sin separación automática | Solución operacional cuando no cabe una sola unidad, grupos con responsables diferentes, límite técnico de ocho episodios, reprogramación y compensaciones |
+| Correcciones tardías | Compensaciones inmutables en parada actual; no se falsifica descenso para liberar capacidad | Procedimiento para errores detectados tras pasar una parada, prueba, revisión y custodia |
+| Permisos revocados y suspensión | Nuevas operaciones revalidan; no se borran reservas ni se interrumpen automáticamente servicios iniciados | Gestión humana de reservas futuras y emergencias con permisos suspendidos, reprogramación y comunicación |
+| Tarifas y devoluciones | Precio original, sin recargo; contacto ficticio y decisiones, sin dinero | Tarifas legales, política de asociación, reclamos, confirmación administrativa real; ningún porcentaje inventado |
+| Datos y auditoría | Historial consultable, inmutable y paginado; sin borrado destructivo | Finalidades, minimización, bases jurídicas, acceso y retención por tipo de dato; sin períodos legales arbitrarios |
+| Habilitación/identidad | Revisor general y administradores restringidos; aprovisionamiento offline separado | Documentación/fuentes oficiales, términos, altas de cuentas reales, Google OAuth, nombre/celular y recuperación/MFA; cuentas/paneles en etapa posterior autorizada |
+| Infraestructura y producción | Loopback y datos ficticios; sin recursos externos | Presupuesto, TLS, monitoreo, backups/restauración, carga, revisión de seguridad/operadores y autorización expresa de piloto |
 
-No se atribuye carácter definitivo a los plazos de laboratorio ni a los supuestos
-de salida. Las observaciones BOARD/ALIGHT pueden ser grupales heredadas o individuales mediante
-UUIDs ficticios, sin mezclar modos en una reserva. No acreditan identidad, edad ni ausencia. No se sustituye una observación faltante por un
-evento ficticio para poder cerrar un viaje.
+El protocolo urbano inicial begin-urban sigue acotado a su manifiesto declarado;
+la salida general existente y la reserva en ruta cubren los recorridos con recogidas
+posteriores sin convertir el transporte urbano en un servicio independiente.
+La rehabilitación simulada no certifica mecánica ni reincorpora automáticamente una
+unidad retirada a una fila. La asignación de una nueva entrada administrativa tras
+reparación requiere procedimiento de operación; no se finge una carrera completada.
 
-También requieren aprobación para uso real: fuente geográfica y permisos oficiales,
-altas documentales, proveedor de identidad, TLS/MFA/canal de recuperación,
-retención/backups y operación. Cobros/QR/GPS/comunicaciones y gastos no se activan.
-Etapa 3 no está autorizada. PR #1 permanece abierto y main no se modifica.
-
-
-## Condiciones operativas pendientes del incremento 2
-
-- **Ausencias 10+5**: aprobar o cambiar los valores, el hecho que inicia el reloj,
-  si el vehículo debe haber llegado/esperado, quién certifica, casos de menores y
-  accesibilidad, canales/consentimiento, excepciones y revisión. Decidir retención
-  y efectos por separado. Los borradores actuales no habilitan efectos automáticos.
-- **Salida/manifiesto**: alternativas para decisión: mantener seis plazas confirmadas
-  incluidas recogidas posteriores (comportamiento actual), exigir abordaje observado
-  en origen, o definir un manifiesto por tramo con mínimos propios. La última opción
-  necesita definir cómo se autoriza la salida con recogidas posteriores; no se
-  modifica la regla actual ni se crean excepciones automáticas.
-- **Secuencia/correcciones**: decidir responsabilidad, evidencia y evento compensatorio
-  inmutable si faltó/erró una observación y ya pasó la parada. Actualmente se rechaza
-  el registro fuera de parada y no se permite reescribir historia ni sobreabordar.
-- **Expreso e itinerarios individuales**: seis UUIDs representan capacidad reservada,
-  no seis personas verificadas. Cada integrante hereda el segmento de su reserva.
-  Diferentes destinos dentro de una misma reserva requieren acordar precio/inventario.
-- **Ofertas/revocación**: 120 segundos siguen siendo provisionales; las aceptaciones
-  parciales también revalidan permisos. Falta definir reasignación tras rechazo/no
-  respuesta y tratamiento de reservas futuras ya confirmadas tras revocación.
-
-Retención de las nuevas bitácoras y su acceso/depuración comercial requieren decisión;
-no se fija un plazo legal ni se añade limpieza destructiva automática. No hay entrega
-de avisos reales ni un modelo de identidad de personas. Etapa 2 sigue en revisión.
-
-## Actualización autorizada en el incremento 3
-
-La simulación de terminal usa ahora 0/5/8 desde READY verificable y la recogida
-cinco minutos desde PICKUP_ARRIVED. Se mantienen desactivadas cancelaciones por
-ausencia y notificaciones. 10+5 es historia de borradores, no la política nueva.
-Pendientes: TTL comercial de declaración, excepciones/evidencia/retención, retirada
-de verificación presencial, recomponer grupos previamente divididos, episodios de
-traslado repetido y recuperación si el nuevo chofer rechaza o vence su oferta.
-Ver límites en REPORTES/ETAPA_2_INCREMENTO_3.md. Ningún plazo técnico activa efectos
-reales ni da por aprobados sanciones/cobros/cancelaciones definitivas.
-
-## Actualización del incremento 4
-
-015 añade recuperación supervisada tras rechazo/vencimiento, incidencia visible,
-episodios repetidos y correcciones auditables de DECLARED/VERIFIED. Queda resuelto
-el bloqueo técnico de pérdida silenciosa: si no hay plaza compatible, se muestra
-RECOVERY_PENDING, sin prometer una asignación confirmada ni restaurar el origen.
-No se garantiza recuperación comercial ni capacidad futura.
-
-Los relojes y la presencia se reinician por nuevo episodio mediante evidencia nueva.
-Ocho propuestas posteriores al episodio base es un límite técnico contra ciclos,
-no una regla comercial: el tratamiento al agotarlo y las incidencias sin alternativa
-requieren decisión. El TTL de declaración permanece configurable sin default y sus
-cambios son auditables. Las correcciones previas al viaje requieren motivo, actor
-y conservación del original; falta un procedimiento comercial de prueba/revisión.
-
-Permanecen pendientes recomposición de grupos ya divididos, menores, correcciones
-BOARD/ALIGHT, manifiesto/salida, revocaciones futuras, retención y recorridos
-intramunicipales. No se activan cancelaciones por ausencia, notificaciones, pagos,
-compensaciones ni sanciones. Etapa 2 permanece en revisión funcional.
-
-## Reglas aprobadas e incremento 5
-
-El nuevo contrato de terminal confirma administrativamente las reasignaciones con
-consentimiento del responsable, sin otra aceptación discrecional del chofer ni
-recargo. Las ofertas heredadas siguen por compatibilidad. Se documentan averías,
-emergencias declaradas e impedimentos, en vez de rechazar arbitrariamente reservas.
-BOARD presencial y compensaciones auditables se separan de llegada y pago. El pago
-solo puede figurar verificado como simulación de la asociación; nunca se supone.
-El nuevo flujo Ya llegué usa 120 segundos provisionales sin renovar READY; conserva
-0/5/8 y recogida cinco minutos, sin automatización de ausencia.
-
-La sustitución urbana completa reserva una unidad libre para la misma carrera,
-retira su entrada de fila y conserva manifiesto/precios/historia. Sin sustituto no
-hay promesa de rescate. A queda bloqueado hasta recuperación administrativa. Las
-posiciones/custodia se declaran y auditan; sin GPS ni asistencias reales.
-
-Pendientes: revisión del plazo provisional, fuentes/evidencia para operación real,
-manifiestos urbanos fuera del protocolo inicial, sustitución fuera de ciudad,
-recomposición con responsables diferentes o dentro de un viaje de origen, menores,
-correcciones tardías/bloqueadas, retención y tratamiento comercial de incidencias.
-No se activan sanciones, compensaciones, cobros ni cancelaciones por ausencia.
-Estas reglas sustituyen las propuestas previas en los endpoints nuevos, sin
-reescribir los informes históricos ni declarar cerrada la Etapa 2.
+El cierre **formal** depende de revisión de ChatGPT/propietario. PR #1 y #2 abiertos,
+main/Etapa 1 conservados. Sin despliegue, pagos, GPS, mensajes reales ni Etapa 3.

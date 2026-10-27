@@ -1,3 +1,4 @@
+import { closureFields,closureReadOperations } from '../domain/stage2-closure.mjs';
 import { createBusinessService } from '../db/business-service.mjs';
 import { assertRuntime } from '../db/runtime.mjs';
 import { object,terminalInput,assignmentInput,operationalInput } from '../domain/business.mjs';
@@ -12,7 +13,8 @@ export async function startBusinessRuntime(pool) {
   const terminal=(op,fn)=>async(body,token,key)=>{terminalInput(op,body);return [200,await fn(token,key,body)];};
   const assignment=(op,fn)=>async(body,token,key)=>{assignmentInput(op,body);return [200,await fn(token,key,body)];};
   const operational=(op,fn)=>async(body,token,key)=>{operationalInput(op,body);return [200,await fn(token,key,body)];};
-  return startLocalTransport({localTest:true,allProtected:true,mutations:[
+  return startLocalTransport({localTest:true,allProtected:true,publicPaths:['/business/closure/public-availability'],mutations:[
+    ...Object.keys(closureFields).filter(op=>!closureReadOperations.includes(op)).map(op=>'/business/closure/'+op),
     '/business/reserve','/business/walk-in','/business/respond','/business/cancel',
     '/business/depart','/business/progress','/business/request-queue','/business/movement',
     '/business/member-movement','/business/absence-draft','/business/refresh-offers',
@@ -20,6 +22,7 @@ export async function startBusinessRuntime(pool) {
     '/business/correct-arrival','/business/assignment-transfer','/business/assignment-respond','/business/episode-command',
     '/business/terminal-impediment','/business/register-responsible','/business/group-consent','/business/approve-terminal-transfer','/business/simulate-payment','/business/activate-terminal','/business/terminal-arrival','/business/terminal-observation','/business/correct-movement','/business/begin-urban','/business/fleet-command','/business/restore-vehicle'
   ],routes:{
+    ...Object.fromEntries(Object.keys(closureFields).map(op=>['/business/closure/'+op,async(b,t,k)=>[200,await(op==='public-availability'?service.publicAvailability(b):service.closure(t,k,op,b))]])),
     '/business/terminal-impediment':operational('impediment',(t,k,b)=>service.terminalImpediment(t,k,b.tripId,b.command,b.reason,b.confirmed)),
     '/business/fleet-history':operational('history',(t,_k,b)=>service.fleetHistory(t,b)),
     '/business/operational-status':operational('status',(t,_k,b)=>service.operationalStatus(t,b.tripId)),

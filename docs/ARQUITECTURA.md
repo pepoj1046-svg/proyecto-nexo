@@ -87,3 +87,10 @@ SQL existentes. Listener de negocio separado que recibe solo nexo_app; comparte
 validación de transporte, sin pool de identidad/provisión ni nuevos endpoints públicos.
 012 añade bitácora por reserva y precondición de precio atómica, sin reescribir
 inventario ni despacho. [Contratos y fronteras](ETAPA_2_CONTRATOS.md).
+
+## Backend Etapa 2, cierre propuesto
+
+012–020 conservan el núcleo y añaden operaciones locales, miembros/compensaciones,
+terminal/episodios, sustitución urbana y rescate interurbano, ventas en ruta,
+condiciones declaradas y administración restringida. No servicios públicos ni apps.
+[Contratos actuales](ETAPA_2_CONTRATOS.md) y [evidencia/fronteras de cierre](REPORTES/ETAPA_2_CIERRE_TECNICO.md).

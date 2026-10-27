@@ -112,3 +112,15 @@ de nexo_identity ni se convierte la API local en pública.
 
 [Cierre técnico y límites](CIERRE_TECNICO_ETAPA_1.md). Permanecen las decisiones
 comerciales, legales, de identidad pública y de piloto enumeradas arriba.
+
+## Actualización del cierre propuesto de Etapa 2
+
+018–020 añaden alcances por ruta dirigida/terminal, puertas en RPC anteriores,
+RLS restrictiva y revocación serializada. Los casos especiales de menores tienen
+revisión mínima simulada y barrera de BOARD; no validación de edades/documentos
+reales. La disponibilidad anónima es una proyección en loopback sin pasajeros.
+No servicios de Internet, envíos, cobros, GPS ni cancelaciones automáticas.
+Los pendientes operativos/legales anteriores se concretan en
+[decisiones actuales](DECISIONES_PENDIENTES_ETAPA_2.md) y el
+[informe de cierre](REPORTES/ETAPA_2_CIERRE_TECNICO.md); los informes previos conservan
+sus resultados históricos y no constituyen habilitación de producción.

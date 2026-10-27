@@ -68,3 +68,22 @@ test('operational history, group targets and repair release reject malformed or 
  assert.throws(()=>operationalInput('history',{tripId,limit:101}));
  assert.throws(()=>operationalInput('correction',{bookingId:tripId,factKey:'x',reason:'INVENT_DESCENT',confirmed:true}));
 });
+
+test('closure contracts keep terminal reassignment, road rescue and public projections distinct',async()=>{
+ const {closureInput}=await import('../src/domain/stage2-closure.mjs');
+ assert.equal(closureInput('road-command',{tripId,version:0,command:'REPORT',confirmed:true}).version,0);
+ assert.equal(closureInput('public-availability',{originLocalityId:routeId,destinationLocalityId:tripId}).originLocalityId,routeId);
+ for(const body of [{tripId,version:1,command:'ASSIGN',targetTripId:routeId,confirmed:true},{tripId,version:1,command:'REPORT',confirmed:true,gps:[0,0]},{tripId,version:1,command:'SAFE_TRANSFER',onboard:7,confirmed:true}])assert.throws(()=>closureInput('road-command',body));
+ assert.throws(()=>closureInput('terminal-reassign',{incidentId:tripId,targetTripId:routeId,consentIds:[tripId,tripId],safeTransfer:true,confirmed:true}));
+ assert.throws(()=>closureInput('reserve-enroute',{tripId,routeId,from:1,to:2,seats:1,source:'WALK_IN'}));
+});
+test('closure contracts collect no general age, documents, real contacts or payment instructions',async()=>{
+ const {closureInput}=await import('../src/domain/stage2-closure.mjs');
+ const minor={memberId:tripId,kind:'UNACCOMPANIED',result:'PENDING',confirmed:true};
+ assert.equal(closureInput('minor-review',minor).result,'PENDING');
+ for(const extra of [{age:10},{document:'FICTICIO'},{photo:'FICTICIO'},{companionId:routeId}])assert.throws(()=>closureInput('minor-review',{...minor,...extra}));
+ assert.throws(()=>closureInput('association-contact',{associationId:routeId,contactCode:'+000000000',confirmed:true}));
+ assert.throws(()=>closureInput('passenger-decision',{bookingId:tripId,decision:'REFUNDED',confirmed:true}));
+ assert.throws(()=>closureInput('route-condition',{routeId,state:'DESVIO',reason:'BLOCKADE',description:'Ficticio',affectedStops:[1],fareId:tripId,amountBOB:'1.001',confirmed:true}));
+ assert.throws(()=>closureInput('operating-history',{routeId,limit:101}));
+});

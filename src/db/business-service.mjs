@@ -1,3 +1,4 @@
+import { closureInput,closureReadOperations } from '../domain/stage2-closure.mjs';
 import { createService } from './service.mjs';
 import { assertRuntime } from './runtime.mjs';
 import { object,id,actionKey,segment,validateReservation,page,memberCommand } from '../domain/business.mjs';
@@ -38,7 +39,39 @@ export function createBusinessService(pool) {
     return transaction(token,async c=>(await c.query(`SELECT nexo.${fn}($1,$2,$3) AS result`,[key,memberId,kind])).rows[0].result);
   };
   const terminalCall=(fn,args)=>(token,...values)=>transaction(token,async c=>(await c.query(`SELECT nexo.${fn}(${args}) AS result`,values)).rows[0].result);
+  const closureQueries={
+    'route-condition':['set_route_condition','$1,$2,$3,$4,$5,$6,$7,$8,$9',b=>[b.routeId,b.state,b.reason,b.description,b.affectedStops,b.fareId??null,b.amountBOB??null,b.confirmed]],
+    'condition-decision':['condition_decision','$1,$2,$3,$4,$5',b=>[b.bookingId,b.revision,b.decision,b.confirmed]],
+    'minor-review':['review_minor','$1,$2,$3,$4,$5,$6',b=>[b.memberId,b.kind,b.companionId??null,b.result,b.confirmed]],
+    'terminal-replacement':['terminal_replacement_candidate','$1',b=>[b.incidentId]],
+    'terminal-reassign':['reassign_terminal_incident','$1,$2,$3,$4,$5,$6',b=>[b.incidentId,b.targetTripId,b.consentIds,b.safeTransfer,b.confirmed]],
+    'road-candidates':['road_candidates','$1,$2',b=>[b.incidentId,b.priority??null]],
+    'road-command':['road_command','$1,$2,$3,$4,$5,$6,$7,$8',b=>[b.tripId,b.version,b.command,b.targetTripId??null,b.priority??null,b.onboard??null,b.confirmed]],
+    'association-review':['review_association','$1,$2,$3,$4',b=>[b.associationId,b.state,b.confirmed]],
+    'association-contact':['set_association_contact','$1,$2,$3,$4',b=>[b.associationId,b.contactCode,b.confirmed]],
+    'passenger-decision':['passenger_decision','$1,$2,$3,$4',b=>[b.bookingId,b.decision,b.confirmed]],
+    'late-resolution':['approve_late_resolution','$1,$2,$3,$4,$5',b=>[b.bookingId,b.targetTripId??null,b.cancelOnly,b.confirmed]],
+    'resolution-options':['resolution_options','$1',b=>[b.bookingId]],
+    'operating-history':['operating_history','$1,$2,$3',b=>[b.routeId,b.limit??50,b.offset??0]]
+  };
   return Object.freeze({
+    publicAvailability:async request=>{
+      const q=closureInput('public-availability',request);const c=await pool.connect();
+      try {await assertRuntime(c,'nexo_app');await c.query('BEGIN');await c.query("SET LOCAL statement_timeout='5s'");
+        await c.query("SELECT set_config('nexo.session_token','',true)");
+        const result=(await c.query('SELECT nexo.public_availability($1,$2,$3) AS result',[q.originLocalityId,q.destinationLocalityId,q.seats??1])).rows[0].result;
+        await c.query('COMMIT');return result;
+      }catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}
+    },
+    closure:(token,key,operation,body)=>{
+      const b=closureInput(operation,body);if(operation==='public-availability')throw new Error('INVALID_OPERATION');
+      const mutates=!closureReadOperations.includes(operation);if(mutates)actionKey(key);
+      return transaction(token,async c=>{
+        if(['reserve-enroute','walk-in-enroute'].includes(operation))return (await c.query('SELECT nexo.reserve_enroute($1,$2,$3,$4) AS result',[key,b.tripId,{routeId:b.routeId,from:b.from,to:b.to,seats:b.seats,source:operation==='walk-in-enroute'?'WALK_IN':'APP'},b.quote??null])).rows[0].result;
+        const [name,args,values]=closureQueries[operation];
+        return (await c.query(`SELECT nexo.${name}(${args}) AS result`,[...(mutates?[key]:[]),...values(b)])).rows[0].result;
+      });
+    },
     fleetHistory:(token,request)=>{
       const q=page(request,'tripId');return transaction(token,async c=>{
         await c.query('SELECT nexo.operational_status($1)',[q.tripId]);

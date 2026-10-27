@@ -31,7 +31,7 @@ function statusFor(error) {
   if(['UNAUTHENTICATED','INVALID_CREDENTIALS'].includes(error.message)) return [401,'UNAUTHENTICATED'];
   if(error.message==='IDENTITY_BUSY') return [429,'RATE_LIMITED'];
   if(error.message==='NOT_FOUND')return [404,'NOT_FOUND'];
-  if(['PASSENGERS_ONBOARD','PRESENCE_REQUIRED','OPERATION_BLOCKED','VEHICLE_OUT_OF_SERVICE','STALE_OPERATION','INVALID_FLEET_STATE','NO_FREE_REPLACEMENT','OUTSIDE_URBAN_SCOPE','PICKUPS_PENDING','INVALID_SAFE_TRANSFER','INVALID_RECOVERY_STATE','UNSUPPORTED_URBAN_MANIFEST','INVALID_URBAN_STATE','INVALID_TERMINAL_TRANSFER','STALE_CONSENT','CONSENT_USED','TERMINAL_RESERVATION_BINDING','RESPONSIBLE_ALREADY_REGISTERED','TRANSFER_CONDITIONS_CHANGED','STALE_ASSIGNMENT','INVALID_CORRECTION_STATE','TERMINAL_CONFIG_REQUIRED','NO_COMPATIBLE_TRANSFER','INVALID_TERMINAL_STATE','AGGREGATE_HISTORY_ONLY','INDIVIDUAL_HISTORY_ONLY','OBSERVED_CAPACITY_EXCEEDED','INVALID_ABSENCE_STATE','NO_CAPACITY','QUOTE_CHANGED','FARE_UNRESOLVED','ROUTE_NOT_ELIGIBLE','ASSOCIATION_SUSPENDED','QUEUE_ORDER','INCOMPATIBLE_TRIP','TRIP_ALREADY_STARTED','NOT_FULL','UNACCEPTED_OFFERS','INVALID_TRIP_STATE','INVALID_MOVEMENT_STATE','IDEMPOTENCY_CONFLICT','ALREADY_ACTIVE','STALE_PREVIOUS_TRIP'].includes(error.message))return [409,error.message];
+  if(['ROUTE_CONDITION_BLOCKED','CONDITION_ACCEPTANCE_REQUIRED','MINOR_REVIEW_REQUIRED','COMPANION_REQUIRED','SAFE_TRANSFER_REQUIRED','ADMIN_REVIEW_REQUIRED','STALE_CONDITION','INVALID_ROAD_STATE','OUTSIDE_ROAD_SCOPE','REPLACEMENT_AVAILABLE','ADMIN_TERMINAL_CHOICE_REQUIRED','PICKUP_PASSED_OR_INCOMPATIBLE','PASSENGER_DECISION_REQUIRED','PASSENGERS_ONBOARD','PRESENCE_REQUIRED','OPERATION_BLOCKED','VEHICLE_OUT_OF_SERVICE','STALE_OPERATION','INVALID_FLEET_STATE','NO_FREE_REPLACEMENT','OUTSIDE_URBAN_SCOPE','PICKUPS_PENDING','INVALID_SAFE_TRANSFER','INVALID_RECOVERY_STATE','UNSUPPORTED_URBAN_MANIFEST','INVALID_URBAN_STATE','INVALID_TERMINAL_TRANSFER','STALE_CONSENT','CONSENT_USED','TERMINAL_RESERVATION_BINDING','RESPONSIBLE_ALREADY_REGISTERED','TRANSFER_CONDITIONS_CHANGED','STALE_ASSIGNMENT','INVALID_CORRECTION_STATE','TERMINAL_CONFIG_REQUIRED','NO_COMPATIBLE_TRANSFER','INVALID_TERMINAL_STATE','AGGREGATE_HISTORY_ONLY','INDIVIDUAL_HISTORY_ONLY','OBSERVED_CAPACITY_EXCEEDED','INVALID_ABSENCE_STATE','NO_CAPACITY','QUOTE_CHANGED','FARE_UNRESOLVED','ROUTE_NOT_ELIGIBLE','ASSOCIATION_SUSPENDED','QUEUE_ORDER','INCOMPATIBLE_TRIP','TRIP_ALREADY_STARTED','NOT_FULL','UNACCEPTED_OFFERS','INVALID_TRIP_STATE','INVALID_MOVEMENT_STATE','IDEMPOTENCY_CONFLICT','ALREADY_ACTIVE','STALE_PREVIOUS_TRIP'].includes(error.message))return [409,error.message];
   if(error.message==='SPLIT_NOT_ALLOWED')return [400,'SPLIT_NOT_ALLOWED'];
   if(/^INVALID_|^FORBIDDEN/.test(error.message)) return [error.message.startsWith('FORBIDDEN')?403:400,'INVALID_REQUEST'];
   return [503,'SERVICE_UNAVAILABLE']; // No SQL, stack, identity or credential in responses.
@@ -39,7 +39,7 @@ function statusFor(error) {
 
 // No configurable host, port, proxy or privileged route. Tests inject adapters;
 // the executable launcher always creates a fresh isolated local database.
-export async function startLocalTransport({localTest,routes,allProtected=false,mutations=[],rateLimit=60,maxInflight=4,now=Date.now}={}) {
+export async function startLocalTransport({localTest,routes,allProtected=false,publicPaths=[],mutations=[],rateLimit=60,maxInflight=4,now=Date.now}={}) {
   if(localTest!==true || !routes || !Number.isInteger(rateLimit) || rateLimit<1 || rateLimit>60 ||
     !Number.isInteger(maxInflight) || maxInflight<1 || maxInflight>4) throw new Error('LOCAL_TEST_ONLY');
   let inflight=0, windowStart=now(), requests=0;
@@ -79,7 +79,7 @@ export async function startLocalTransport({localTest,routes,allProtected=false,m
       if(req.headers['content-type']!=='application/json' || req.headers['content-encoding']) throw failure(415,'JSON_REQUIRED');
       if(req.headers['content-length'] && Number(req.headers['content-length'])>4096) throw failure(413,'BODY_TOO_LARGE');
       let token;
-      if(allProtected || !['/v1/register','/v1/login','/v1/recover'].includes(req.url)) {
+      if((allProtected && !publicPaths.includes(req.url)) || (!allProtected && !['/v1/register','/v1/login','/v1/recover'].includes(req.url))) {
         const match=/^Bearer ([A-Za-z0-9_-]{32,128})$/.exec(req.headers.authorization ?? '');
         if(!match) throw failure(401,'UNAUTHENTICATED');
         token=match[1];

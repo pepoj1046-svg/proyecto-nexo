@@ -8,8 +8,14 @@ permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 3.
 
 ## Etapa 2: reservas y negocio local
 
+[Cierre técnico propuesto, alcance y evidencia](docs/REPORTES/ETAPA_2_CIERRE_TECNICO.md).
+018–020 añaden rescate interurbano, reservas durante el viaje, condiciones de ruta,
+permisos por ruta/terminal y contratos administrativos mínimos. Cierre formal
+pendiente de revisión; no es una autorización de producción.
+
 `npm run dev:local` muestra dos puertos loopback: identidad/catálogo y negocio.
-El segundo requiere Bearer y claves Idempotency-Key en mutaciones; no tiene login,
+El segundo requiere Bearer salvo la proyección anónima local de disponibilidad,
+y claves Idempotency-Key en mutaciones; no tiene login,
 SQL ni aprovisionamiento. Ambas superficies usan la misma base nueva de pruebas.
 Los tests crean fixtures ficticios para todos los escenarios; el launcher no crea
 operadores reales ni un catálogo nacional.
@@ -27,7 +33,7 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**31 unitarias, 146 integraciones PostgreSQL real**,
+**33 unitarias, 177 integraciones PostgreSQL real**,
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar
