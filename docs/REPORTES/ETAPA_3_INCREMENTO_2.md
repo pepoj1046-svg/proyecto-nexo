@@ -103,8 +103,16 @@ existentes siguen vigentes: no insistir repetidamente con cuentas/contraseñas e
 - Parada con SIGINT real: HTTP/PostgreSQL detenidos y puertos cerrados verificados.
   Reinicio: reserva persistida en la primera ejecución, contraseña/sesión/reserva
   previas ausentes en la siguiente; archivo privado eliminado en ambos cierres.
-- CI Ubuntu/Windows × Node 22/24: pendiente de ejecutar para el commit publicado;
-  no se atribuyen a este incremento los resultados históricos del incremento 1.
+- CI del commit funcional **f2b51ddd88d4c6e2b87a6b71f4d8f80c169c10d1**:
+  [ejecución del PR #3](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40443264644),
+  **4/4 trabajos aprobados**, sin reintentos: Ubuntu Node 22, Ubuntu Node 24,
+  Windows Node 22 y Windows Node 24. Cada combinación ejecutó test:all y test:web,
+  incluidos los smokes de cierre y reinicio (SIGINT en Ubuntu, IPC en Windows).
+  No se atribuyen a este incremento los resultados históricos del incremento 1.
+
+Main sigue en `cac056b`, Etapa 1 en `9188139` y Etapa 2 en `820fd1f`;
+PR #1 y #2 continúan abiertos y sin fusionar. El commit posterior de documentación
+registra únicamente esta evidencia; el código probado es el hash indicado arriba.
 
 Se mantienen todos los **245 casos** del incremento 1; la batería ampliada contiene
 **268**: 40 unitarias + 192 PostgreSQL + 36 navegador (18 escritorio, 18 móvil).
