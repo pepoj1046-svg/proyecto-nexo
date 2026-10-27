@@ -7,7 +7,7 @@ import { createBusinessService } from '../src/db/business-service.mjs';
 // These names are examples; no passenger/association/permit/position is real.
 export async function seedWebDemo(db,pool) {
   const users={};
-  for(const label of ['catalog','passenger','admin','reviewer',...Array.from({length:5},(_,i)=>'driver'+i)]) {
+  for(const label of ['catalog','passenger','admin','reviewer','adminH','adminU','operativo0','operativo1',...Array.from({length:6},(_,i)=>'driver'+i)]) {
     const id=randomUUID(),token=randomBytes(32).toString('hex');users[label]={id,token};
     await db.query('INSERT INTO nexo.users VALUES($1,$2)',[id,'FICTICIO-WEB-'+label]);
     await db.query("INSERT INTO nexo.sessions VALUES($1,$2,clock_timestamp()+interval '1 hour',NULL)",[createHash('sha256').update(token).digest('hex'),id]);
@@ -42,8 +42,8 @@ export async function seedWebDemo(db,pool) {
     runs.push({association,route,trips});
     await business.closure(users.admin.token,randomUUID(),'association-contact',{associationId:association,contactCode:'LAB-TERMINAL-'+n,confirmed:true});
   }
-  const reserve=async(run,trip,seats,from=0,to=3)=>{
-    const g=await core.reserve(users.passenger.token,randomUUID(),{routeId:run.route,from,to,seats,parts:[{tripId:trip.id,seats}]});
+  const reserve=async(run,trip,seats,from=0,to=3,actor=users.passenger)=>{
+    const g=await core.reserve(actor.token,randomUUID(),{routeId:run.route,from,to,seats,parts:[{tripId:trip.id,seats}]});
     for(const id of g.bookingIds)await core.respond(trip.driver.token,randomUUID(),id,true);return g;
   };
   const a=runs[0];await reserve(a,a.trips[0],4);const filler=await reserve(a,a.trips[0],2);
@@ -63,9 +63,23 @@ export async function seedWebDemo(db,pool) {
   for(const[index,name]of ['Terminal alternativa (ficticia)','Destino alternativo (ficticio)'].entries())await db.query('INSERT INTO nexo.stops(association_id,route_id,stop_index,name,catalog_id,locality_id)VALUES($1,$2,$3,$4,$5,$6)',[a.association,extra,index,name,catalog,index?localities.villa:localities.yacuiba]);
   await db.query("INSERT INTO nexo.route_authorizations(association_id,route_id,issuer,reference,status,valid_from,valid_until,requested_by,reviewed_by,review_reason)VALUES($1,$2,'Emisor ficticio','ALTERNATIVA FICTICIA','VERIFIED',clock_timestamp()-interval '1 hour',clock_timestamp()+interval '1 day',$3,$4,'Ejemplo')",[a.association,extra,users.admin.id,users.reviewer.id]);
   await business.closure(users.admin.token,randomUUID(),'route-condition',{routeId:extra,state:'SUSPENDIDA',reason:'LANDSLIDE',description:'Solo la ruta alternativa está suspendida en esta simulación.',affectedStops:[],confirmed:true});
+  // Explicit synthetic point types, never inferred from a name or GPS.
+  for(const run of runs)for(let index=0;index<4;index++)await db.query('INSERT INTO nexo.web_point_profiles VALUES($1,$2,$3,$4,$5)',[run.association,run.route,index,['TERMINAL','URBAN','ROAD','TERMINAL'][index],index===1]);
+  for(const[label,run]of [['adminH',runs[0]],['adminU',runs[1]]]){
+    await db.query("INSERT INTO nexo.memberships VALUES($1,$2,'ASSOCIATION_ADMIN',true)",[run.association,users[label].id]);
+    await db.query('SELECT nexo.configure_admin_scope($1,$2,$3,true)',[users[label].id,run.association,[run.route]]);
+  }
+  const vehicle=randomUUID(),operationalTrip={id:randomUUID(),driver:users.driver5};
+  await db.query("INSERT INTO nexo.memberships VALUES($1,$2,'DRIVER',true)",[a.association,users.driver5.id]);
+  await db.query('INSERT INTO nexo.vehicles(id,association_id,label)VALUES($1,$2,$3)',[vehicle,a.association,'FICTICIO-OPERATIVO']);
+  await db.query('INSERT INTO nexo.trips(id,association_id,route_id,vehicle_id,driver_id,position_no)VALUES($1,$2,$3,$4,$5,4)',[operationalTrip.id,a.association,a.route,vehicle,users.driver5.id]);
+  // Temporarily fill earlier compatible units through native RPCs, then restore them.
+  const blockers=[await reserve(a,a.trips[0],2),await reserve(a,a.trips[1],2,1,3)];
+  await reserve(a,operationalTrip,4,0,3,users.operativo0);await reserve(a,operationalTrip,2,1,3,users.operativo1);
+  for(const g of blockers)await core.cancel(users.passenger.token,randomUUID(),g.bookingIds[0]);
   const accounts={};
-  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),'driver0','driver1','driver2','driver3','driver4']){
-    const password=randomBytes(24).toString('base64url'),login='lab-'+label;
+  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),'driver0','driver1','driver2','driver3','driver4','driver5','adminH','adminU','operativo0','operativo1']){
+    const password=randomBytes(24).toString('base64url'),login='lab-'+label.toLowerCase();
     const user=users[label]?.id??randomUUID();if(!users[label])await db.query('INSERT INTO nexo.users VALUES($1,$2)',[user,'FICTICIO-WEB-'+label]);
     await db.query('INSERT INTO nexo.identity_accounts(user_id,login_key,password_hash)VALUES($1,$2,$3)',[user,login,await hashPassword(password)]);
     accounts[label]={login,password};

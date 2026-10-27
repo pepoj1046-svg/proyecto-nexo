@@ -104,3 +104,18 @@ propietaria se cierra antes de escuchar. Sin base paralela, SQL desde navegador 
 escrituras web. Paneles privados pendientes, APIs 401. El runner existente inicia
 y detiene el clúster efímero de 001–022 y el gateway. No Next.js/SSR ni proveedores.
 [Informe, seguridad y ejecución](REPORTES/ETAPA_3_INCREMENTO_1.md).
+
+
+## Etapa 3: incrementos 2–3 de laboratorio
+
+El gateway de mismo origen conserva sesiones web opacas con cookie protegida y CSRF,
+identidad SQL separada del pool nexo_app y setup cerrado antes de escuchar. No se
+promueve a Internet el listener CLI previo. Las operaciones web se limitan a comandos
+expresamente admitidos; cada RPC vuelve a autorizar con la sesión y el ámbito SQL.
+
+023 proyecta puntos/segmentos y reservas propias. 024 añade tipos de puntos declarados
+offline, un snapshot operativo por rol y una envoltura de observación vinculada a
+viaje/episodio. Esta envoltura reclama idempotencia antes de bloquear ruta y delega
+el hecho al RPC existente; no mantiene otro inventario. Presencia, verificación,
+abordaje, salida, fin de recogidas y llegada siguen separados y auditados.
+[Operaciones web, límites y procedimiento](REPORTES/ETAPA_3_INCREMENTO_3.md).

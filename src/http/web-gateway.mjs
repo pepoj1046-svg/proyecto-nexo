@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { createWebCatalogService } from '../db/web-catalog-service.mjs';
 import {createIdentity}from'../auth/identity.mjs';
 import {createWebReservationService}from'../db/web-reservation-service.mjs';
+import {createWebOperationsService}from'../db/web-operations-service.mjs';
 import {createWebSessions}from'./web-sessions.mjs';
 import { assertRuntime } from '../db/runtime.mjs';
 
@@ -20,6 +21,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   if(!service){const c=await pool.connect();try{await assertRuntime(c,'nexo_app',{localTest:true});}finally{c.release();}service=createWebCatalogService(pool,catalogToken);}
   if(identityPool){const c=await identityPool.connect();try{await assertRuntime(c,'nexo_identity',{localTest:true});}finally{c.release();}}
   const business=identityPool?createWebReservationService(pool):null;
+  const operations=identityPool?createWebOperationsService(pool):null;
   const sessions=identityPool?createWebSessions({identity:createIdentity(identityPool),business}):null;
   const root=resolve('apps/web/dist');const html=await readFile(resolve(root,'index.html'));
   // Host, same-origin and JSON checks are enforced here, independently of React.
@@ -58,7 +60,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
           await sessions.actor(context);return send(200,await business[req.url.includes('passenger')?'list':'operatorList'](context.entry.token));
         }
         if(/^\/api\/(admin|driver|passenger)(\/|$)/.test(req.url))throw denial(401,'AUTHENTICATION_REQUIRED');
-        const privateRoutes=['/api/login','/api/logout','/api/reservations/quote','/api/reservations','/api/operator/accept'];
+        const privateRoutes=['/api/login','/api/logout','/api/reservations/quote','/api/reservations','/api/operator/accept','/api/operations/overview','/api/operations/snapshot','/api/operations/command'];
         if(!publicRoutes[req.url]&&!(sessions&&privateRoutes.includes(req.url)))throw denial(404,'NOT_FOUND');
         if(req.method!=='POST')throw denial(405,'METHOD_NOT_ALLOWED');
         if(req.headers.origin!==origin)throw denial(403,'SAME_ORIGIN_REQUIRED');
@@ -72,6 +74,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
         await sessions.actor(context);
         if(req.url==='/api/reservations/quote')return send(200,await business.quote(context.entry.token,b));
         const key=req.headers['idempotency-key'];
+        if(req.url.startsWith('/api/operations/'))return send(200,await operations[req.url.slice('/api/operations/'.length)](context.entry.token,...(req.url.endsWith('/command')?[key,b]:[b])));
         return send(200,await business[req.url==='/api/reservations'?'reserve':'accept'](context.entry.token,key,b));
       }
       if(req.method!=='GET')throw denial(405,'METHOD_NOT_ALLOWED');
@@ -79,7 +82,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
       const asset=/^\/(app-[A-Z0-9]+\.(js|css))$/.exec(req.url);
       if(asset){let data;try{data=await readFile(resolve(root,asset[1]));}catch{throw denial(404,'NOT_FOUND');}return send(200,data,asset[2]==='js'?'text/javascript; charset=utf-8':'text/css; charset=utf-8');}
       throw denial(404,'NOT_FOUND');
-    }catch(e){const known=/^(INVALID_[A-Z_]+|UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|NO_CAPACITY|CAPACITY_EXCEEDED|FARE_CHANGED|FARE_UNRESOLVED|ROUTE_NOT_ELIGIBLE|TRIP_NOT_QUEUED|TRIP_NOT_IN_TRANSIT|PICKUP_PASSED|PICKUP_PASSED_OR_INCOMPATIBLE|QUOTE_CHANGED|OPERATION_BLOCKED|IDEMPOTENCY_CONFLICT|OFFER_EXPIRED|NOT_DRIVER)$/;const message=known.test(e.message)?e.message:null;const status=e.status??(message==='INVALID_CREDENTIALS'||message==='UNAUTHENTICATED'?401:message==='FORBIDDEN'||message==='NOT_DRIVER'?403:message==='NOT_FOUND'?404:message?.startsWith('INVALID_')?400:message?409:503);send(status,{error:e.status?e.code??'REQUEST_REJECTED':message??(req.url.startsWith('/api/local')||req.url==='/api/availability'?'CATALOG_UNAVAILABLE':'SERVICE_UNAVAILABLE')});req.resume();}
+    }catch(e){const known=/^(INVALID_[A-Z_]+|UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|NO_CAPACITY|CAPACITY_EXCEEDED|FARE_CHANGED|FARE_UNRESOLVED|ROUTE_NOT_ELIGIBLE|TRIP_NOT_QUEUED|TRIP_NOT_IN_TRANSIT|PICKUP_PASSED|PICKUP_PASSED_OR_INCOMPATIBLE|QUOTE_CHANGED|OPERATION_BLOCKED|IDEMPOTENCY_CONFLICT|OFFER_EXPIRED|NOT_DRIVER|FORBIDDEN_SCOPE|STALE_ASSIGNMENT|STALE_OPERATION|NOT_FULL|UNACCEPTED_OFFERS|PICKUPS_PENDING|QUEUE_ORDER|INCOMPATIBLE_TRIP|INDIVIDUAL_HISTORY_ONLY|AGGREGATE_HISTORY_ONLY|OBSERVED_CAPACITY_EXCEEDED|UNSUPPORTED_URBAN_MANIFEST|OUTSIDE_URBAN_SCOPE|OUTSIDE_ROAD_SCOPE|ROUTE_CONDITION_BLOCKED|CONDITION_ACCEPTANCE_REQUIRED|MINOR_REVIEW_REQUIRED|COMPANION_REQUIRED)$/;const message=known.test(e.message)?e.message:null;const status=e.status??(message==='INVALID_CREDENTIALS'||message==='UNAUTHENTICATED'?401:message==='FORBIDDEN'||message==='FORBIDDEN_SCOPE'||message==='NOT_DRIVER'?403:message==='NOT_FOUND'?404:message?.startsWith('INVALID_')?400:message?409:503);send(status,{error:e.status?e.code??'REQUEST_REJECTED':message??(req.url.startsWith('/api/local')||req.url==='/api/availability'?'CATALOG_UNAVAILABLE':'SERVICE_UNAVAILABLE')});req.resume();}
     finally{if(entered)inflight--;}
   });
   server.maxConnections=32;server.maxHeadersCount=32;server.on('clientError',(_error,socket)=>{if(socket.writable)socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');});

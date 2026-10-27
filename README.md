@@ -1,10 +1,10 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 2,
+asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 3,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 3.
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 4.
 
 ## Etapa 3: interfaz web local
 
@@ -12,8 +12,10 @@ React + TypeScript, búsqueda por origen/destino conectada a PostgreSQL, plazas 
 tramo y estados independientes por ruta. Inicio/cierre de sesión de prueba, puntos
 intermedios autorizados, solicitudes persistidas con idempotencia y «Mis reservas».
 `HELD` significa **pendiente**; solo el chofer asignado acepta en `/operador`.
-Administración y el panel completo de chofer siguen pendientes. Sin OAuth ni despliegue.
-001–022 intactas; 023 añade proyecciones de lectura, sin reconstruir el inventario.
+Terminal, presencia, abordajes individuales/grupales, despacho y progreso conectados
+a paneles de administrador y chofer con permisos reales. Sin OAuth ni despliegue.
+001–023 intactas; 024 añade proyecciones operativas y tipos de paradas declarados
+offline, reutilizando el inventario y las operaciones existentes.
 
 ```sh
 npm ci --no-fund
@@ -29,8 +31,14 @@ Usar `viajero0` para reservar; abrir otra sesión de navegador con `driver0` en
 subir ese archivo: sus contraseñas se generan en cada arranque y se elimina al cerrar.
 **La base es efímera: reiniciar pierde cuentas, sesiones y reservas.**
 
-[Procedimiento completo, capturas y límites del incremento 2](docs/REPORTES/ETAPA_3_INCREMENTO_2.md).
+[Procedimiento del incremento 2](docs/REPORTES/ETAPA_3_INCREMENTO_2.md).
 [Informe histórico del incremento 1](docs/REPORTES/ETAPA_3_INCREMENTO_1.md).
+
+[Recorrido completo Windows, paneles y evidencia del incremento 3](docs/REPORTES/ETAPA_3_INCREMENTO_3.md):
+`operativo0` declara presencia en Mis reservas; `adminH` verifica/observa en
+Administración; `driver5` inicia salida con cuatro abordados, recoge dos en Palmar,
+registra inicio del viaje principal, llegada final y descensos. Usar contextos de
+navegador separados para cada rol. Seis confirmadas no provocan salida automática.
 Para pruebas de navegador: `npx --no-install playwright install chromium` si hace
 falta, y `npm run test:web`. Escritorio y móvil emulado, solo en loopback.
 
@@ -61,8 +69,8 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**40 unitarias y 192 integraciones PostgreSQL real**. La batería web ampliada
-ejecuta 36 casos de escritorio/móvil (resultados y CI en el informe del incremento 2),
+**43 unitarias y 204 integraciones PostgreSQL real**. La batería web ampliada
+ejecuta 46 casos de escritorio/móvil (resultados y CI en el informe del incremento 3),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar

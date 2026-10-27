@@ -148,3 +148,24 @@ archivos locales que el propietario deberá retirar. Nada debe contener datos re
 proyecciones con SECURITY DEFINER, search_path fijado y permisos explícitos.
 El historial propio excluye pasajeros ajenos aunque el actor tenga rol administrativo.
 No se habilitan nuevos permisos de escritura SQL ni se modifican 001–022.
+
+
+## Etapa 3, incremento 3: operaciones de terminal y viaje
+
+El modo ADMIN/DRIVER/PASSENGER solicitado por la interfaz no concede autoridad.
+`web_trip_snapshot` exige pertenencia/alcance real de administrador, conducción del
+viaje o reserva APP propia. Un pasajero recibe solo integrantes y presencia propios,
+no el manifiesto de otros grupos. Los snapshots son informativos y las mutaciones
+siguen revalidando permisos, estado, capacidad y parada bajo locks del núcleo.
+
+`web_observation` vincula el hecho al viaje/episodio mostrado. Toma los locks de
+idempotencia exterior/interior antes del lock de ruta y delega a terminal_observation,
+sin reconstruir BOARD/ALIGHT, sin DML de inventario ni modificar 001–023. Un ámbito
+revocado o un cliente que inventa rol, asociación, usuario o destino no autoriza nada.
+`web_point_profiles` solo se aprovisiona offline; no hay DML concedido a nexo_app.
+
+Los reportes/confirmaciones de incidencia son declaraciones ficticias auditadas,
+no atestación de seguridad vial ni asistencia de emergencia. Bloquean según el
+contrato existente y no cancelan reservas ni activan comunicaciones. Política de
+retención, operación comercial, correcciones tardías y resolución/rescate completos
+siguen sujetos a las decisiones y contratos previos. Solo datos ficticios locales.
