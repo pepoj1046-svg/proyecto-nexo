@@ -115,7 +115,7 @@ comerciales, legales, de identidad pública y de piloto enumeradas arriba.
 
 ## Actualización del cierre propuesto de Etapa 2
 
-018–021 añaden alcances por ruta dirigida/terminal, puertas en RPC anteriores,
+018–022 añaden alcances por ruta dirigida/terminal, puertas en RPC anteriores,
 RLS restrictiva y revocación serializada. Los casos especiales de menores tienen
 revisión mínima simulada y barrera de BOARD; no validación de edades/documentos
 reales. La disponibilidad anónima es una proyección en loopback sin pasajeros.

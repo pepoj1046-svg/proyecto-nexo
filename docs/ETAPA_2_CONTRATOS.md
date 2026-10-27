@@ -5,7 +5,7 @@ Base: `9188139`, rama `desarrollo/etapa-2`, revisión hacia `desarrollo/etapa-1`
 PR #1 y main se conservan. Sin Etapa 3, producción, gastos ni datos reales.
 
 **Vigencia:** las secciones de incrementos conservan la evolución del contrato.
-Para el cierre propuesto prevalece «Cierre técnico: contratos adicionales 018–021»
+Para el cierre propuesto prevalece «Cierre técnico: contratos adicionales 018–022»
 al final. En particular, 10+5 es antecedente inactivo; rige simulación 0/5/8.
 
 ## Superficies y ejecución
@@ -367,10 +367,10 @@ sin contexto urbano no se convierte en rescate automáticamente. Fuera de ciudad
 riesgo físico o lesiones requieren coordinación humana; la aplicación no reemplaza
 la asistencia de emergencia. Ver límites de manifiesto/corrección en el informe.
 
-## Cierre técnico: contratos adicionales 018–021
+## Cierre técnico: contratos adicionales 018–022
 
 [Informe completo, pruebas, riesgos y matriz de requisitos](REPORTES/ETAPA_2_CIERRE_TECNICO.md).
-Migraciones 001–017 intactas; 018–021 aditivas. Reutilizan bloqueos, inventario vivo,
+Migraciones 001–017 intactas; 018–022 aditivas. Reutilizan bloqueos, inventario vivo,
 episodios, movimientos, identidad y primitivas de auditoría. No despliegue ni Etapa 3.
 Todas las rutas nuevas son POST `/business/closure/<operación>`, JSON estricto y
 loopback. Bearer e Idempotency-Key para mutaciones, excepto disponibilidad anónima
