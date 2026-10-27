@@ -1,0 +1,2473 @@
+{
+  "generatedAt": "2026-10-27T20:42:21.268953+00:00",
+  "scope": "Laboratorio ficticio, lecturas PostgreSQL READ ONLY independientes de HTTP. Sin credenciales.",
+  "postgres": "18.4",
+  "projects": {
+    "desktop": {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "independentContexts": [
+        "operativo0",
+        "adminH",
+        "driver5"
+      ],
+      "checkpoints": [
+        {
+          "step": "01-reservas-confirmadas-sin-salida",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 0,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 0,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [],
+          "terminalEvents": [],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "02-llegada-declarada",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 0,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 0,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            }
+          ],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "03-presencia-verificada",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 0,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 0,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "04-cuatro-abordados-sin-salida",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "05-duplicados-y-pasajero-no-alteran-abordaje",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "06-lecturas-y-admin-no-provocan-salida",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "07-salida-explicita-cuatro-mas-dos",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "URBAN_COLLECTION",
+            "current_stop": 0,
+            "departed_at": "2026-10-27T20:40:27.096Z",
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            }
+          ]
+        },
+        {
+          "step": "08-septima-plaza-rechazada-sin-retencion",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "URBAN_COLLECTION",
+            "current_stop": 0,
+            "departed_at": "2026-10-27T20:40:27.096Z",
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            }
+          ]
+        },
+        {
+          "step": "09-llegada-palmar-faltan-dos",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "URBAN_COLLECTION",
+            "current_stop": 1,
+            "departed_at": "2026-10-27T20:40:27.096Z",
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        },
+        {
+          "step": "10-palmar-seis-abordados",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "URBAN_COLLECTION",
+            "current_stop": 1,
+            "departed_at": "2026-10-27T20:40:27.096Z",
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 6,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 6,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        },
+        {
+          "step": "11-inicio-principal-explicito",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "MAIN_TRIP",
+            "current_stop": 1,
+            "departed_at": "2026-10-27T20:40:27.096Z",
+            "completed_at": null,
+            "main_started_at": "2026-10-27T20:40:28.615Z",
+            "native_onboard": 6,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 6,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "MAIN_TRIP_STARTED"
+            }
+          ]
+        },
+        {
+          "step": "12-paso-del-chaco",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "MAIN_TRIP",
+            "current_stop": 2,
+            "departed_at": "2026-10-27T20:40:27.096Z",
+            "completed_at": null,
+            "main_started_at": "2026-10-27T20:40:28.615Z",
+            "native_onboard": 6,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 6,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "MAIN_TRIP_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        },
+        {
+          "step": "13-llegada-final-no-fabrica-descensos",
+          "trip": {
+            "status": "COMPLETED",
+            "phase": "COMPLETED",
+            "current_stop": 3,
+            "departed_at": "2026-10-27T20:40:27.096Z",
+            "completed_at": "2026-10-27T20:40:30.477Z",
+            "main_started_at": "2026-10-27T20:40:28.615Z",
+            "native_onboard": 6,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 6,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 0,
+              "reserved": 0
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "MAIN_TRIP_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        },
+        {
+          "step": "14-descenso-grupo-1",
+          "trip": {
+            "status": "COMPLETED",
+            "phase": "COMPLETED",
+            "current_stop": 3,
+            "departed_at": "2026-10-27T20:40:27.096Z",
+            "completed_at": "2026-10-27T20:40:30.477Z",
+            "main_started_at": "2026-10-27T20:40:28.615Z",
+            "native_onboard": 2,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 2,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 0,
+              "reserved": 0
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            },
+            {
+              "kind": "ALIGHT",
+              "stop_index": 3,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "MAIN_TRIP_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        },
+        {
+          "step": "14-descenso-grupo-2",
+          "trip": {
+            "status": "COMPLETED",
+            "phase": "COMPLETED",
+            "current_stop": 3,
+            "departed_at": "2026-10-27T20:40:27.096Z",
+            "completed_at": "2026-10-27T20:40:30.477Z",
+            "main_started_at": "2026-10-27T20:40:28.615Z",
+            "native_onboard": 0,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 0,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 0,
+              "reserved": 0
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            },
+            {
+              "kind": "ALIGHT",
+              "stop_index": 3,
+              "actor": "FICTICIO-WEB-driver5"
+            },
+            {
+              "kind": "ALIGHT",
+              "stop_index": 3,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "MAIN_TRIP_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        }
+      ]
+    },
+    "mobile": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "independentContexts": [
+        "operativo0",
+        "adminH",
+        "driver5"
+      ],
+      "checkpoints": [
+        {
+          "step": "01-reservas-confirmadas-sin-salida",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 0,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 0,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [],
+          "terminalEvents": [],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "02-llegada-declarada",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 0,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 0,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            }
+          ],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "03-presencia-verificada",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 0,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 0,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "04-cuatro-abordados-sin-salida",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "05-duplicados-y-pasajero-no-alteran-abordaje",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "06-lecturas-y-admin-no-provocan-salida",
+          "trip": {
+            "status": "QUEUED",
+            "phase": null,
+            "current_stop": 0,
+            "departed_at": null,
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [],
+          "fleetEvents": []
+        },
+        {
+          "step": "07-salida-explicita-cuatro-mas-dos",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "URBAN_COLLECTION",
+            "current_stop": 0,
+            "departed_at": "2026-10-27T20:41:51.111Z",
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            }
+          ]
+        },
+        {
+          "step": "08-septima-plaza-rechazada-sin-retencion",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "URBAN_COLLECTION",
+            "current_stop": 0,
+            "departed_at": "2026-10-27T20:41:51.111Z",
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            }
+          ]
+        },
+        {
+          "step": "09-llegada-palmar-faltan-dos",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "URBAN_COLLECTION",
+            "current_stop": 1,
+            "departed_at": "2026-10-27T20:41:51.111Z",
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 4,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 4,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        },
+        {
+          "step": "10-palmar-seis-abordados",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "URBAN_COLLECTION",
+            "current_stop": 1,
+            "departed_at": "2026-10-27T20:41:51.111Z",
+            "completed_at": null,
+            "main_started_at": null,
+            "native_onboard": 6,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 6,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        },
+        {
+          "step": "11-inicio-principal-explicito",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "MAIN_TRIP",
+            "current_stop": 1,
+            "departed_at": "2026-10-27T20:41:51.111Z",
+            "completed_at": null,
+            "main_started_at": "2026-10-27T20:41:51.822Z",
+            "native_onboard": 6,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 6,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "MAIN_TRIP_STARTED"
+            }
+          ]
+        },
+        {
+          "step": "12-paso-del-chaco",
+          "trip": {
+            "status": "IN_TRANSIT",
+            "phase": "MAIN_TRIP",
+            "current_stop": 2,
+            "departed_at": "2026-10-27T20:41:51.111Z",
+            "completed_at": null,
+            "main_started_at": "2026-10-27T20:41:51.822Z",
+            "native_onboard": 6,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 6,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 4,
+              "reserved": 4
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 6,
+              "reserved": 6
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 6,
+              "reserved": 6
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "CONFIRMED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "MAIN_TRIP_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        },
+        {
+          "step": "13-llegada-final-no-fabrica-descensos",
+          "trip": {
+            "status": "COMPLETED",
+            "phase": "COMPLETED",
+            "current_stop": 3,
+            "departed_at": "2026-10-27T20:41:51.111Z",
+            "completed_at": "2026-10-27T20:41:53.047Z",
+            "main_started_at": "2026-10-27T20:41:51.822Z",
+            "native_onboard": 6,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 6,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 0,
+              "reserved": 0
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "MAIN_TRIP_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        },
+        {
+          "step": "14-descenso-grupo-1",
+          "trip": {
+            "status": "COMPLETED",
+            "phase": "COMPLETED",
+            "current_stop": 3,
+            "departed_at": "2026-10-27T20:41:51.111Z",
+            "completed_at": "2026-10-27T20:41:53.047Z",
+            "main_started_at": "2026-10-27T20:41:51.822Z",
+            "native_onboard": 2,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 2,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 0,
+              "reserved": 0
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            },
+            {
+              "kind": "ALIGHT",
+              "stop_index": 3,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "MAIN_TRIP_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        },
+        {
+          "step": "14-descenso-grupo-2",
+          "trip": {
+            "status": "COMPLETED",
+            "phase": "COMPLETED",
+            "current_stop": 3,
+            "departed_at": "2026-10-27T20:41:51.111Z",
+            "completed_at": "2026-10-27T20:41:53.047Z",
+            "main_started_at": "2026-10-27T20:41:51.822Z",
+            "native_onboard": 0,
+            "capacity": 6,
+            "read_only": "on"
+          },
+          "onboardIndependentlyCalculated": 0,
+          "segments": [
+            {
+              "stop_index": 0,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 1,
+              "confirmed": 0,
+              "reserved": 0
+            },
+            {
+              "stop_index": 2,
+              "confirmed": 0,
+              "reserved": 0
+            }
+          ],
+          "bookings": [
+            {
+              "source": "APP",
+              "seats": 4,
+              "from_stop": 0,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "140.00",
+              "fare_version": 1,
+              "members": 4
+            },
+            {
+              "source": "APP",
+              "seats": 2,
+              "from_stop": 1,
+              "to_stop": 3,
+              "status": "COMPLETED",
+              "price_bob": "50.00",
+              "fare_version": 1,
+              "members": 2
+            }
+          ],
+          "movements": [
+            {
+              "kind": "BOARD",
+              "stop_index": 0,
+              "actor": "FICTICIO-WEB-adminH"
+            },
+            {
+              "kind": "BOARD",
+              "stop_index": 1,
+              "actor": "FICTICIO-WEB-driver5"
+            },
+            {
+              "kind": "ALIGHT",
+              "stop_index": 3,
+              "actor": "FICTICIO-WEB-driver5"
+            },
+            {
+              "kind": "ALIGHT",
+              "stop_index": 3,
+              "actor": "FICTICIO-WEB-driver5"
+            }
+          ],
+          "terminalEvents": [
+            {
+              "kind": "DECLARED",
+              "actor": "FICTICIO-WEB-operativo0"
+            },
+            {
+              "kind": "VERIFIED",
+              "actor": "FICTICIO-WEB-adminH"
+            }
+          ],
+          "departureActors": [
+            "FICTICIO-WEB-driver5"
+          ],
+          "fleetEvents": [
+            {
+              "kind": "URBAN_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "MAIN_TRIP_STARTED"
+            },
+            {
+              "kind": "PROGRESS"
+            },
+            {
+              "kind": "PROGRESS"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

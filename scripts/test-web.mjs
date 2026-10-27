@@ -5,9 +5,10 @@ const run=(args,env=process.env)=>new Promise((resolve,reject)=>{const p=spawn(p
 let failed=await run(['node_modules/typescript/bin/tsc','--noEmit','-p','apps/web/tsconfig.json']);
 if(!failed)failed=await run(['scripts/build-web.mjs']);
 if(!failed) {
- projects:for(const project of ['desktop','mobile']) for(const suite of ['app.spec.mjs','functional.spec.mjs','operations.spec.mjs','checkout-races.spec.mjs']) {
+ projects:for(const project of ['desktop','mobile']) for(const suite of ['app.spec.mjs','functional.spec.mjs','operations.spec.mjs','operation-permissions.spec.mjs','checkout-races.spec.mjs']) {
+  const needsAudit=['operations.spec.mjs','operation-permissions.spec.mjs'].includes(suite);
   const child=spawn(process.execPath,['scripts/test-postgres.mjs','--serve-web'],{stdio:['ignore','pipe','pipe','ipc'],windowsHide:true,
-    env:{...process.env,DATABASE_URL:'postgres://invalid@external.invalid/production',HOST:'0.0.0.0',PORT:'80'}});
+    env:{...process.env,NEXO_WEB_TEST_AUDIT:needsAudit?'1':'0',DATABASE_URL:'postgres://invalid@external.invalid/production',HOST:'0.0.0.0',PORT:'80'}});
   let output='',diagnostic='';child.stdout.on('data',data=>{output=(output+data).slice(-16000);});child.stderr.on('data',data=>{diagnostic=(diagnostic+data).slice(-16000);});
   const done=new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',code=>resolve(code??1));});
   const timeout=setTimeout(()=>child.kill(),180000);let code=1;
@@ -16,6 +17,10 @@ if(!failed) {
    const url=ready.url;
    if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(url))throw new Error('LOCAL_BROWSER_TEST_REQUIRED');
    const env={...process.env,NEXO_WEB_CREDENTIALS_FILE:ready.credentialsFile,NEXO_WEB_TEST_LOCAL:'1',NEXO_WEB_TEST_URL:url};
+   if(needsAudit){
+    if(!ready.auditConfig)throw new Error('LOCAL_DATABASE_AUDIT_REQUIRED');
+    env.NEXO_WEB_AUDIT_CONFIG=JSON.stringify(ready.auditConfig);
+   }else delete env.NEXO_WEB_AUDIT_CONFIG;
    if(process.platform==='linux'){try{await access('/usr/bin/chromium');env.NEXO_BROWSER_EXECUTABLE='/usr/bin/chromium';}catch{}}
    code=await run(['node_modules/@playwright/test/cli.js','test','tests/web/'+suite,'--project='+project],env);
   }catch(e){console.error(e.message);code=1;}
