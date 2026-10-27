@@ -114,7 +114,14 @@ identidad/negocio, SIGINT real y puertos cerrados, y reinicio sin reutilizar ses
 contraseña ni reserva anterior. Ambas órdenes completas terminaron con código 0.
 Logs locales: `.local/e2e-all-final.log` y `.local/e2e-web-final.log`.
 
-**CI de este refuerzo: pendiente de ejecutar tras la publicación del commit.**
+**CI del refuerzo `187856708b370b98718812913fa4170a27bd3aca`: cuatro trabajos
+aprobados, sin reintentos**, en la [ejecución 40581013260 del PR #3](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40581013260).
+Cada combinación Ubuntu/Windows × Node 22/24 ejecutó test:all y test:web, incluidos
+el recorrido ampliado, permisos, cierre y reinicio. Jobs aprobados:
+Ubuntu 24 `122460059721`, Ubuntu 22 `122460060479`, Windows 22 `122460060515` y
+Windows 24 `122460060517`. Resultados finales consultados el 27/10/2026.
+El commit posterior de documentación solo registra esta evidencia; no cambia el
+código ensayado ni las capturas/lecturas SQL publicadas en `1878567`.
 La CI anterior de `8514403` fue verificada de nuevo: [ejecución 40526196148](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40526196148),
 cuatro trabajos aprobados Ubuntu/Windows × Node 22/24. Ese resultado histórico no
 se atribuye a las comprobaciones nuevas.
