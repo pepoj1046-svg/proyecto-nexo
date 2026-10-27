@@ -207,8 +207,26 @@ exit: 0
 - G12 amplía SHA-256 fijo de 001–017 a **001–022**. Siguen aprobando todas las
   actualizaciones pobladas previas y su registro de 22 migraciones, sin nueva DDL.
 
-**CI Ubuntu/Windows × Node22/24 pendiente de publicar/verificar este commit.**
-No se atribuye aprobación a una ejecución no completada.
+Implementación **`a16945cba43f09171cabf8ddd81bbd5bca0b1014`**:
+[PR #3](https://github.com/pepoj1046-svg/proyecto-nexo/pull/3) hacia
+`desarrollo/etapa-2`, abierto y sin fusionar.
+[CI del código completada con success](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40434475279).
+Los cuatro jobs terminaron en success; se inspeccionaron sus logs:
+
+| Plataforma | Node observado | Unitarias | PostgreSQL 18.4 real | Web escritorio / móvil | Cierre |
+|---|---|---|---|---|---|
+| Ubuntu | 22.23.3 | 36/36 | 181/181 | 14/14 +14/14 | SIGINT real, puertos cerrados |
+| Ubuntu | 24.21.0 | 36/36 | 181/181 | 14/14 +14/14 | SIGINT real, puertos cerrados |
+| Windows | 22.23.4 | 36/36 | 181/181 | 14/14 +14/14 | IPC, puertos cerrados |
+| Windows | 24.22.1 | 36/36 | 181/181 | 14/14 +14/14 | IPC, puertos cerrados |
+
+**245 pruebas por combinación**, sin fallos ni pruebas omitidas. También aprobaron
+typecheck/build, la propagación intencional del fallo 9, smoke de los listeners
+anteriores y análisis axe en navegador. La señal de cierre real se probó en Unix;
+en Windows se verificó el cierre mediante IPC, sin atribuirle una prueba física
+de Ctrl+C. Chromium se instaló desde la dependencia fijada de Playwright en CI;
+no se afirman pruebas con Firefox/Safari u operadores reales.
+Este registro documental posterior tiene sus propios checks en el PR.
 
 ## 7. Capturas y problemas corregidos
 
