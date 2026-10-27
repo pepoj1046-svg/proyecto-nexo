@@ -1,10 +1,28 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 2 activa
-en `desarrollo/etapa-2`, desde el cierre aceptado de Etapa 1. PR de esta etapa hacia
-`desarrollo/etapa-1`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 3.
+asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 1,
+en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
+`desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 2.
+
+## Etapa 3: interfaz web local
+
+React + TypeScript, búsqueda por origen/destino conectada a PostgreSQL, plazas por
+tramo y tres estados de ruta. Selección de reserva **demostrativa**, sin escrituras.
+Estructuras de pasajero, administrador y chofer pendientes de conexión; APIs privadas
+bloqueadas en servidor. No OAuth ni despliegue. Migraciones 001–022 intactas.
+
+```sh
+npm ci --no-fund
+npm run dev:web
+# Abrir la dirección http://127.0.0.1:<puerto> que muestra el terminal.
+# Ctrl+C detiene HTTP y PostgreSQL. Datos ficticios nuevos en cada arranque.
+```
+
+[Informe, pantallas, capturas y límites](docs/REPORTES/ETAPA_3_INCREMENTO_1.md).
+Para pruebas de navegador: `npx --no-install playwright install chromium` si hace
+falta, y `npm run test:web`. Escritorio y móvil emulado, solo en loopback.
 
 ## Etapa 2: reservas y negocio local
 
@@ -33,7 +51,7 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**33 unitarias, 177 integraciones PostgreSQL real**,
+**36 unitarias, 181 integraciones PostgreSQL real**, más 28 pruebas web de escritorio/móvil,
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar

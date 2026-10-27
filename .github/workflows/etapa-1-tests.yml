@@ -1,9 +1,9 @@
 name: Laboratorio - dominio y PostgreSQL
 on:
   push:
-    branches: [desarrollo/etapa-1, desarrollo/etapa-2]
+    branches: [desarrollo/etapa-1, desarrollo/etapa-2, desarrollo/etapa-3]
   pull_request:
-    branches: [main, desarrollo/etapa-1]
+    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2]
 permissions:
   contents: read
 jobs:
@@ -26,3 +26,7 @@ jobs:
         run: npm ci --no-fund
       - name: Dominio y PostgreSQL local aislado
         run: npm run test:all
+      - name: Instalar Chromium de pruebas
+        run: npx --no-install playwright install chromium
+      - name: Interfaz web local - escritorio y móvil
+        run: npm run test:web

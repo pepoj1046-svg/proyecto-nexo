@@ -1,4 +1,5 @@
 import { test, before, beforeEach, after } from 'node:test';
+import { startWebGateway } from '../../src/http/web-gateway.mjs';
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { mkdtemp, writeFile, readFile } from 'node:fs/promises';
@@ -545,8 +546,13 @@ test('G11: authorization revocation preserves active trips, cancellation and ter
   await rejects(hold(),/ROUTE_NOT_ELIGIBLE/);
   assert.equal((await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3)).status,'COMPLETED');
 });
-test('G12: applied migrations 001-017 remain byte-identical',async()=>{
+test('G12: applied migrations 001-022 remain byte-identical',async()=>{
   const expected={
+    '022_rescue_manifest_privacy.sql':'de2572bf53ee04116ba1e4da54aa3feed22385e31af024ea69fdfab44b3ed52b',
+    '021_scope_read_boundaries.sql':'7bc4551a6283bf71f029ac0b99d2dc211af11b127ad60a1c1db889ab2b55e26f',
+    '020_scoped_administration.sql':'643e0ba2417be17189d957e9f9562bd901c478dff0fcb0fd2fdfd24b00fcb4c6',
+    '019_journey_recovery.sql':'96a311c568ed2471c354c06a3176f066cecbebedb0cecfb2abf3deb7e58f1164',
+    '018_operating_contracts.sql':'77757bf35956270f6c4ba52a7140383e8cc623ec9a5bf10a6a70370d276f870e',
     '017_urban_replacement.sql':'25854b173b0154a11c013e94de2dae64f9083d4870b4f64e46cd34243fa4a3ee',
     '016_terminal_boarding.sql':'be49599eb2c11ceb5cd0c7f6dda633082eba328053611987c4a067bb2c988f35',
     '001_core.sql':'9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059',
@@ -2586,4 +2592,47 @@ test('Q31: terminal relocation handles more than six distinct groups on disjoint
  const consents=[];for(const g of groups)consents.push((await b.consentGroup(fixture.tokens.p,key(),g.bookingIds[0],fixture.trips[1],0,true)).consentId);
  await closure('terminal-reassign',{incidentId:incident.incidentId,targetTripId:fixture.trips[1],consentIds:consents,safeTransfer:false,confirmed:true});
  assert.equal((await admin.query("SELECT * FROM nexo.bookings WHERE trip_id=$1 AND status='CONFIRMED'",[fixture.trips[1]])).rowCount,12);assert.ok((await occupancy()).every(r=>r.used<=6));
+});
+
+test('V01: browser gateway reuses PostgreSQL public availability and catalogue without exposing a session or private fields',async()=>{
+ await namedLocalities();const g=await individualFixture(4);const web=await startWebGateway({pool,catalogToken:fixture.tokens.other,localTest:true});
+ try{
+  const headers={Origin:web.url};const suggestions=await postJson(web.url,'/api/localities',{query:'San Jose'},headers);assert.equal(suggestions.status,200);assert.ok(suggestions.body.length>=1);
+  const result=await postJson(web.url,'/api/availability',{originLocalityId:fixture.geo.localities[0],destinationLocalityId:fixture.geo.localities[1]},headers);assert.equal(result.status,200);assert.equal(result.body.mode,'LOCAL_LAB');assert.equal(result.body.reservationWritesEnabled,false);
+  const t=result.body.services.find(s=>s.tripId===fixture.trips[0]);assert.equal(t.confirmedSeats,4);assert.equal(t.availableSeats,2);assert.equal(t.segments[0].available,2);assert.equal(t.boardingName,'Parada ficticia 0');
+  const text=JSON.stringify(result.body);for(const privateValue of [fixture.tokens.other,fixture.tokens.p,fixture.p,fixture.adminA,g.bookingIds[0],'passenger_id','password'])assert.ok(!text.includes(privateValue));
+  const page=await fetch(web.url);assert.equal(page.status,200);assert.match(page.headers.get('content-security-policy'),/connect-src 'self'/);assert.equal(page.headers.get('access-control-allow-origin'),null);
+ }finally{await web.close();}
+});
+test('V02: browser gateway denies cross-origin, forged hosts, credentials, public writes and administrative escalation',async()=>{
+ const web=await startWebGateway({pool,catalogToken:fixture.tokens.p,localTest:true});try{
+  for(const path of ['/api/admin/overview','/api/driver/overview','/api/passenger/overview'])assert.equal((await fetch(web.url+path)).status,401);
+  assert.equal((await postJson(web.url,'/api/localities',{query:'Ya'},{Origin:'https://external.invalid'})).status,403);
+  assert.equal((await postJson(web.url,'/api/localities',{query:'Ya'})).status,403);
+  assert.equal((await postJson(web.url,'/api/localities',{query:'Ya'},{Origin:web.url,Host:'external.invalid'})).status,403);
+  assert.equal((await postJson(web.url,'/api/localities',{query:'Ya',role:'ASSOCIATION_ADMIN'},{Origin:web.url})).status,400);
+  assert.equal((await postJson(web.url,'/api/localities',{query:'Ya'},{Origin:web.url,Authorization:'Bearer '+fixture.tokens.adminA})).status,400);
+  assert.equal((await postJson(web.url,'/api/reserve',{routeId:fixture.ra},{Origin:web.url})).status,404);
+  assert.equal((await fetch(web.url+'/.env')).status,404);assert.equal((await fetch(web.url+'/api/localities')).status,405);
+  assert.equal((await postJson(web.url,'/api/localities',{}, {Origin:web.url},{raw:'{bad'})).status,400);
+  assert.equal((await postJson(web.url,'/api/localities',{}, {Origin:web.url},{raw:'x'.repeat(3000)})).status,413);
+ }finally{await web.close();}
+});
+test('V03: browser results retain visible suspended routes and reject stale origin pickup through existing backend rules',async()=>{
+ await namedLocalities();const web=await startWebGateway({pool,catalogToken:fixture.tokens.other,localTest:true});try{
+  const g=await fixed(6);await acceptAll(g);await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);await api.progress(fixture.tokens.d0,key(),fixture.trips[0],1);
+  await closure('route-condition',condition('SUSPENDIDA'));
+  const r=await postJson(web.url,'/api/availability',{originLocalityId:fixture.geo.localities[0],destinationLocalityId:fixture.geo.localities[1]},{Origin:web.url});assert.equal(r.status,200);
+  assert.ok(r.body.services.filter(s=>s.associationId===fixture.A).every(s=>s.state==='SUSPENDIDA'&&s.availableSeats===0));assert.ok(r.body.services.every(s=>s.tripId!==fixture.trips[0]));
+  assert.equal((await admin.query('SELECT count(*)::int AS n FROM nexo.bookings')).rows[0].n,1);
+ }finally{await web.close();}
+});
+test('V04: browser facade rejects privileged pools, bounds requests and sanitizes catalogue failures',async()=>{
+ const ownerPool=new pg.Pool({connectionString:url.href,max:1});try{await rejects(startWebGateway({pool:ownerPool,catalogToken:fixture.tokens.p,localTest:true}),/UNSAFE_RUNTIME_ROLE/);}finally{await ownerPool.end();}
+ await rejects(startWebGateway({pool,catalogToken:fixture.tokens.p}),/LOCAL_TEST_ONLY/);
+ const web=await startWebGateway({localTest:true,service:{localities:()=>{throw new Error('SQL_FAKE_SECRET');},availability:()=>({})}});
+ try{
+  const r=await postJson(web.url,'/api/localities',{query:'Ya'},{Origin:web.url});assert.equal(r.status,503);assert.deepEqual(r.body,{error:'CATALOG_UNAVAILABLE'});
+  let last;for(let i=0;i<121;i++)last=await fetch(web.url+'/api/session');assert.equal(last.status,429);assert.equal(last.headers.get('retry-after'),'60');
+ }finally{await web.close();}
 });

@@ -94,3 +94,13 @@ inventario ni despacho. [Contratos y fronteras](ETAPA_2_CONTRATOS.md).
 terminal/episodios, sustitución urbana y rescate interurbano, ventas en ruta,
 condiciones declaradas y administración restringida. No servicios públicos ni apps.
 [Contratos actuales](ETAPA_2_CONTRATOS.md) y [evidencia/fronteras de cierre](REPORTES/ETAPA_2_CIERRE_TECNICO.md).
+
+## Etapa 3, incremento 1 autorizado: interfaz web local
+
+React/TypeScript compilado estáticamente con esbuild. El gateway de mismo origen
+sirve assets y una lista de consultas públicas sobre los servicios PostgreSQL
+existentes, con nexo_app y sesión técnica de catálogo solo en servidor. La conexión
+propietaria se cierra antes de escuchar. Sin base paralela, SQL desde navegador ni
+escrituras web. Paneles privados pendientes, APIs 401. El runner existente inicia
+y detiene el clúster efímero de 001–022 y el gateway. No Next.js/SSR ni proveedores.
+[Informe, seguridad y ejecución](REPORTES/ETAPA_3_INCREMENTO_1.md).
