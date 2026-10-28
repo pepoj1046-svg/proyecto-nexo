@@ -100,9 +100,23 @@ verificados y reinicio sin reutilizar sesión/contraseña/reserva aprobaron tamb
 El mensaje `--nexo-invalid-test-option` del probe es intencional: comprueba que el
 código de error 9 del hijo se conserva y PostgreSQL se detiene. Logs locales de
 esta entrega: `.local/i4-entrega-all.log` y `.local/i4-entrega-web.log`.
-CI: **pendiente de publicación y comprobación**; matriz Ubuntu/Windows × Node 22/24.
+CI del commit funcional [`62bb09d`](https://github.com/pepoj1046-svg/proyecto-nexo/commit/62bb09db8edf3244d326e5cd188b898ca20eacc5):
+[ejecución 40611160076](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40611160076),
+**completed/success, 4/4 trabajos aprobados**. Se inspeccionaron los logs de los
+cuatro jobs, incluyendo recuentos, cierre de listeners/PostgreSQL y reinicio.
+
+| Entorno | Node realmente ejecutado | Unitarias | PostgreSQL | Chromium | Resultado |
+| --- | --- | --- | --- | --- | --- |
+| [Ubuntu, Node 22](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40611160076/job/122562741298) | 22.23.4 | 47 | 212 | 56 | Aprobado |
+| [Ubuntu, Node 24](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40611160076/job/122562741092) | 24.21.0 | 47 | 212 | 56 | Aprobado |
+| [Windows, Node 22](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40611160076/job/122562741225) | 22.23.4 | 47 | 212 | 56 | Aprobado |
+| [Windows, Node 24](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/40611160076/job/122562741378) | 24.22.1 | 47 | 212 | 56 | Aprobado |
+
+PostgreSQL real **18.4** en los cuatro jobs. No se suman las repeticiones locales o
+las cuatro plataformas como nuevos casos: la batería contiene **315 casos**.
 El presupuesto de cada job pasa de 10 a 15 minutos para los laboratorios adicionales;
-no se incorporan proveedores ni servicios de pago.
+no se incorporan proveedores ni servicios de pago. El registro posterior de estos
+resultados es exclusivamente documental.
 
 Se añaden ocho integraciones PostgreSQL (R01–R08), dos regresiones del cierre de
 pools, validadores unitarios y cinco recorridos E2E, cada uno en escritorio/móvil:
@@ -237,6 +251,7 @@ quedar retenidos en `.local/` y no constituyen borrado seguro. Para recuperar es
 se eliminaron únicamente 150 clústeres antiguos ficticios, detenidos y verificados
 con `pg_ctl status`, preservando logs y evidencias. No se tocó ninguna base externa.
 
-Evaluación local: alcance funcional del incremento completado y comprobado, sin
-nuevos bloqueos técnicos locales; pendiente únicamente comprobar CI de esta entrega.
+Evaluación: **incremento 4 completado y verificado en su alcance de laboratorio**,
+con batería local y CI aprobadas. Los casos operativos no definidos o incompatibles
+permanecen a revisión humana según los contratos documentados, sin reglas nuevas.
 No se declara cerrada toda la Etapa 3 ni se autoriza producción.
