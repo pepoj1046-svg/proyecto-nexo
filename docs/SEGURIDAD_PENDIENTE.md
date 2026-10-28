@@ -169,3 +169,22 @@ no atestación de seguridad vial ni asistencia de emergencia. Bloquean según el
 contrato existente y no cancelan reservas ni activan comunicaciones. Política de
 retención, operación comercial, correcciones tardías y resolución/rescate completos
 siguen sujetos a las decisiones y contratos previos. Solo datos ficticios locales.
+
+## Etapa 3, incremento 4: recuperación de laboratorio
+
+La web no expone RPCs arbitrarios, SQL, aprovisionamiento ni manifiestos de rescate.
+Los comandos permitidos reutilizan los contratos de consentimiento, traslado,
+sustitución y custodia segura existentes, con sesión, CSRF, confirmación y clave
+idempotente. La autoridad y los bloqueos se revalidan en PostgreSQL, incluidos los
+alcances de ambas terminales para el rescate interurbano.
+
+025 es solo lectura: pasajero APP propio y chofer activo de su asociación. Al perder
+la conducción, el chofer ve únicamente su incidencia histórica y el vehículo que se
+autorizó en ella; no recibe el estado/manifiesto de incidencias posteriores ajenas,
+conteos actuales ni autoridad de conducción. Las reservas afectadas se consultan
+por episodio desde el ámbito administrativo autorizado, conservando los precios.
+
+Siguen sin activarse cancelaciones por ausencia, GPS, dinero, avisos reales,
+despliegues o políticas comerciales/legales. Los controles de origen/loopback,
+separación de pools y límites de transporte permanecen. La configuración SQL del
+testigo E2E circula únicamente por IPC de pruebas, nunca en HTTP o evidencias públicas.

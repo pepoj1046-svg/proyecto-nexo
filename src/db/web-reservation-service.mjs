@@ -17,7 +17,11 @@ export function createWebReservationService(pool){
  const me=token=>tx(token,async(c,actor)=>({accountRef:createHash('sha256').update(actor).digest('hex').slice(0,32),operator:(await c.query("SELECT 1 FROM nexo.memberships WHERE user_id=$1 AND role='DRIVER' AND active LIMIT 1",[actor])).rowCount>0}));
  const own=(token,booking)=>tx(token,async(c,actor)=>{if(!(await c.query("SELECT 1 FROM nexo.bookings WHERE id=$1 AND passenger_id=$2 AND source='APP'",[id(booking),actor])).rowCount)throw new Error('NOT_FOUND');return true;});
  return Object.freeze({me,logout:token=>core.logout(token),
-  list:(token,request={})=>{object(request,['limit','offset']);const{limit=50,offset=0}=request;if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0||offset>10000)throw new Error('INVALID_PAGE');return tx(token,async c=>(await c.query('SELECT nexo.passenger_reservations($1,$2)AS result',[limit,offset])).rows[0].result);},
+  list:(token,request={})=>{object(request,['limit','offset']);const{limit=50,offset=0}=request;if(!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0||offset>10000)throw new Error('INVALID_PAGE');return tx(token,async(c,actor)=>{
+   const result=(await c.query('SELECT nexo.passenger_reservations($1,$2)AS result',[limit,offset])).rows[0].result;
+   const rows=(await c.query("SELECT b.id,b.driver_accepted,(nexo.group_status(b.id)->>'confirmationAuthority')AS authority FROM nexo.bookings b WHERE b.id=ANY($1::uuid[])AND b.passenger_id=$2 AND b.source='APP'",[result.bookings.map(b=>b.bookingId),actor])).rows;
+   const current=new Map(rows.map(r=>[r.id,r]));for(const b of result.bookings){const row=current.get(b.bookingId);b.confirmationAuthority=row?.authority??null;b.driverAccepted=row?.driver_accepted??false;}return result;
+  });},
   quote:(token,b)=>{const{from,to}=journeyRequest(b);return business.quote(token,{routeId:b.routeId,from,to,seats:b.seats});},
   reserve:async(token,key,b)=>{
    actionKey(key);const{from,to}=journeyRequest(b,true);let receipt;

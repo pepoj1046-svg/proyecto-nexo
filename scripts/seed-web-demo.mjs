@@ -7,7 +7,7 @@ import { createBusinessService } from '../src/db/business-service.mjs';
 // These names are examples; no passenger/association/permit/position is real.
 export async function seedWebDemo(db,pool) {
   const users={};
-  for(const label of ['catalog','passenger','admin','reviewer','adminH','adminU','operativo0','operativo1',...Array.from({length:6},(_,i)=>'driver'+i)]) {
+  for(const label of ['catalog','passenger','admin','reviewer','adminH','adminU','adminR','terminal0','operativo0','operativo1',...Array.from({length:8},(_,i)=>'driver'+i)]) {
     const id=randomUUID(),token=randomBytes(32).toString('hex');users[label]={id,token};
     await db.query('INSERT INTO nexo.users VALUES($1,$2)',[id,'FICTICIO-WEB-'+label]);
     await db.query("INSERT INTO nexo.sessions VALUES($1,$2,clock_timestamp()+interval '1 hour',NULL)",[createHash('sha256').update(token).digest('hex'),id]);
@@ -46,7 +46,7 @@ export async function seedWebDemo(db,pool) {
     const g=await core.reserve(actor.token,randomUUID(),{routeId:run.route,from,to,seats,parts:[{tripId:trip.id,seats}]});
     for(const id of g.bookingIds)await core.respond(trip.driver.token,randomUUID(),id,true);return g;
   };
-  const a=runs[0];await reserve(a,a.trips[0],4);const filler=await reserve(a,a.trips[0],2);
+  const a=runs[0];await reserve(a,a.trips[0],4,0,3,users.terminal0);const filler=await reserve(a,a.trips[0],2);
   await reserve(a,a.trips[1],2,0,1);await reserve(a,a.trips[1],4,1,3);
   await core.cancel(users.passenger.token,randomUUID(),filler.bookingIds[0]);
   const moving=await reserve(a,a.trips[2],6,0,1);await core.depart(a.trips[2].driver.token,randomUUID(),a.trips[2].id);
@@ -75,10 +75,43 @@ export async function seedWebDemo(db,pool) {
   await db.query('INSERT INTO nexo.trips(id,association_id,route_id,vehicle_id,driver_id,position_no)VALUES($1,$2,$3,$4,$5,4)',[operationalTrip.id,a.association,a.route,vehicle,users.driver5.id]);
   // Temporarily fill earlier compatible units through native RPCs, then restore them.
   const blockers=[await reserve(a,a.trips[0],2),await reserve(a,a.trips[1],2,1,3)];
-  await reserve(a,operationalTrip,4,0,3,users.operativo0);await reserve(a,operationalTrip,2,1,3,users.operativo1);
+  const terminalGroup=await reserve(a,operationalTrip,4,0,3,users.operativo0),urbanGroup=await reserve(a,operationalTrip,2,1,3,users.operativo1);
   for(const g of blockers)await core.cancel(users.passenger.token,randomUUID(),g.bookingIds[0]);
+  // Available replacement units at the two authorized endpoints. Existing queue
+  // entries, reservations and public Yacuiba→Tarija empty result remain unchanged.
+  const reverse=randomUUID();
+  await db.query("INSERT INTO nexo.routes(id,association_id,name,direction,version,stop_count,origin_code,destination_code,catalog_id,origin_locality_id,destination_locality_id)VALUES($1,$2,'Villa Montes → Yacuiba','IN',1,4,'LAB-V','LAB-Y',$3,$4,$5)",[reverse,a.association,catalog,localities.villa,localities.yacuiba]);
+  for(const[index,[name,locality]]of [['Terminal Villa Montes (ficticia)',localities.villa],['Parada Paso del Chaco (ficticia)',localities.paso],['Parada Palmar (ficticia)',localities.palmar],['Terminal de Yacuiba (ficticia)',localities.yacuiba]].entries()){
+   await db.query('INSERT INTO nexo.stops(association_id,route_id,stop_index,name,catalog_id,locality_id)VALUES($1,$2,$3,$4,$5,$6)',[a.association,reverse,index,name,catalog,locality]);
+   await db.query('INSERT INTO nexo.web_point_profiles VALUES($1,$2,$3,$4,$5)',[a.association,reverse,index,['TERMINAL','ROAD','URBAN','TERMINAL'][index],index===2]);
+  }
+  await db.query("INSERT INTO nexo.route_authorizations(association_id,route_id,issuer,reference,status,valid_from,valid_until,requested_by,reviewed_by,review_reason)VALUES($1,$2,'Emisor ficticio','RETORNO SOLO LABORATORIO','VERIFIED',clock_timestamp()-interval '1 hour',clock_timestamp()+interval '1 day',$3,$4,'Permiso ficticio de retorno')",[a.association,reverse,users.admin.id,users.reviewer.id]);
+  for(const[index,[route,label,position]]of [[a.route,'FICTICIO-RESCATE-ORIGEN',5],[reverse,'FICTICIO-RESCATE-DESTINO',1]].entries()){
+   const driver=users['driver'+(6+index)],v=randomUUID();await db.query("INSERT INTO nexo.memberships VALUES($1,$2,'DRIVER',true)",[a.association,driver.id]);
+   await db.query('INSERT INTO nexo.vehicles(id,association_id,label)VALUES($1,$2,$3)',[v,a.association,label]);
+   await db.query('INSERT INTO nexo.trips(id,association_id,route_id,vehicle_id,driver_id,position_no)VALUES($1,$2,$3,$4,$5,$6)',[randomUUID(),a.association,route,v,driver.id,position]);
+  }
+  await db.query("INSERT INTO nexo.memberships VALUES($1,$2,'ASSOCIATION_ADMIN',true)",[a.association,users.adminR.id]);
+  await db.query('SELECT nexo.configure_admin_scope($1,$2,$3,true)',[users.adminR.id,a.association,[a.route,reverse]]);
+  const scenario=process.env.NEXO_WEB_RECOVERY_SCENARIO??'DEFAULT';
+  if(!['DEFAULT','URBAN','ROAD','ROAD_NO_FREE'].includes(scenario))throw new Error('INVALID_LOCAL_RECOVERY_FIXTURE');
+  if(scenario!=='DEFAULT'){
+   await business.terminalObservation(users.admin.token,randomUUID(),terminalGroup.bookingIds[0],null,'BOARD',4,3,true);
+   await business.beginUrban(users.driver5.token,randomUUID(),operationalTrip.id,1,true);
+   if(scenario==='ROAD'||scenario==='ROAD_NO_FREE'){
+    await core.progress(users.driver5.token,randomUUID(),operationalTrip.id,1);
+    await business.terminalObservation(users.driver5.token,randomUUID(),urbanGroup.bookingIds[0],null,'BOARD',2,3,true);
+    const op=await business.operationalStatus(users.driver5.token,operationalTrip.id);
+    await business.fleetCommand(users.driver5.token,randomUUID(),operationalTrip.id,op.version,'MAIN_START',null,null,true);
+    await core.progress(users.driver5.token,randomUUID(),operationalTrip.id,2);
+    if(scenario==='ROAD_NO_FREE')for(const label of ['driver6','driver7']){
+     const trip=(await db.query('SELECT id FROM nexo.trips WHERE driver_id=$1',[users[label].id])).rows[0];
+     await business.terminalImpediment(users[label].token,randomUUID(),trip.id,'REPORT','MECHANICAL_FAILURE',true);
+    }
+   }
+  }
   const accounts={};
-  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),'driver0','driver1','driver2','driver3','driver4','driver5','adminH','adminU','operativo0','operativo1']){
+  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1']){
     const password=randomBytes(24).toString('base64url'),login='lab-'+label.toLowerCase();
     const user=users[label]?.id??randomUUID();if(!users[label])await db.query('INSERT INTO nexo.users VALUES($1,$2)',[user,'FICTICIO-WEB-'+label]);
     await db.query('INSERT INTO nexo.identity_accounts(user_id,login_key,password_hash)VALUES($1,$2,$3)',[user,login,await hashPassword(password)]);

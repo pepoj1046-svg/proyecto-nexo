@@ -119,3 +119,18 @@ viaje/episodio. Esta envoltura reclama idempotencia antes de bloquear ruta y del
 el hecho al RPC existente; no mantiene otro inventario. Presencia, verificación,
 abordaje, salida, fin de recogidas y llegada siguen separados y auditados.
 [Operaciones web, límites y procedimiento](REPORTES/ETAPA_3_INCREMENTO_3.md).
+
+## Etapa 3, incremento 4: recuperación operativa en la web
+
+`web-recovery-service` es una fachada con comandos cerrados sobre consent_group_transfer,
+approve_terminal_transfer, reassign_terminal_incident, fleet_command y road_command.
+Las lecturas usan RLS y las funciones existentes de candidatos/estado; la transacción
+de escritura sigue siendo la del núcleo, con sus locks, versiones e idempotencia.
+No hay inventario ni motor de sustitución nuevo en React o en Node.
+
+025 añade únicamente proyecciones de lectura por reserva APP propia y por chofer.
+Un chofer sustituido consulta su incidencia histórica, sin manifiesto ni datos de
+incidencias posteriores ajenas de la misma carrera. El administrador conserva sus
+alcances por ruta dirigida/terminal; una asignación de rescate no puede solicitarla
+el chofer. UI, gateway, identidad y pools conservan las fronteras anteriores.
+[Informe, pruebas y procedimiento Windows](REPORTES/ETAPA_3_INCREMENTO_4.md).

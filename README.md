@@ -1,10 +1,10 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 3,
+asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 4,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 4.
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 5.
 
 ## Etapa 3: interfaz web local
 
@@ -14,8 +14,9 @@ intermedios autorizados, solicitudes persistidas con idempotencia y «Mis reserv
 `HELD` significa **pendiente**; solo el chofer asignado acepta en `/operador`.
 Terminal, presencia, abordajes individuales/grupales, despacho y progreso conectados
 a paneles de administrador y chofer con permisos reales. Sin OAuth ni despliegue.
-001–023 intactas; 024 añade proyecciones operativas y tipos de paradas declarados
-offline, reutilizando el inventario y las operaciones existentes.
+001–024 intactas en este incremento; 025 solo añade lecturas mínimas de recuperación
+por pasajero/chofer. Incidencias, consentimiento, traslados y rescates web delegan
+en los contratos PostgreSQL ya existentes, sin reescribir inventario o despacho.
 
 ```sh
 npm ci --no-fund
@@ -41,6 +42,13 @@ registra inicio del viaje principal, llegada final y descensos. Usar contextos d
 navegador separados para cada rol. Seis confirmadas no provocan salida automática.
 Para pruebas de navegador: `npx --no-install playwright install chromium` si hace
 falta, y `npm run test:web`. Escritorio y móvil emulado, solo en loopback.
+
+[Incremento 4: incidencias, sustituciones y rescates](docs/REPORTES/ETAPA_3_INCREMENTO_4.md).
+El responsable consiente todo su grupo; administración revalida el traslado o asigna
+una unidad libre desde la terminal autorizada. El chofer sustituto registra el
+traslado seguro antes de continuar. Sin vehículo disponible queda revisión humana,
+sin cancelaciones, cobros ni notificaciones automáticas. Cuentas y procedimientos
+ficticios para Windows y resultados de la batería ampliada en el informe.
 
 ## Etapa 2: reservas y negocio local
 
@@ -69,8 +77,8 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**43 unitarias y 204 integraciones PostgreSQL real**. La batería web ampliada
-ejecuta 46 casos de escritorio/móvil (resultados y CI en el informe del incremento 3),
+**47 unitarias y 212 integraciones PostgreSQL real**. La batería web ampliada
+ejecuta 56 casos de escritorio/móvil (resultados y CI en el informe del incremento 4),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar

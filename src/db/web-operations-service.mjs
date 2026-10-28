@@ -27,7 +27,7 @@ export function createWebOperationsService(pool){
  return Object.freeze({
   overview:(token,b)=>{object(b,['view']);view(b);if(b.view==='PASSENGER')throw new Error('INVALID_VIEW');return tx(token,async(c,actor)=>{
    const role=b.view==='ADMIN'?'ASSOCIATION_ADMIN':'DRIVER';if(!(await c.query('SELECT 1 FROM nexo.memberships WHERE user_id=$1 AND role=$2 AND active LIMIT 1',[actor,role])).rowCount)throw new Error('FORBIDDEN');
-   return{trips:(await c.query(`SELECT t.id AS "tripId",r.name AS route,a.name AS association,v.label AS "vehicleLabel",t.status,t.position_no AS position FROM nexo.trips t JOIN nexo.routes r ON r.id=t.route_id JOIN nexo.associations a ON a.id=t.association_id JOIN nexo.vehicles v ON v.id=t.vehicle_id WHERE ($1='ADMIN'AND nexo.manage_route(t.route_id)OR $1='DRIVER'AND t.driver_id=$2 AND nexo.drives(t.id))ORDER BY a.name,r.id,t.position_no,t.id LIMIT 50`,[b.view,actor])).rows};});},
+   return{trips:(await c.query(`SELECT t.id AS "tripId",r.name AS route,a.name AS association,v.label AS "vehicleLabel",t.status,t.position_no AS position FROM nexo.trips t JOIN nexo.routes r ON r.id=t.route_id JOIN nexo.associations a ON a.id=t.association_id JOIN nexo.vehicles v ON v.id=t.vehicle_id WHERE t.status<>'WITHDRAWN'AND ($1='ADMIN'AND nexo.manage_route(t.route_id)OR $1='DRIVER'AND t.driver_id=$2 AND nexo.drives(t.id))ORDER BY a.name,r.id,t.position_no,t.id LIMIT 50`,[b.view,actor])).rows};});},
   snapshot:(token,b)=>{object(b,['view','tripId']);view(b);id(b.tripId);return tx(token,async c=>(await c.query('SELECT nexo.web_trip_snapshot($1,$2)AS result',[b.tripId,b.view])).rows[0].result);},
   command:async(token,key,request)=>{
    const b=validateOperation(request);actionKey(key);
