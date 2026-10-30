@@ -81,8 +81,8 @@ CSRF existente. GET de reservas conserva el acceso autenticado anterior.
 | SQL | `database/migrations/027_web_administration.sql` |
 | Adaptadores | `src/db/web-management-service.mjs`, `web-operations-service.mjs`, `web-reservation-service.mjs` |
 | Transporte | `src/http/web-gateway.mjs` |
-| Interfaz | `apps/web/src/Management.tsx`, `Functional.tsx`, `Operations.tsx`, `operation-model.ts`, `private-api.ts`, `styles.css` |
-| Pruebas | `tests/web-management.test.mjs`, `tests/integration/postgres.test.mjs`, `tests/web/administration.spec.mjs` |
+| Interfaz | `apps/web/src/Management.tsx`, `Functional.tsx`, `Operations.tsx`, `Login.tsx`, `operation-model.ts`, `private-api.ts`, `styles.css` |
+| Pruebas | `tests/web-management.test.mjs`, `tests/web-auth-order.test.mjs`, `tests/integration/postgres.test.mjs`, `tests/web/administration.spec.mjs`, `functional.spec.mjs` y ayuda de diagnóstico |
 | Laboratorio | `scripts/seed-web-demo.mjs`, `scripts/test-web.mjs` |
 | Documentación | `AGENTS.md`, `README.md`, arquitectura, seguridad y este informe/evidencias |
 
@@ -95,19 +95,22 @@ reserva anterior. Continúan los upgrades históricos y los checksums anteriores
 
 ## Pruebas y resultados
 
+Primera versión funcional: `489498892e2344cc8df071ca4cda97c64046f0b2`.
+La corrección de orden de sesiones se verifica antes de publicar su commit final.
+
 | Verificación | Resultado local |
 | --- | --- |
 | Validadores nuevos | 2/2 aprobados |
 | PostgreSQL dirigido, A601–A609 + G12/R08/Z07 | 12/12 aprobados |
 | Regresión web dirigida | 16/16 aprobados, 8 por dispositivo |
 | Escenario administrativo ampliado final | 4/4 aprobados, 2 por dispositivo; cierres/reinicio aprobados |
-| `npm run test:all` | **51/51 unitarias + 229/229 integraciones PostgreSQL**, salida 0; sin casos omitidos |
-| `npm run test:web` completo | **64/64 Chromium**, 32 escritorio + 32 móvil, salida 0; 26 laboratorios cerrados, SIGINT/puertos y reinicio aprobados |
+| `npm run test:all` | **53/53 unitarias + 229/229 integraciones PostgreSQL**, salida 0; sin casos omitidos |
+| `npm run test:web` completo | **66/66 Chromium**, 33 escritorio + 33 móvil, salida 0; 26 laboratorios cerrados, SIGINT/puertos y reinicio aprobados |
 | Compilación TypeScript/esbuild | Aprobada en los comandos anteriores |
 | Runner/listeners | Salida intencional 9 propagada; HTTP/negocio y PostgreSQL detenidos; sin conexión externa |
 
-Se conservan los 329 casos anteriores. Nuevos: dos validadores, nueve integraciones
-PostgreSQL y cuatro casos Chromium en total. No se cuentan aserciones, smokes o
+Se conservan los 329 casos anteriores. Nuevos: dos validadores, dos regresiones de orden de sesiones, nueve integraciones
+PostgreSQL y seis casos Chromium en total. La batería definida suma 348 casos. No se cuentan aserciones, smokes o
 repeticiones como casos nuevos. Linux local, Node 24.19.0, PostgreSQL real 18.4,
 Playwright 1.64.1 y Chromium 154.0.8037.57; escritorio 1440×1000 y móvil emulado
 390×844. No se atribuye una prueba manual en Windows o una validación de campo.
@@ -126,13 +129,42 @@ abordaje concurrente, grupo dividido, viaje iniciado y reserva contra cancelaci�
 Axe WCAG 2 A/AA y 2.1 AA no detectó violaciones en la pantalla administrativa examinada;
 esto no certifica accesibilidad completa del producto.
 
-**CI y CodeQL: pendientes de publicación/comprobación.** Se completará con IDs y
-resultados reales; no se presenta como aprobada una ejecución no realizada.
+[CodeQL de la primera versión funcional](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41130094116):
+analizador `124318501638` aprobado. El check separado de resultados **CodeQL**
+`124318844326` aprobó con «No new alerts in code changed by this pull request»,
+cero anotaciones. No se equipara el job del analizador a ausencia de hallazgos,
+ni se afirma que no exista ninguna vulnerabilidad en todo el sistema.
+
+**CI de pruebas: pendiente de comprobación final.**
+[Ejecutar/consultar matriz del PR](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41130103475).
+No se presenta como aprobada una ejecución pendiente. La primera matriz del PR tuvo 3/4 aprobados:
+Windows/24 falló al esperar el cierre del formulario de login en el segundo caso
+administrativo, tras aprobar dominio/PostgreSQL. La ejecución push del mismo código
+aprobó 4/4. No se solicitó re-run de esos jobs.
+
+Se añadieron dos regresiones de orden de respuestas que fallaron **2/2 antes** y
+aprobaron **2/2 después**: una respuesta anónima pendiente podía reemplazar la cookie
+de un login posterior; una lectura concurrente podía observar el contexto anterior
+durante logout. La fachada ahora comparte únicamente lecturas de sesión en vuelo y
+ordena login/logout tras las respuestas previas; las lecturas posteriores esperan
+la mutación. No conserva una caché duradera de credenciales, no reintenta solicitudes
+ni altera sus timeouts. El formulario indica preparación y espera el contexto inicial.
+
+El E2E retarda una respuesta real de sesión, comprueba que no se puedan enviar las
+credenciales antes de completar el arranque y verifica login/logout. Los **14 E2E
+dirigidos afectados** aprobaron después. La ayuda de pruebas conserva sus límites y
+añade solo diagnóstico seguro de status/ruta/código de error, sin cuerpos de login,
+CSRF, cookies o contraseñas. El job original no registró la respuesta HTTP concreta;
+no se atribuye su causa exclusivamente a la carrera reproducida sin esa evidencia.
+La batería completa corregida aprobó **53 + 229 + 66 = 348** casos localmente,
+con salidas 0, cierres y reinicio. La nueva CI deberá aprobar sobre ese código
+antes de entregar. No se ocultaron ni se contaron como aprobados los fallos previos.
 La CI mantiene Ubuntu/Windows y Node 22/24. No se cambiaron workflows, reintentos o
 timeouts de pruebas existentes. El ejecutor permite seleccionar suites/proyecto para
 trabajo local dirigido; sin argumentos ejecuta todas las suites y ambos dispositivos.
 
-Logs privados: `.local/i6-final-all.log`, `.local/i6-final-web.log`,
+Logs privados finales: `.local/i6-release-all.log`, `.local/i6-release-web.log`.
+Se conservan las pasadas anteriores `.local/i6-final-all.log`, `.local/i6-final-web.log`,
 `.local/i6-pg-directed-4.log`, `.local/i6-web-directed-2.log` y
 `.local/i6-web-directed-final.log`. Configuración SQL, accesos y trazas permanecen
 fuera de Git. Las capturas/evidencia públicas seleccionadas solo contienen datos ficticios.
@@ -163,6 +195,9 @@ de ambos comandos completos. No fue necesario repetir las baterías.
 4. Se corrigió la selección de fixture del nuevo test antes de la batería final:
    usa DEFAULT + historia adicional, sin activar por accidente el escenario ROAD.
    Se verificó de nuevo el escenario afectado, sin reducir aserciones.
+5. Carrera de arranque/lecturas frente a login y logout: reproducida con respuestas
+   controladas y corregida con orden de operaciones en la misma página. No sustituye
+   la autorización SQL ni sincroniza sesiones entre pestañas.
 
 ## Reproducción en Windows
 

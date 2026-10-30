@@ -33,3 +33,14 @@ test('puntos intermedios muestran nombres, orden y tarifa real sin índices al p
  await choose(page);await page.getByLabel('Subida',{exact:true}).selectOption({label:'Parada Palmar (ficticia)'});await page.getByLabel('Bajada',{exact:true}).selectOption({label:'Parada Paso del Chaco (ficticia)'});await expect(page.locator('.reservation-total')).toContainText('15');await expect(page.getByLabel('Subida',{exact:true}).locator('option').last()).toHaveJSProperty('disabled',true);
  await checkout(page,'viajero3');await expect(page.locator('.quote')).toContainText('Bs 15');expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();await page.screenshot({path:`.local/screenshots/solicitud-${info.project.name}.png`,fullPage:true});
 });
+
+test('el acceso espera el contexto inicial de sesión antes de enviar credenciales, incluso con respuestas anónimas retrasadas',async({page})=>{
+ let release,started;const gate=new Promise(r=>{release=r;}),ready=new Promise(r=>{started=r;});let delayed=true;
+ await page.route('**/api/session',async route=>{if(delayed&&route.request().method()==='GET'){const real=await route.fetch();started();await gate;await route.fulfill({response:real});}else await route.continue();});
+ try{
+  await page.goto('/pasajero');await ready;await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeDisabled();
+  delayed=false;release();await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeEnabled();await login(page,'viajero8');await expect(page.getByRole('button',{name:'Cerrar sesión',exact:true})).toBeVisible();
+  expect((await(await page.request.get('/api/session')).json()).authenticated).toBe(true);await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click();await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeVisible();
+  expect((await(await page.request.get('/api/session')).json()).authenticated).toBe(false);
+ }finally{delayed=false;release();await page.unroute('**/api/session');}
+});

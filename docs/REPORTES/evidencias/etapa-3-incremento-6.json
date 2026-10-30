@@ -3,10 +3,10 @@
   "baseCommit": "697cf3d8923440e75bdefeed948b0111ba4dcd12",
   "codeCommit": null,
   "results": {
-    "unit": 51,
+    "unit": 53,
     "postgres": 229,
-    "chromium": 64,
-    "total": 344,
+    "chromium": 66,
+    "total": 348,
     "previousCasesPreserved": 329
   },
   "records": [
@@ -15,26 +15,26 @@
       "manifestCount": 69,
       "uniqueManifestCount": 69,
       "ownReservations": 67,
-      "rawPaginationSHA256": "2ed4ba2d43cf3dd1da615cac26a5f82e6d63fdda31cb616c6dcd153cf289b4cc",
-      "rawCancellationSHA256": "03631af45bc77aaba9f62413dd68413cb694d305b0ad9c39928c6c7f6f76146e",
+      "rawPaginationSHA256": "5d1535b048020b165fcc87c4a6d2c7a983519389cc59a6c6ade79f6bd557d3dc",
+      "rawCancellationSHA256": "17a05b27c5aa1fd7262bb7b11961050d77b40f0894551cb05905188a0a61e7d2",
       "cancelledGroup": {
-        "bookingId": "d59db829-9180-4c70-a4a3-a0a59a9e718a",
+        "bookingId": "94aee7b9-a4e9-4f7f-81d3-e0f8244f7acd",
         "parts": [
           {
             "seats": 1,
             "status": "CANCELLED",
-            "tripId": "92b47072-4d7c-4f74-ac8e-db2886ba6855",
+            "tripId": "a70142db-5ba5-4b06-87f3-2f415cc32d02",
             "onboard": 0,
             "vehicle": "FICTICIO-WEB-0-0",
             "priceBOB": "35.00",
-            "bookingId": "d59db829-9180-4c70-a4a3-a0a59a9e718a",
+            "bookingId": "94aee7b9-a4e9-4f7f-81d3-e0f8244f7acd",
             "tripStatus": "QUEUED"
           }
         ],
         "audit": [
           {
             "action": "ADMIN_CANCELLED:WRONG_RESERVATION",
-            "createdAt": "2026-10-30T21:11:27.754295+00:00"
+            "createdAt": "2026-10-30T21:43:46.477287+00:00"
           }
         ],
         "conditionReviewRecorded": true,
@@ -67,26 +67,26 @@
       "manifestCount": 69,
       "uniqueManifestCount": 69,
       "ownReservations": 67,
-      "rawPaginationSHA256": "897fd3264ac7b7e7ecf14cf10a96a6189d43119db3607c71dbe1e11813fb37d0",
-      "rawCancellationSHA256": "2008a236b35c97041c6dc4def8bfa447a105f2ab10c0c79ac61d58b5ecf16a49",
+      "rawPaginationSHA256": "f5de9479620aada6725a8fa5f744b39dd8bf55278986a22152b1fe29f27e0c2c",
+      "rawCancellationSHA256": "d1123dfd9bb9b2bed130e0539d8d58dac03898aaeb053562b27b9e4e8116caf5",
       "cancelledGroup": {
-        "bookingId": "d8615e60-5423-4ba7-ab91-9bcf58f70883",
+        "bookingId": "fcb2a899-afb3-4736-b33a-2b092d0fbd06",
         "parts": [
           {
             "seats": 1,
             "status": "CANCELLED",
-            "tripId": "48a065b7-4f1b-4481-863a-1b728548cffe",
+            "tripId": "5e54670b-2ace-4314-b8be-155a4fc196a5",
             "onboard": 0,
             "vehicle": "FICTICIO-WEB-0-0",
             "priceBOB": "35.00",
-            "bookingId": "d8615e60-5423-4ba7-ab91-9bcf58f70883",
+            "bookingId": "fcb2a899-afb3-4736-b33a-2b092d0fbd06",
             "tripStatus": "QUEUED"
           }
         ],
         "audit": [
           {
             "action": "ADMIN_CANCELLED:WRONG_RESERVATION",
-            "createdAt": "2026-10-30T21:14:54.995642+00:00"
+            "createdAt": "2026-10-30T21:47:10.377103+00:00"
           }
         ],
         "conditionReviewRecorded": true,
@@ -122,7 +122,7 @@
     },
     {
       "path": "docs/REPORTES/capturas/etapa-3-incremento-6-cancelacion-desktop.png",
-      "sha256": "f69897c67a174d881e690943307f3955c387b96281ec65ddc573bcb4d42d278f"
+      "sha256": "0ce4d52b2439b6beb21ea3344bbbb15c84d669bd604638501123f4a506e90468"
     },
     {
       "path": "docs/REPORTES/capturas/etapa-3-incremento-6-navegacion-mobile.png",
@@ -130,7 +130,7 @@
     },
     {
       "path": "docs/REPORTES/capturas/etapa-3-incremento-6-cancelacion-mobile.png",
-      "sha256": "b75f61e0b314e2e1070c2729ac38c7bb09c58d0fa607d67673b2f4bf1685ddb0"
+      "sha256": "c6cb3693821087869d0e52c3c37af7aa501190fa8f196123b0b0d78321c735e6"
     }
   ],
   "notes": [

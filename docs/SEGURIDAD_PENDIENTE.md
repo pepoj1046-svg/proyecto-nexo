@@ -231,3 +231,10 @@ de que una operación ya autorizada puede terminar después de revocarse su sesi
 Se preservan plazos y contratos existentes. Las páginas son consultas vivas y la huella
 actual requiere evaluación de carga antes de cualquier propuesta productiva. Identidad
 real, MFA/TLS, retención, política legal y autorización de despliegue siguen pendientes.
+
+La corrección de sesiones web comparte solo lecturas simultáneas en vuelo y ordena
+login/logout con ellas para que una respuesta anónima anterior no reemplace la cookie
+nueva. No mantiene credenciales en una caché duradera ni sustituye revocación/autoridad
+SQL por estado del navegador. Formulario bloqueado mientras se prepara el contexto,
+sin nuevos reintentos ni timeouts ampliados; la sincronización entre pestañas sigue
+fuera del prototipo actual. Regresiones antes/después y E2E de respuesta retrasada.

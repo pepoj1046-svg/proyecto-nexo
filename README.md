@@ -91,8 +91,8 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**51 unitarias y 229 integraciones PostgreSQL real**. La batería web ampliada
-ejecuta 64 casos de escritorio/móvil (resultados y CI en el informe del incremento 6),
+**53 unitarias y 229 integraciones PostgreSQL real**. La batería web ampliada
+ejecuta 66 casos de escritorio/móvil (resultados y CI en el informe del incremento 6),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar
