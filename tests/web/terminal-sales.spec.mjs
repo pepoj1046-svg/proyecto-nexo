@@ -15,6 +15,7 @@ test('terminal: reserva presencial comparte las seis plazas, chofer rechaza, pas
     await operational(a,'adminH','/administracion','FICTICIO-WEB-0-0');await operational(d,'driver0','/chofer','FICTICIO-WEB-0-0');
     const tripId=await a.getByLabel('Vehículo autorizado').inputValue(),before=await audit.read(tripId);
     await a.getByRole('button',{name:'Consultar vehículos y filas',exact:true}).click();await expect(a.locator('.fleet-directory')).toContainText('FICTICIO-WEB-0-0');await expect(a.locator('.fleet-directory')).not.toContainText('Unión del Sur');
+    for(const name of ['Filtrar ruta y asociación','Filtrar estado del servicio'])expect((await a.getByLabel(name,{exact:true}).boundingBox()).height).toBeGreaterThanOrEqual(44);
     await a.getByLabel('Filtrar estado del servicio').selectOption('QUEUED');await expect(a.locator('.fleet-card')).toHaveCount(4);
     await a.getByRole('button',{name:'Preparar reserva presencial',exact:true}).click();await a.getByLabel('Plazas del grupo presencial',{exact:true}).fill('2');await commandClick(a,a.getByRole('button',{name:'Revisar importe presencial',exact:true}),'/api/terminal/quote');
     await expect(a.locator('.walk-in-sale')).toContainText('Bs 70');await a.getByLabel('Confirmo todo el grupo, los puntos').check();
