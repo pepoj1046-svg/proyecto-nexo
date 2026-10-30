@@ -28,7 +28,14 @@ test('reserva demostrativa reconsulta servidor y no ejecuta escrituras ni persis
  await page.reload();await expect(page.getByRole('heading',{name:'Primero, encuentra tu recorrido'})).toBeVisible();
 });
 test('navegación responsive y enlaces profundos de paneles no revelan datos operativos',async({page},info)=>{
- await page.goto('/');if(info.project.name==='mobile')await page.getByRole('button',{name:'Abrir navegación'}).click();await page.getByRole('link',{name:'Administración',exact:true}).click();await expect(page).toHaveURL(/\/administracion$/);await expect(page.getByRole('status')).toContainText('sesión requerida');await expect(page.getByRole('heading',{name:'Ámbito autorizado'})).toBeVisible();await expect(page.getByText('Sesión requerida',{exact:true})).toHaveCount(4);
+ let release,started;const gate=new Promise(r=>{release=r;}),ready=new Promise(r=>{started=r;});
+ await page.route('**/api/session',async route=>{const real=await route.fetch();started();await gate;await route.fulfill({response:real});});
+ try{
+  await page.goto('/');if(info.project.name==='mobile')await page.getByRole('button',{name:'Abrir navegación'}).click();await page.getByRole('link',{name:'Administración',exact:true}).click();await expect(page).toHaveURL(/\/administracion$/);await ready;
+  await expect(page.getByRole('status')).toHaveCount(2);await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeDisabled();
+  release();await expect(page.getByRole('status').filter({hasText:'Acceso privado · sesión requerida'})).toBeVisible();
+ }finally{release();await page.unroute('**/api/session');}
+ await expect(page.getByRole('heading',{name:'Ámbito autorizado'})).toBeVisible();await expect(page.getByText('Sesión requerida',{exact:true})).toHaveCount(4);
  await page.goto('/chofer');await expect(page.getByRole('heading',{name:'Tu recorrido, con claridad.'})).toBeVisible();await page.goto('/pasajero');await expect(page.getByRole('heading',{name:'Tus viajes, en un solo lugar.'})).toBeVisible();await expect(page.getByRole('heading',{name:'Ya llegué',exact:true})).toBeVisible();
 });
 test('servidor protege rutas administrativas e ignora roles inventados en el navegador',async({page,request,baseURL})=>{
@@ -53,7 +60,7 @@ test('diseño sin desbordamiento, recursos propios y accesibilidad WCAG en resul
  const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(results.violations).toEqual([]);
  await mkdir('.local/screenshots',{recursive:true});await page.evaluate(()=>{window.scrollTo(0,0);(document.activeElement instanceof HTMLElement)&&document.activeElement.blur();});await page.screenshot({path:`.local/screenshots/busqueda-${info.project.name}.png`,fullPage:true,scale:'css'});
  await page.getByRole('article',{name:'Horizonte del Chaco · ficticia',exact:true}).getByRole('button',{name:'Elegir viaje',exact:true}).first().click();await page.screenshot({path:`.local/screenshots/reserva-${info.project.name}.png`,fullPage:true,scale:'css'});
- await page.goto('/administracion');await expect(page.getByRole('status')).toContainText('sesión requerida');expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);await page.screenshot({path:`.local/screenshots/administracion-${info.project.name}.png`,fullPage:true,scale:'css'});
+ await page.goto('/administracion');await expect(page.getByRole('status').filter({hasText:'Acceso privado · sesión requerida'})).toBeVisible();expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);await page.screenshot({path:`.local/screenshots/administracion-${info.project.name}.png`,fullPage:true,scale:'css'});
 });
 test('respuestas lentas de localidades no reemplazan una búsqueda más reciente',async({page})=>{
  await page.goto('/');let delayed;const started=new Promise(r=>{delayed=r;});

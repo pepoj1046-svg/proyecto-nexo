@@ -214,6 +214,16 @@ sin casos omitidos. La aplicación/SQL no cambió desde la pasada de dominio cit
 Logs finales: `.local/i6-refresh-directed.log` (2/2) y
 `.local/i6-final-diagnostic-web.log` (66/66).
 
+La validación de `d84351d` detectó además en Windows/22 un selector ambiguo en
+`app.spec.mjs`: al arrancar coexistían los indicadores «Comprobando acceso» y
+«Preparando el acceso». Playwright rechazó el selector genérico antes de que
+terminara la sesión anónima. Las dos expectativas de acceso ahora seleccionan el
+estado concreto «Acceso privado · sesión requerida». El caso de navegación retiene
+la respuesta real de sesión, verifica ambos indicadores y el login deshabilitado,
+y después libera la respuesta y exige el estado privado. No se cambia la aplicación,
+la autenticación, los límites de espera ni los reintentos. El registro enlazado
+conserva este fallo y los resultados posteriores de la suite dirigida y batería final.
+
 ## Evidencias ficticias
 
 [Evidencia SQL mínima y hashes de capturas](evidencias/etapa-3-incremento-6.json).
