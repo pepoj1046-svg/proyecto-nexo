@@ -95,8 +95,9 @@ reserva anterior. Continúan los upgrades históricos y los checksums anteriores
 
 ## Pruebas y resultados
 
-Primera versión funcional: `489498892e2344cc8df071ca4cda97c64046f0b2`.
-La corrección de orden de sesiones se verifica antes de publicar su commit final.
+Versión funcional final **`c57d59d566354d815cb7c21e46dac45312ef1b67`**, posterior
+a la corrección de orden de sesiones. La actualización documental posterior conserva
+exactamente ese código.
 
 | Verificación | Resultado local |
 | --- | --- |
@@ -129,15 +130,27 @@ abordaje concurrente, grupo dividido, viaje iniciado y reserva contra cancelaci�
 Axe WCAG 2 A/AA y 2.1 AA no detectó violaciones en la pantalla administrativa examinada;
 esto no certifica accesibilidad completa del producto.
 
-[CodeQL de la primera versión funcional](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41130094116):
-analizador `124318501638` aprobado. El check separado de resultados **CodeQL**
-`124318844326` aprobó con «No new alerts in code changed by this pull request»,
+[CodeQL de la versión funcional final](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41133913042):
+analizador `124331498935` aprobado. El check separado de resultados **CodeQL**
+`124332005998` aprobó con «No new alerts in code changed by this pull request»,
 cero anotaciones. No se equipara el job del analizador a ausencia de hallazgos,
 ni se afirma que no exista ninguna vulnerabilidad en todo el sistema.
 
-**CI de pruebas: pendiente de comprobación final.**
-[Ejecutar/consultar matriz del PR](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41130103475).
-No se presenta como aprobada una ejecución pendiente. La primera matriz del PR tuvo 3/4 aprobados:
+CI del código corregido: **4/4 aprobados** en
+[la matriz del PR](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41133921078).
+Se contrastaron sus cuatro logs: 53 unitarias, 229 PostgreSQL y 66 Chromium por entorno,
+cero fallidos/omitidos y smokes de cierre/reinicio aprobados. La
+[matriz push adicional](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41133913080)
+también terminó 4/4 aprobada.
+
+| Entorno del PR | Job | Unitarias | PostgreSQL | E2E | Resultado |
+| --- | --- | --- | --- | --- | --- |
+| Ubuntu / Node 22 | 124331525707 | 53 | 229 | 66 | Aprobado |
+| Ubuntu / Node 24 | 124331525211 | 53 | 229 | 66 | Aprobado |
+| Windows / Node 22 | 124331525586 | 53 | 229 | 66 | Aprobado |
+| Windows / Node 24 | 124331525589 | 53 | 229 | 66 | Aprobado |
+
+No se multiplican esos entornos o repeticiones para contar casos únicos. [La primera matriz del PR](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41130103475) tuvo 3/4 aprobados:
 Windows/24 falló al esperar el cierre del formulario de login en el segundo caso
 administrativo, tras aprobar dominio/PostgreSQL. La ejecución push del mismo código
 aprobó 4/4. No se solicitó re-run de esos jobs.
@@ -157,8 +170,8 @@ añade solo diagnóstico seguro de status/ruta/código de error, sin cuerpos de 
 CSRF, cookies o contraseñas. El job original no registró la respuesta HTTP concreta;
 no se atribuye su causa exclusivamente a la carrera reproducida sin esa evidencia.
 La batería completa corregida aprobó **53 + 229 + 66 = 348** casos localmente,
-con salidas 0, cierres y reinicio. La nueva CI deberá aprobar sobre ese código
-antes de entregar. No se ocultaron ni se contaron como aprobados los fallos previos.
+con salidas 0, cierres y reinicio. La nueva CI aprobó sobre ese código, incluido Windows/24. Se conservaron sus
+resultados y los del intento anterior para revisión. No se ocultaron ni se contaron como aprobados los fallos previos.
 La CI mantiene Ubuntu/Windows y Node 22/24. No se cambiaron workflows, reintentos o
 timeouts de pruebas existentes. El ejecutor permite seleccionar suites/proyecto para
 trabajo local dirigido; sin argumentos ejecuta todas las suites y ambos dispositivos.
@@ -181,7 +194,8 @@ Los originales privados se conservan en `.local/e2e-incremento-6/`.
 
 La disponibilidad del entorno se comprobó nuevamente tras el aviso de inicio del
 workspace. Los archivos permanecieron intactos y los logs de npm confirman salida 0
-de ambos comandos completos. No fue necesario repetir las baterías.
+de ambos comandos completos. Ese aviso no obligó a repetir las baterías; la pasada posterior respondió a la
+corrección demostrada de sesiones.
 
 ## Errores encontrados y corregidos
 
@@ -269,3 +283,17 @@ menores y uso real permanecen separadas. No se automatizan consecuencias ni se i
 políticas nuevas. **Este incremento no cierra toda la Etapa 3 ni habilita producción.**
 Sin main/otras ramas modificadas, fusiones, incremento 7, GPS, OAuth/pagos reales,
 comunicaciones externas, servicios contratados o gastos nuevos.
+
+## Evaluación de entrega
+
+**Incremento 6 implementado y verificado en su alcance de laboratorio**: cancelación
+administrativa con motivo, consulta paginada completa, revisión administrativa y
+controles de sesión/permisos. 348 casos locales y matriz final del código 4/4, sin
+ocultar el fallo previo. La Etapa 3 completa conserva los pendientes anteriores y
+no se declara cerrada ni preparada para producción.
+
+El commit documental posterior solo actualiza este informe y la referencia de código
+en la evidencia JSON. Conserva exactamente el ejecutable probado de `c57d59d`;
+sus checks se registran en la entrega del PR #3, sin una cadena de commits adicionales
+para documentar cada ejecución idéntica. El filtro de paths de CodeQL no dispara
+análisis nuevos por esos dos archivos documentales.
