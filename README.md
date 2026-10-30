@@ -1,10 +1,10 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 5,
+asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 6,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 6.
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 7.
 
 ## Etapa 3: interfaz web local
 
@@ -14,8 +14,8 @@ intermedios autorizados, solicitudes persistidas con idempotencia y «Mis reserv
 `HELD` significa **pendiente**; solo el chofer asignado acepta en `/operador`.
 Terminal, presencia, abordajes individuales/grupales, despacho y progreso conectados
 a paneles de administrador y chofer con permisos reales. Sin OAuth ni despliegue.
-001–025 intactas en el incremento 5; 026 añade una envoltura de retorno con cero
-personas observadas a bordo antes de delegar en la fila existente. Se mantienen las
+001–026 intactas en el incremento 6; 027 añade paginación web y cancelación
+administrativa con motivo, delegando la transición en el núcleo existente. Se mantienen las
 proyecciones por rol y los contratos de reservas, despacho, incidencias y rescates.
 
 ```sh
@@ -57,6 +57,13 @@ por ruta/estado y la rehabilitación ficticia respeta el procedimiento nativo. G
 con handlers privados protegidos por CSRF y regresión de respuestas de sesión tardías.
 Resultados, CodeQL, capturas y recorridos Windows en el informe del incremento.
 
+[Incremento 6: cancelación administrativa, revisión y paginación real](docs/REPORTES/ETAPA_3_INCREMENTO_6.md).
+Administrador y chofer recorren todo el manifiesto; el pasajero navega sus reservas
+propias y consulta su presencia aunque exceda el primer bloque de 50. Los cambios
+concurrentes de listado exigen actualizar, sin concatenar páginas incompatibles.
+Motivo y confirmación obligatorios para cancelar administrativamente el grupo;
+revisión de condiciones separada de su aceptación por el responsable. Sin dinero.
+
 ## Etapa 2: reservas y negocio local
 
 [Cierre técnico propuesto, alcance y evidencia](docs/REPORTES/ETAPA_2_CIERRE_TECNICO.md).
@@ -84,8 +91,8 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**49 unitarias y 220 integraciones PostgreSQL real**. La batería web ampliada
-ejecuta 60 casos de escritorio/móvil (resultados y CI en el informe del incremento 5),
+**51 unitarias y 229 integraciones PostgreSQL real**. La batería web ampliada
+ejecuta 64 casos de escritorio/móvil (resultados y CI en el informe del incremento 6),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar

@@ -1,6 +1,7 @@
 import {createBusinessService} from './business-service.mjs';
 import {assertRuntime} from './runtime.mjs';
 import {object,id,actionKey} from '../domain/business.mjs';
+import {cursorPage} from './web-management-service.mjs';
 import {pointIndex} from './web-reservation-service.mjs';
 const kinds=['ARRIVED','PICKUP_REQUEST','VERIFY','PICKUP_ARRIVED','BOARD','ALIGHT','ACCEPT','DEPART','BEGIN_COLLECTION','MAIN_START','PROGRESS','REPORT_TERMINAL','CONFIRM_TERMINAL','REPORT_URBAN','CONFIRM_URBAN','REPORT_ROAD','CONFIRM_ROAD'];
 export function validateOperation(b){
@@ -28,7 +29,7 @@ export function createWebOperationsService(pool){
   overview:(token,b)=>{object(b,['view']);view(b);if(b.view==='PASSENGER')throw new Error('INVALID_VIEW');return tx(token,async(c,actor)=>{
    const role=b.view==='ADMIN'?'ASSOCIATION_ADMIN':'DRIVER';if(!(await c.query('SELECT 1 FROM nexo.memberships WHERE user_id=$1 AND role=$2 AND active LIMIT 1',[actor,role])).rowCount)throw new Error('FORBIDDEN');
    return{trips:(await c.query(`SELECT t.id AS "tripId",r.name AS route,a.name AS association,v.label AS "vehicleLabel",t.status,t.position_no AS position FROM nexo.trips t JOIN nexo.routes r ON r.id=t.route_id JOIN nexo.associations a ON a.id=t.association_id JOIN nexo.vehicles v ON v.id=t.vehicle_id WHERE t.status<>'WITHDRAWN'AND ($1='ADMIN'AND nexo.manage_route(t.route_id)OR $1='DRIVER'AND t.driver_id=$2 AND nexo.drives(t.id))ORDER BY a.name,r.id,t.position_no,t.id LIMIT 50`,[b.view,actor])).rows};});},
-  snapshot:(token,b)=>{object(b,['view','tripId']);view(b);id(b.tripId);return tx(token,async c=>(await c.query('SELECT nexo.web_trip_snapshot($1,$2)AS result',[b.tripId,b.view])).rows[0].result);},
+  snapshot:(token,b)=>{object(b,['view','tripId','limit','cursor','bookingId']);view(b);id(b.tripId);if(b.bookingId!==undefined){id(b.bookingId);if(b.view!=='PASSENGER')throw new Error('INVALID_VIEW');}const q=cursorPage(Object.fromEntries(Object.entries(b).filter(([k])=>['limit','cursor'].includes(k))));return tx(token,async c=>(await c.query('SELECT nexo.web_trip_page($1,$2,$3,$4,$5)AS result',[b.tripId,b.view,q.limit,q.cursor,b.bookingId??null])).rows[0].result);},
   command:async(token,key,request)=>{
    const b=validateOperation(request);actionKey(key);
    switch(b.kind){

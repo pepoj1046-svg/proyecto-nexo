@@ -149,3 +149,18 @@ existente y cero personas observadas a bordo bajo bloqueo, antes de delegar en
 web delega en `restore_vehicle`; no crea una entrada administrativa tras retirar una
 unidad. El gateway registra handlers privados con CSRF incondicional por construcción.
 [Auditoría previa, resultados y pendientes](REPORTES/ETAPA_3_INCREMENTO_5.md).
+
+## Etapa 3, incremento 6: administración y consulta completa
+
+027 conserva 001–026 y los RPCs nativos. Añade una proyección privada con el contrato
+de campos 023–024, lectura paginada y cancelación administrativa con motivo sobre
+`cancel`. Cursores vinculados a actor/vista/viaje/tamaño y huella de IDs/fecha/viaje/
+estado detectan cambios del conjunto; no conceden autoridad ni son un histórico
+congelado. Los comandos revalidan en el núcleo, con sus locks y auditoría.
+
+`web-management-service` conecta revisión del grupo, condición vigente y acciones
+cerradas. ADMIN_REVIEW no sustituye ACCEPT del responsable. `web_trip_page` conserva
+metadatos globales de capacidad aunque muestre solo una página; no limita inventario
+a lo visible. La presencia propia puede enfocarse por reserva. Se mantienen RLS,
+identidad/pools separados, same-origin/CSRF y el límite loopback.
+[Informe, límites y guía Windows](REPORTES/ETAPA_3_INCREMENTO_6.md).

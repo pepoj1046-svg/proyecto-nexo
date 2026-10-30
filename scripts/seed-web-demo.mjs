@@ -110,6 +110,16 @@ export async function seedWebDemo(db,pool) {
     }
    }
   }
+  if(process.env.NEXO_WEB_ADMIN_FIXTURE==='1'){
+   // Additional fictitious history only for the administrative pagination laboratory.
+   for(let i=0;i<65;i++){
+    const g=await core.reserve(users.terminal0.token,randomUUID(),{routeId:a.route,from:0,to:3,seats:1,parts:[{tripId:a.trips[0].id,seats:1}]});
+    await core.cancel(users.terminal0.token,randomUUID(),g.bookingIds[0]);
+   }
+   const fresh=await core.reserve(users.terminal0.token,randomUUID(),{routeId:a.route,from:0,to:3,seats:1,parts:[{tripId:a.trips[0].id,seats:1}]});
+   await core.respond(users.driver0.token,randomUUID(),fresh.bookingIds[0],true);
+   await business.closure(users.adminH.token,randomUUID(),'route-condition',{routeId:a.route,state:'NORMAL',reason:'NORMAL',description:'Condiciones ficticias para revisión administrativa',affectedStops:[],confirmed:true});
+  }
   const accounts={};
   for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1']){
     const password=randomBytes(24).toString('base64url'),login='lab-'+label.toLowerCase();

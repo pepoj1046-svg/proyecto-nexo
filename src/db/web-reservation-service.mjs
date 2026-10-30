@@ -3,6 +3,7 @@ import {createBusinessService}from'./business-service.mjs';
 import {assertRuntime}from'./runtime.mjs';
 import {object,id,actionKey}from'../domain/business.mjs';
 import{createHash}from'node:crypto';
+import {cursorPage} from './web-management-service.mjs';
 export function pointIndex(point,route){if(typeof point!=='string'||!point.startsWith(route+':')||!/^\d{1,5}$/.test(point.slice(route.length+1)))throw new Error('INVALID_AUTHORIZED_POINTS');const index=Number(point.slice(route.length+1));if(index>10000)throw new Error('INVALID_AUTHORIZED_POINTS');return index;}
 export function journeyRequest(b,withQuote=false){
  object(b,withQuote?['routeId','tripId','boardingPointId','alightingPointId','seats','flow','quote','confirmed']:['routeId','tripId','boardingPointId','alightingPointId','seats','flow']);id(b.routeId);id(b.tripId);
@@ -21,6 +22,11 @@ export function createWebReservationService(pool){
    const result=(await c.query('SELECT nexo.passenger_reservations($1,$2)AS result',[limit,offset])).rows[0].result;
    const rows=(await c.query("SELECT b.id,b.driver_accepted,(nexo.group_status(b.id)->>'confirmationAuthority')AS authority FROM nexo.bookings b WHERE b.id=ANY($1::uuid[])AND b.passenger_id=$2 AND b.source='APP'",[result.bookings.map(b=>b.bookingId),actor])).rows;
    const current=new Map(rows.map(r=>[r.id,r]));for(const b of result.bookings){const row=current.get(b.bookingId);b.confirmationAuthority=row?.authority??null;b.driverAccepted=row?.driver_accepted??false;}return result;
+  });},
+  page:(token,b={})=>{const q=cursorPage(b);return tx(token,async(c,actor)=>{
+   const r=(await c.query("SELECT nexo.web_bookings_page(NULL,'OWN',$1,$2)AS r",[q.limit,q.cursor])).rows[0].r;
+   const rows=(await c.query("SELECT b.id,b.driver_accepted,(nexo.group_status(b.id)->>'confirmationAuthority')AS authority FROM nexo.bookings b WHERE b.id=ANY($1::uuid[])AND b.passenger_id=$2 AND b.source='APP'",[r.bookings.map(b=>b.bookingId),actor])).rows;
+   for(const b of r.bookings){const row=rows.find(x=>x.id===b.bookingId);b.confirmationAuthority=row?.authority??null;b.driverAccepted=row?.driver_accepted??false;}return r;
   });},
   quote:(token,b)=>{const{from,to}=journeyRequest(b);return business.quote(token,{routeId:b.routeId,from,to,seats:b.seats});},
   reserve:async(token,key,b)=>{

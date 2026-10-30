@@ -5,12 +5,12 @@ Trabaja **solo** en este repositorio, `pepoj1046-svg/proyecto-nexo`. Nunca uses,
 
 ## Flujo de desarrollo
 - Rama principal protegida por convención: no hacer push ni merge directo a `main`.
-- Etapas 1–2 verificadas en laboratorio; Etapa 3, incremento 5 autorizado por
+- Etapas 1–2 verificadas en laboratorio; Etapa 3, incremento 6 autorizado por
   el propietario. Rama `desarrollo/etapa-3` desde `820fd1f` de `desarrollo/etapa-2`.
 - PR independiente hacia `desarrollo/etapa-2`; no fusionar ni cerrar PR #1 ni #2.
 - Solo interfaz web adaptable con datos ficticios y entorno local. No iniciar
-  el incremento 6, aplicaciones móviles nativas, bancos, GPS real ni despliegues.
-- Conservar 001–025 intactas. Futuras migraciones desde 026 solo si son necesarias. Reutilizar el núcleo
+  el incremento 7, aplicaciones móviles nativas, bancos, GPS real ni despliegues.
+- Conservar 001–026 intactas. Futuras migraciones desde 027 solo si son necesarias. Reutilizar el núcleo
   transaccional probado y documentar decisiones de negocio pendientes por separado.
 - Antes de editar, leer `docs/REQUISITOS_INICIALES.md`, `docs/ARQUITECTURA.md`, `docs/MODELO_DE_DATOS.md`, `docs/SEGURIDAD_PENDIENTE.md` y `docs/PRUEBAS_ETAPA_1.md`.
 - Implementar incrementos pequeños con pruebas automatizadas reproducibles. Documentar cómo ejecutar cada prueba y su salida.

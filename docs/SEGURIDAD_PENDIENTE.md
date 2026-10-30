@@ -213,3 +213,21 @@ Los límites actuales son **120 solicitudes API/minuto por listener** y seis sol
 simultáneas globales; no constituyen un limitador distribuido por cuenta. Cuerpo 2048
 bytes y acceso loopback/mismo origen conservados. Identidad real, MFA/TLS, pruebas de
 carga, retención y producción continúan fuera de este laboratorio.
+
+## Etapa 3, incremento 6: cancelación administrativa y páginas privadas
+
+La cancelación web administrativa requiere motivo técnico, confirmación, ámbito de
+todas las partes y asignación actual. La envoltura reclama claves antes de rutas y
+delega en `cancel`, sin omitir BOARD efectivo o viajes iniciados. La auditoría añade
+el motivo solo al producir un cambio, y un reintento autorizado conserva el recibo.
+El contrato CLI previo permanece compatible. No hay sanciones o dinero.
+
+Los cursores no son credenciales: cada página valida actor, vista, ruta/terminal o
+reserva APP propia. El helper de formato queda privado; no hay nuevos grants de DML,
+identidad o provisión. Cambios del conjunto invalidan la navegación, sin mezclar filas.
+La UI invalida respuestas antiguas al desmontar/cambiar sesión; se conserva la frontera
+de que una operación ya autorizada puede terminar después de revocarse su sesión.
+
+Se preservan plazos y contratos existentes. Las páginas son consultas vivas y la huella
+actual requiere evaluación de carga antes de cualquier propuesta productiva. Identidad
+real, MFA/TLS, retención, política legal y autorización de despliegue siguen pendientes.
