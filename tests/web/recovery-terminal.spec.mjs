@@ -7,7 +7,18 @@ test('avería terminal: capacidad conjunta, consentimiento, traslado seguro y su
   await login(page,'terminal0','/pasajero');const booking=page.locator('.saved-booking');const id=(await booking.locator('code').first().textContent()).trim();
   const a=await admin.newPage(),d=await driver.newPage();await operational(a,'adminH','/administracion','FICTICIO-WEB-0-0');const source=await a.getByLabel('Vehículo autorizado').inputValue();
   await commandClick(a,a.locator('.expected-booking').filter({hasText:'Reserva confirmada'}).getByRole('button',{name:'Registrar abordaje del grupo',exact:true}),'/api/operations/command');await expect(a.locator('.trip-facts')).toContainText('4 abordados observados');const before=await audit.read(source);
-  await operational(d,'driver0','/chofer','FICTICIO-WEB-0-0');await commandClick(d,d.getByRole('button',{name:'Reportar avería ficticia observada',exact:true}),'/api/operations/command');await expect(d.getByRole('button',{name:'Registrar salida',exact:true})).toBeDisabled();
+  await operational(d,'driver0','/chofer','FICTICIO-WEB-0-0');
+  // A successful write starts a separate read. Hold that real read to prove the
+  // loading boundary, then assert the disabled control only after its response.
+  let release,readStarted;const gate=new Promise(r=>{release=r;}),started=new Promise(r=>{readStarted=r;});let delayed=true;
+  await d.route('**/api/operations/snapshot',async route=>{if(delayed){const real=await route.fetch();readStarted();await gate;await route.fulfill({response:real});}else await route.continue();});
+  try{
+   const refreshed=d.waitForResponse(r=>r.url().endsWith('/api/operations/snapshot')&&r.request().method()==='POST');
+   await commandClick(d,d.getByRole('button',{name:'Reportar avería ficticia observada',exact:true}),'/api/operations/command');await started;
+   await expect(d.locator('.trip-operations button:enabled')).toHaveCount(0);
+   delayed=false;release();const response=await refreshed;expect(response.status(),JSON.stringify({error:(await response.json()).error})).toBe(200);
+   await expect(d.getByRole('button',{name:'Registrar salida',exact:true})).toBeDisabled();
+  }finally{delayed=false;release();await d.unroute('**/api/operations/snapshot');}
   await a.getByRole('button',{name:'Actualizar operación',exact:true}).click();await expect(a.getByRole('button',{name:'Confirmar incidencia reportada',exact:true})).toBeVisible();await confirmIncident(a);const incidentId=await consoleIncident(a,'FICTICIO-WEB-0-0');
   await expect(a.locator('.recovery-detail')).toContainText('Primera opción autorizada: FICTICIO-RESCATE-ORIGEN');const candidates=await api(a,'/api/recovery/detail',{incidentId});const detail=await candidates.json(),target=detail.candidates[0].tripId;
   // B has incompatible reserved segments; choosing it must not move any group.

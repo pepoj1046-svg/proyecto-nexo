@@ -15,26 +15,26 @@
       "manifestCount": 69,
       "uniqueManifestCount": 69,
       "ownReservations": 67,
-      "rawPaginationSHA256": "5d1535b048020b165fcc87c4a6d2c7a983519389cc59a6c6ade79f6bd557d3dc",
-      "rawCancellationSHA256": "17a05b27c5aa1fd7262bb7b11961050d77b40f0894551cb05905188a0a61e7d2",
+      "rawPaginationSHA256": "04bf5cc65d7465c7fc31e38604a1c958fe2d09e2ece2b8283090b9d88b6eb5d5",
+      "rawCancellationSHA256": "3d93dfb294683b837f01a6ff2811fe95a26de27c46cd97ee77acadb74a33a30a",
       "cancelledGroup": {
-        "bookingId": "94aee7b9-a4e9-4f7f-81d3-e0f8244f7acd",
+        "bookingId": "c0c8c577-0abd-45b3-a2ce-dfb80151b847",
         "parts": [
           {
             "seats": 1,
             "status": "CANCELLED",
-            "tripId": "a70142db-5ba5-4b06-87f3-2f415cc32d02",
+            "tripId": "3f699314-fed7-4905-a9f2-38c1d700f140",
             "onboard": 0,
             "vehicle": "FICTICIO-WEB-0-0",
             "priceBOB": "35.00",
-            "bookingId": "94aee7b9-a4e9-4f7f-81d3-e0f8244f7acd",
+            "bookingId": "c0c8c577-0abd-45b3-a2ce-dfb80151b847",
             "tripStatus": "QUEUED"
           }
         ],
         "audit": [
           {
             "action": "ADMIN_CANCELLED:WRONG_RESERVATION",
-            "createdAt": "2026-10-30T21:43:46.477287+00:00"
+            "createdAt": "2026-10-30T22:30:01.118952+00:00"
           }
         ],
         "conditionReviewRecorded": true,
@@ -67,26 +67,26 @@
       "manifestCount": 69,
       "uniqueManifestCount": 69,
       "ownReservations": 67,
-      "rawPaginationSHA256": "f5de9479620aada6725a8fa5f744b39dd8bf55278986a22152b1fe29f27e0c2c",
-      "rawCancellationSHA256": "d1123dfd9bb9b2bed130e0539d8d58dac03898aaeb053562b27b9e4e8116caf5",
+      "rawPaginationSHA256": "2324934ae41bce70b1282f085a28361848638388cdfaee61d6f8ffc33d90bf43",
+      "rawCancellationSHA256": "71420736d978cd55fe75be8c996e72a8886faf46cf06385aebea6077cef09b60",
       "cancelledGroup": {
-        "bookingId": "fcb2a899-afb3-4736-b33a-2b092d0fbd06",
+        "bookingId": "2a5c66bc-a016-466d-b895-62f64c6d2fe6",
         "parts": [
           {
             "seats": 1,
             "status": "CANCELLED",
-            "tripId": "5e54670b-2ace-4314-b8be-155a4fc196a5",
+            "tripId": "f89a7e21-32e7-425b-8f5d-d3df8df99edc",
             "onboard": 0,
             "vehicle": "FICTICIO-WEB-0-0",
             "priceBOB": "35.00",
-            "bookingId": "fcb2a899-afb3-4736-b33a-2b092d0fbd06",
+            "bookingId": "2a5c66bc-a016-466d-b895-62f64c6d2fe6",
             "tripStatus": "QUEUED"
           }
         ],
         "audit": [
           {
             "action": "ADMIN_CANCELLED:WRONG_RESERVATION",
-            "createdAt": "2026-10-30T21:47:10.377103+00:00"
+            "createdAt": "2026-10-30T22:33:25.757108+00:00"
           }
         ],
         "conditionReviewRecorded": true,
@@ -122,7 +122,7 @@
     },
     {
       "path": "docs/REPORTES/capturas/etapa-3-incremento-6-cancelacion-desktop.png",
-      "sha256": "0ce4d52b2439b6beb21ea3344bbbb15c84d669bd604638501123f4a506e90468"
+      "sha256": "a3ccaec3f6b6be283e39d76ed3069452837e53edd1e79dc99f51d167572644a6"
     },
     {
       "path": "docs/REPORTES/capturas/etapa-3-incremento-6-navegacion-mobile.png",
@@ -130,12 +130,17 @@
     },
     {
       "path": "docs/REPORTES/capturas/etapa-3-incremento-6-cancelacion-mobile.png",
-      "sha256": "c6cb3693821087869d0e52c3c37af7aa501190fa8f196123b0b0d78321c735e6"
+      "sha256": "5f407d58562927e3e83776cab689294f8d3e957285dc2995240f9b1a4d200daf"
     }
   ],
   "notes": [
     "SQL witness uses READ ONLY and data exclusively fictitious.",
     "Raw SQL configuration, sessions, credentials and private traces excluded.",
     "Cursors detect changed collections; they are not identity credentials."
-  ]
+  ],
+  "verificationRecord": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6534810824",
+  "localFinalLogs": {
+    "i6-release-all.log": "dc1741d8abcf1a5625f09a4e37b7300cc5e23db03e3040831715f5803da941cb",
+    "i6-final-diagnostic-web.log": "2db4afafd8132e4ce67168a5202e11f246bc775efcc642b398eab375db939eed"
+  }
 }

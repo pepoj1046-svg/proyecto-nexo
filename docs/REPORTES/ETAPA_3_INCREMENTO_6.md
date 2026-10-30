@@ -82,7 +82,7 @@ CSRF existente. GET de reservas conserva el acceso autenticado anterior.
 | Adaptadores | `src/db/web-management-service.mjs`, `web-operations-service.mjs`, `web-reservation-service.mjs` |
 | Transporte | `src/http/web-gateway.mjs` |
 | Interfaz | `apps/web/src/Management.tsx`, `Functional.tsx`, `Operations.tsx`, `Login.tsx`, `operation-model.ts`, `private-api.ts`, `styles.css` |
-| Pruebas | `tests/web-management.test.mjs`, `tests/web-auth-order.test.mjs`, `tests/integration/postgres.test.mjs`, `tests/web/administration.spec.mjs`, `functional.spec.mjs` y ayuda de diagnóstico |
+| Pruebas | `tests/web-management.test.mjs`, `tests/web-auth-order.test.mjs`, `tests/integration/postgres.test.mjs`, `tests/web/administration.spec.mjs`, `functional.spec.mjs`, `recovery-terminal.spec.mjs` y ayuda de diagnóstico |
 | Laboratorio | `scripts/seed-web-demo.mjs`, `scripts/test-web.mjs` |
 | Documentación | `AGENTS.md`, `README.md`, arquitectura, seguridad y este informe/evidencias |
 
@@ -95,9 +95,10 @@ reserva anterior. Continúan los upgrades históricos y los checksums anteriores
 
 ## Pruebas y resultados
 
-Versión funcional final **`c57d59d566354d815cb7c21e46dac45312ef1b67`**, posterior
-a la corrección de orden de sesiones. La actualización documental posterior conserva
-exactamente ese código.
+Código de aplicación **`c57d59d566354d815cb7c21e46dac45312ef1b67`**, posterior
+a la corrección de orden de sesiones. Los ajustes posteriores de sincronización y
+diagnóstico de pruebas conservan ese ejecutable. El commit final de validación y
+sus resultados se identifican en el registro enlazado a continuación.
 
 | Verificación | Resultado local |
 | --- | --- |
@@ -181,6 +182,37 @@ Se conservan las pasadas anteriores `.local/i6-final-all.log`, `.local/i6-final-
 `.local/i6-pg-directed-4.log`, `.local/i6-web-directed-2.log` y
 `.local/i6-web-directed-final.log`. Configuración SQL, accesos y trazas permanecen
 fuera de Git. Las capturas/evidencia públicas seleccionadas solo contienen datos ficticios.
+
+## Registro final de CI y espera de recarga
+
+[Resultados finales por commit, run y job](https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6534810824).
+Este registro se completa únicamente con resultados ejecutados y se actualiza en el
+PR, sin crear otro commit que vuelva a disparar toda la matriz solo para grabar IDs.
+La tabla anterior conserva la validación efectiva del código de aplicación `c57d59d`;
+el registro incluye también el resultado del commit final de pruebas y documentación.
+
+El commit documental `bfbaa98` tuvo un fallo adicional en Windows/24: tras el 200 de
+REPORT, el test buscó el botón de salida mientras se recargaba el panel. Los otros
+entornos del PR aprobaron; ese intento Windows/24 no se presenta como aprobado ni se
+solicitó re-run. El log original no guardó la respuesta de recarga y no permite
+atribuir una causa HTTP concreta.
+
+Se corrigió una precondición de sincronización: el 200 de la escritura no implica
+que haya terminado su lectura posterior. El caso ahora retiene **una respuesta real**
+de snapshot, comprueba que durante la recarga no haya acciones operativas habilitadas,
+la libera, exige status 200 y mantiene la aserción de salida deshabilitada. No cambia
+los 8 s de expectativas, los 90 s del caso, los límites HTTP ni los reintentos (cero).
+Los dos casos dirigidos, escritorio/móvil, aprobaron con cierre y reinicio.
+
+La ayuda de pruebas recoge, solo al fallar, status/código, errores de red y una
+proyección mínima de estado de las páginas observadas. Excluye cuerpos de solicitud,
+credenciales, CSRF, cookies, campos de formulario e identidad SQL. Así un eventual
+fallo de refresco deja evidencia concreta y no se confunde con capacidad o permisos.
+La batería web final aprobó **66/66**, salida 0, con 26 laboratorios cerrados y
+checks de cierre/reinicio. El resultado local acumulado es **53 + 229 + 66 = 348**,
+sin casos omitidos. La aplicación/SQL no cambió desde la pasada de dominio citada.
+Logs finales: `.local/i6-refresh-directed.log` (2/2) y
+`.local/i6-final-diagnostic-web.log` (66/66).
 
 ## Evidencias ficticias
 
@@ -292,8 +324,8 @@ controles de sesión/permisos. 348 casos locales y matriz final del código 4/4,
 ocultar el fallo previo. La Etapa 3 completa conserva los pendientes anteriores y
 no se declara cerrada ni preparada para producción.
 
-El commit documental posterior solo actualiza este informe y la referencia de código
-en la evidencia JSON. Conserva exactamente el ejecutable probado de `c57d59d`;
-sus checks se registran en la entrega del PR #3, sin una cadena de commits adicionales
-para documentar cada ejecución idéntica. El filtro de paths de CodeQL no dispara
-análisis nuevos por esos dos archivos documentales.
+La aplicación conserva exactamente el ejecutable probado de `c57d59d`. El último
+commit también incluye el ajuste de espera/diagnóstico de pruebas; su CodeQL y checks
+se registran en el enlace final del PR, sin una cadena de commits adicionales para
+documentar cada ejecución idéntica. La entrega solo se da por terminada después de
+comprobar ese registro. La Etapa 3 completa sigue pendiente de los flujos enumerados.
