@@ -1,10 +1,10 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 4,
+asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 5,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 5.
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 6.
 
 ## Etapa 3: interfaz web local
 
@@ -14,9 +14,9 @@ intermedios autorizados, solicitudes persistidas con idempotencia y «Mis reserv
 `HELD` significa **pendiente**; solo el chofer asignado acepta en `/operador`.
 Terminal, presencia, abordajes individuales/grupales, despacho y progreso conectados
 a paneles de administrador y chofer con permisos reales. Sin OAuth ni despliegue.
-001–024 intactas en este incremento; 025 solo añade lecturas mínimas de recuperación
-por pasajero/chofer. Incidencias, consentimiento, traslados y rescates web delegan
-en los contratos PostgreSQL ya existentes, sin reescribir inventario o despacho.
+001–025 intactas en el incremento 5; 026 añade una envoltura de retorno con cero
+personas observadas a bordo antes de delegar en la fila existente. Se mantienen las
+proyecciones por rol y los contratos de reservas, despacho, incidencias y rescates.
 
 ```sh
 npm ci --no-fund
@@ -50,6 +50,13 @@ traslado seguro antes de continuar. Sin vehículo disponible queda revisión hum
 sin cancelaciones, cobros ni notificaciones automáticas. Cuentas y procedimientos
 ficticios para Windows y resultados de la batería ampliada en el informe.
 
+[Incremento 5: directorio, presenciales, rechazo, cancelación propia y retorno voluntario](docs/REPORTES/ETAPA_3_INCREMENTO_5.md).
+Las reservas presenciales fijan su origen en servidor y comparten inventario con APP;
+el chofer acepta o rechaza sin movimientos automáticos. El directorio pagina servicios
+por ruta/estado y la rehabilitación ficticia respeta el procedimiento nativo. Gateway
+con handlers privados protegidos por CSRF y regresión de respuestas de sesión tardías.
+Resultados, CodeQL, capturas y recorridos Windows en el informe del incremento.
+
 ## Etapa 2: reservas y negocio local
 
 [Cierre técnico propuesto, alcance y evidencia](docs/REPORTES/ETAPA_2_CIERRE_TECNICO.md).
@@ -77,8 +84,8 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**47 unitarias y 212 integraciones PostgreSQL real**. La batería web ampliada
-ejecuta 56 casos de escritorio/móvil (resultados y CI en el informe del incremento 4),
+**49 unitarias y 220 integraciones PostgreSQL real**. La batería web ampliada
+ejecuta 60 casos de escritorio/móvil (resultados y CI en el informe del incremento 5),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar

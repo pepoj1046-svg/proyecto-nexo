@@ -48,6 +48,18 @@ unidad sea apta para un rescate; esa elegibilidad sigue en los RPCs del incremen
   mismo wrapper CSRF y los autenticados añaden la comprobación de sesión. Los paths
   no habilitan invocación dinámica de métodos ni eliminan la puerta de seguridad.
 
+## Archivos principales
+
+| Capa | Archivos y propósito |
+| --- | --- |
+| Interfaz | `apps/web/src/Terminal.tsx`, `Functional.tsx`, `Operations.tsx`, `Recovery.tsx`: nuevos flujos y conexión de paneles existentes |
+| Transporte/estado de interfaz | `private-api.ts`, `use-command.ts`, `main.tsx`, `styles.css`: errores, intención de reintento, etiquetas y controles móviles |
+| Servidor local | `src/db/web-terminal-service.mjs`, `web-recovery-service.mjs`, `src/http/web-gateway.mjs`: contratos, permisos, lecturas acotadas y CSRF |
+| PostgreSQL | `database/migrations/026_web_queue_return.sql`: envoltura de retorno, sin modificar migraciones previas |
+| Regresión | `tests/web-terminal.test.mjs`, `tests/integration/postgres.test.mjs`, suites web `terminal-sales`, `terminal-return`, `functional` y `app` |
+| Ejecución | `scripts/test-postgres.mjs`, `scripts/test-web.mjs`, `.github/workflows/etapa-1-tests.yml`: selección local dirigida, nuevos laboratorios y presupuesto de job |
+| Documentación | `AGENTS.md`, `README.md`, arquitectura, seguridad, este informe, evidencia JSON y seis capturas ficticias |
+
 ## Observación de CodeQL y regresiones
 
 Se revisó el comentario de CodeQL del PR #3 (`discussion_r4425161756`,
@@ -61,7 +73,11 @@ En la base `dc07bbd`, el job de análisis terminaba correctamente, pero el check
 resultados **CodeQL** marcaba **1 alerta nueva de severidad alta**. Se comprueban
 ambas cosas en esta entrega: ejecución del analizador y check de resultados; no se
 equipara un workflow verde con ausencia de hallazgos. Resultado de esta entrega:
-**pendiente de publicación/comprobación**.
+[analizador final sobre `12bec7e`](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41093021877)
+aprobado, incluido el paso de análisis. El check separado de resultados **CodeQL**
+(`124192029702`) también aprobó: «No new alerts in code changed by this pull request»,
+**cero anotaciones**. Los análisis de los dos commits funcionales anteriores también
+aprobaron. Esto no afirma ausencia de toda vulnerabilidad ni sustituye una auditoría externa.
 
 Los primeros ensayos dirigidos detectaron una consulta nueva a un helper privado
 (`live`) y errores de preparación/aserción de pruebas. Se corrigió la consulta
@@ -70,24 +86,88 @@ se conservan en logs privados y no se contabilizan como aprobados.
 
 ## Pruebas y resultados
 
-`npm run test:all` aprobó **49 unitarias y 220 integraciones PostgreSQL reales**,
-código de salida 0, sin casos omitidos; probes de propagación de error y smokes de
-ambos listeners también aprobados. Los diez casos PostgreSQL dirigidos (Z01–Z08,
-G12 y R08), el chequeo ACL específico y los dos validadores unitarios nuevos pasaron.
-El recorrido dirigido web aprobó **14/14** (7 por dispositivo), con cierre/reinicio.
+Versión funcional final **`12bec7ea3a51ea70a17d5d15c1d85b96b9b8ec52`**, descendiente
+de `ec9d7d9` y `f4faf7d`. La entrega documental posterior no cambia este código.
+Sobre esa versión se ejecutaron nuevamente ambas baterías completas:
+
+| Batería | Resultado ejecutado |
+| --- | --- |
+| `npm run test:all` | **49/49 unitarias + 220/220 integraciones**, salida 0 |
+| `npm run test:web` | **60/60 Chromium**, 30 escritorio + 30 móvil, salida 0 |
+| Compilación/TypeScript | Aprobada, incluida en ambos comandos |
+| Probes y smokes | Error 9 del hijo preservado; HTTP/negocio cerrados; SIGINT real, puertos cerrados y reinicio sin sesiones/credenciales/reservas anteriores |
+
+Total: **329 casos**, conservando los **315 anteriores** y añadiendo 14. No se suman
+las repeticiones como nuevos casos. Sin casos omitidos en las baterías finales.
+Logs privados finales: `.local/i5-release-all.log` y `.local/i5-release-web.log`.
+Node **24.19.0**, PostgreSQL **18.4 real**, Chromium **154.0.8037.57**, Playwright
+**1.64.1**. Viewports 1440×1000 y móvil emulado 390×844; contextos adicionales de los
+roles heredan la emulación del dispositivo. Axe WCAG 2 A/AA y 2.1 AA y controles
+nuevos de tamaño táctil, sin atribuir validación manual de Windows o de campo.
+
+Antes de la batería completa aprobaron los diez casos PostgreSQL dirigidos (Z01–Z08,
+G12 y R08), el chequeo ACL y los dos validadores unitarios nuevos. El recorrido web
+dirigido aprobó **14/14**, y el ajuste táctil **4/4**, incluidos cierres/reinicio.
 La primera ejecución general web encontró una expectativa de texto anterior a la
 tarjeta «Ámbito autorizado / Sesión requerida». Se actualizó esa aserción sin quitar
-las comprobaciones de acceso privado; **28/28** casos afectados aprobaron después.
-**La repetición de la batería web completa sigue en ejecución.**
+las comprobaciones de acceso privado; **28/28** casos afectados aprobaron y se repitió
+la batería completa. La revisión visual posterior detectó filtros demasiado bajos;
+se ajustaron a 44 px y se verifican sus dimensiones en ambos dispositivos.
+El directorio inicialmente omitía las banderas nativas de salida y presentaba una
+unidad completa como En fila. Ahora reutiliza `operationalLabel`, fase y elegibilidad
+del snapshot para distinguir fila, completo/salida pendiente y viaje, sin inferir
+movimientos ni exigir seis personas observadas; se añadieron aserciones SQL y E2E.
+
 Se ejecutan primero pruebas dirigidas, después `npm run test:all` y
 `npm run test:web`, con PostgreSQL local real y Chromium, escritorio/móvil.
 No se sustituyen los casos anteriores. Los nuevos comprueban inventario APP/presencial,
 reintentos, concurrencia, cancelación/rechazo, privacidad de sesión, filas/retorno,
 rehabilitación y permisos por asociación/terminal.
 
-CI Ubuntu/Windows × Node 22/24: **pendiente de publicación/comprobación**.
-No se declarará aprobada ninguna ejecución pendiente o no realizada.
-Los resultados definitivos y capturas se incorporarán desde la ejecución final.
+CI Ubuntu/Windows × Node 22/24 de la versión final:
+[ejecución 41093034472](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41093034472).
+Ubuntu/22, Ubuntu/24 y Windows/24 aprobaron **49 + 220 + 60 casos cada uno**, con
+sus logs de cierre y reinicio contrastados. Windows/22 agotó inicialmente los 90 s
+del consentimiento de traslado en `recovery-transfer.spec.mjs`, esperando la respuesta
+al comando; no se recibió esa respuesta en ese intento. Se solicitó repetir ese job
+sobre el mismo commit, sin alterar timeouts, aserciones ni añadir reintentos a los tests.
+La repetición (`124197329722`) aprobó **49 + 220 + 60**, incluidos cierre y reinicio;
+la matriz final queda **4/4 aprobada**. Se contrastaron los cuatro logs finales.
+El timeout no se reprodujo. No se atribuye una causa concreta sin evidencia ni se
+presenta el primer intento como aprobado.
+
+| Entorno de CI | Unitarias | PostgreSQL | Chromium | Resultado final |
+| --- | --- | --- | --- | --- |
+| Ubuntu / Node 22 | 49 | 220 | 60 | Aprobado |
+| Ubuntu / Node 24 | 49 | 220 | 60 | Aprobado |
+| Windows / Node 22 | 49 | 220 | 60 | Aprobado tras la repetición registrada |
+| Windows / Node 24 | 49 | 220 | 60 | Aprobado |
+
+Matrices anteriores: `ec9d7d9` aprobó 4/4 con sus cuatro logs contrastados
+([41088045280](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41088045280)).
+En `f4faf7d`, Windows/24 falló inicialmente con `page.goto: net::ERR_NO_BUFFER_SPACE`
+al abrir Chromium; dominio/PostgreSQL y los otros 13 casos de ese archivo aprobaron.
+Se solicitó repetir ese job al terminar el workflow: el mismo commit aprobó después
+**49 + 220 + 60**, y la matriz terminó **4/4 aprobada**
+([41089823316](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41089823316)).
+Se conservan ambos fallos intermedios y sus resultados, sin sumarlos como casos nuevos.
+
+[Evidencia SQL mínima y hashes de capturas](evidencias/etapa-3-incremento-5.json),
+con cuatro estados finales de las pruebas (dos escenarios × dos dispositivos).
+Las posiciones del retorno se comprueban mediante recibo nativo y directorio;
+el testigo SQL actual no proyecta `position_no`. No se inventa esa columna en la evidencia.
+Las dos capturas del directorio se tomaron adicionalmente con Chromium en otro
+laboratorio nuevo del mismo código, sin sumarlas como casos nuevos.
+
+- [Directorio administrativo, escritorio](capturas/etapa-3-incremento-5-directorio-desktop.png).
+- [Directorio administrativo, móvil](capturas/etapa-3-incremento-5-directorio-mobile.png).
+- [Reserva presencial con importe conservado](capturas/etapa-3-incremento-5-presencial-desktop.png).
+- [Reserva propia cancelada, móvil](capturas/etapa-3-incremento-5-cancelacion-mobile.png).
+- [Rehabilitación simulada resuelta](capturas/etapa-3-incremento-5-rehabilitacion-desktop.png).
+- [Nueva entrada voluntaria sin salida automática](capturas/etapa-3-incremento-5-retorno-mobile.png).
+
+Capturas originales, solo datos ficticios. Configuración SQL, archivos de acceso,
+logs y trazas privadas permanecen en `.local/`, excluidos de Git.
 La matriz conserva ambos sistemas y familias Node; el presupuesto del job pasa de
 15 a 20 minutos por los cuatro laboratorios E2E aislados adicionales. Los timeouts
 de cada laboratorio, las pruebas anteriores y los checks de cierre se conservan.
@@ -175,3 +255,15 @@ retención, verificación legal, reembolsos o tiempos de rescate.
 Sigue siendo laboratorio ficticio en loopback, con base nueva por arranque. Sin
 publicación, pagos, GPS/OAuth real, comunicaciones externas o servicios contratados.
 PR #3 abierto hacia `desarrollo/etapa-2`; no se fusiona ni se inicia incremento 6.
+
+## Evaluación del incremento
+
+Se completó la consolidación descrita, sin rehacer los recorridos de los incrementos
+1–4 ni alterar sus contratos. La migración 026 se aplica sobre la base ficticia
+poblada conservando las filas previas, importes, miembros, historial y registro de
+migraciones; los checksums 001–025 permanecen intactos. **Incremento 5 verificado en
+su alcance de laboratorio**, con 329 casos locales y la matriz final 4/4 aprobados,
+sin omitir los fallos intermedios descritos. El commit posterior contiene únicamente
+README, este informe, la evidencia y las capturas; los resultados anteriores identifican
+explícitamente el commit funcional probado. No se declara cerrada toda la Etapa 3
+ni se inicia su incremento 6.
