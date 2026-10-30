@@ -4,6 +4,7 @@ import type {WebSession} from './private-api';
 import {useCommands} from './use-command';
 import {money} from './model';
 import type {OperationPoint} from './operation-model';
+import {operationalLabel} from './operation-model';
 
 const errorText=(error:unknown)=>error instanceof Error?error.message:'No se pudo consultar la operación.';
 async function read<T>(path:string,body:unknown){
@@ -13,7 +14,7 @@ async function read<T>(path:string,body:unknown){
 }
 const labels:Record<string,string>={QUEUED:'En fila',IN_TRANSIT:'En recorrido',COMPLETED:'Viaje finalizado',WITHDRAWN:'Retirado de fila'};
 interface Directory{
-  trips:{tripId:string;routeId:string;route:string;association:string;vehicle:string;status:string;position:string;onboard:number;blocked:boolean;confirmed:number;reserved:number}[];
+  trips:{tripId:string;routeId:string;route:string;association:string;vehicle:string;status:string;phase:string;departureEligible:boolean;operationAllowed:boolean;position:string;onboard:number;blocked:boolean;confirmed:number;reserved:number}[];
   routes:{id:string;name:string;association:string}[];hasMore:boolean;offset:number;limit:number;
 }
 export function FleetDirectory({onSelect}:{onSelect:(tripId:string)=>Promise<void>}){
@@ -30,7 +31,7 @@ export function FleetDirectory({onSelect}:{onSelect:(tripId:string)=>Promise<voi
       <div className="terminal-filters"><label>Ruta y asociación<select aria-label="Filtrar ruta y asociación" disabled={busy} value={route} onChange={e=>{setRoute(e.target.value);void load(e.target.value,status,0);}}><option value="">Todas las rutas autorizadas</option>{routes.map(r=><option key={r.id} value={r.id}>{r.name} · {r.association}</option>)}</select></label>
       <label>Estado del servicio<select aria-label="Filtrar estado del servicio" disabled={busy} value={status} onChange={e=>{setStatus(e.target.value);void load(route,e.target.value,0);}}><option value="ALL">Todos los estados</option>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div></>}
     {busy&&<p role="status">Consultando vehículos autorizados…</p>}
-    {data&&<><p role="status">Página {Math.floor(data.offset/data.limit)+1}. Orden registrado por asociación, ruta y posición.</p><div className="fleet-grid">{data.trips.map(t=><article className="fleet-card" key={t.tripId}><h3>{t.vehicle}</h3><p>{t.association} · {t.route}</p><p><strong>{labels[t.status]}</strong> · posición registrada {t.position}</p><p>{t.confirmed}/6 confirmadas · {t.reserved}/6 comprometidas, máximo por tramo · {t.onboard} personas observadas a bordo.</p><p>{t.blocked?'Unidad bloqueada por incidencia.':'Sin bloqueo de unidad registrado; se revalidan permisos y estado al operar.'}</p>{t.status!=='WITHDRAWN'?<button className="button quiet" onClick={()=>void onSelect(t.tripId)}>Ver operación de {t.vehicle}</button>:<p>Consulta su incidencia para el historial y la resolución permitida. No se reincorpora automáticamente.</p>}</article>)}</div>{data.trips.length===0&&<p>No hay servicios accesibles con estos filtros.</p>}
+    {data&&<><p role="status">Página {Math.floor(data.offset/data.limit)+1}. Orden registrado por asociación, ruta y posición.</p><div className="fleet-grid">{data.trips.map(t=><article className="fleet-card" key={t.tripId}><h3>{t.vehicle}</h3><p>{t.association} · {t.route}</p><p><strong>{t.status==='WITHDRAWN'?labels[t.status]:operationalLabel({...t,confirmedSeats:t.confirmed})}</strong> · posición registrada {t.position}</p><p>{t.confirmed}/6 confirmadas · {t.reserved}/6 comprometidas, máximo por tramo · {t.onboard} personas observadas a bordo.</p><p>{t.blocked?'Unidad bloqueada por incidencia.':'Sin bloqueo de unidad registrado; se revalidan permisos y estado al operar.'}</p>{t.status!=='WITHDRAWN'?<button className="button quiet" onClick={()=>void onSelect(t.tripId)}>Ver operación de {t.vehicle}</button>:<p>Consulta su incidencia para el historial y la resolución permitida. No se reincorpora automáticamente.</p>}</article>)}</div>{data.trips.length===0&&<p>No hay servicios accesibles con estos filtros.</p>}
       <nav className="terminal-pagination" aria-label="Páginas del directorio"><button className="button quiet" disabled={busy||offset===0} onClick={()=>void load(route,status,Math.max(0,offset-data.limit))}>Página anterior</button><button className="button quiet" disabled={busy||!data.hasMore||offset+data.limit>10000} onClick={()=>void load(route,status,offset+data.limit)}>Página siguiente</button></nav></>}
     {error&&<p role="alert" className="message error">{error}</p>}
   </section>;

@@ -55,6 +55,7 @@ export function createWebTerminalService(pool){
         snapshots AS MATERIALIZED(SELECT page.*,nexo.web_trip_snapshot("tripId",'ADMIN')AS detail FROM page)
         SELECT "tripId","routeId",route,association,vehicle,status,position,blocked,
         (detail->>'observedOnboard')::integer AS onboard,(detail->>'confirmedSeats')::integer AS confirmed,
+        detail->>'phase'AS phase,(detail->>'departureEligible')::boolean AS "departureEligible",(detail->>'operationAllowed')::boolean AS "operationAllowed",
         (SELECT coalesce(max((s->>'reserved')::integer),0) FROM jsonb_array_elements(detail->'segments')s)AS reserved
         FROM snapshots ORDER BY association,"routeId",position,"tripId"`,[q.routeId,q.status,q.limit+1,q.offset])).rows;
       return {trips:rows.slice(0,q.limit),routes,limit:q.limit,offset:q.offset,hasMore:rows.length>q.limit,snapshotOnly:true,routeLimit:100};
