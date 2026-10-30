@@ -80,7 +80,7 @@ try {
   const code = await new Promise((resolveCode, reject) => {
     const args = process.argv.includes('--verify-failure')
       ? ['--test','--nexo-invalid-test-option']
-      : ['--test','--test-concurrency=1','tests/integration/postgres.test.mjs'];
+      : ['--test','--test-concurrency=1',...process.argv.filter(arg=>arg.startsWith('--test-name-pattern=')),'tests/integration/postgres.test.mjs'];
     const child = spawn(process.execPath, args, {
       stdio: 'inherit', windowsHide: true,
       env: { ...process.env, NEXO_TEST_LOCAL: '1',

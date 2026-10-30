@@ -15,7 +15,7 @@ jobs:
         node: ['22', '24']
     name: tests (${{ matrix.os }}, Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -7,6 +7,7 @@ import {createIdentity}from'../auth/identity.mjs';
 import {createWebReservationService}from'../db/web-reservation-service.mjs';
 import {createWebOperationsService}from'../db/web-operations-service.mjs';
 import {createWebRecoveryService}from'../db/web-recovery-service.mjs';
+import {createWebTerminalService}from'../db/web-terminal-service.mjs';
 import {createWebSessions}from'./web-sessions.mjs';
 import { assertRuntime } from '../db/runtime.mjs';
 
@@ -24,7 +25,45 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   const business=identityPool?createWebReservationService(pool):null;
   const operations=identityPool?createWebOperationsService(pool):null;
   const recovery=identityPool?createWebRecoveryService(pool):null;
+  const terminal=identityPool?createWebTerminalService(pool):null;
   const sessions=identityPool?createWebSessions({identity:createIdentity(identityPool),business}):null;
+  // Fixed handler tables: every private POST is constructed with the CSRF gate.
+  // Request paths select a handler, never whether its security check is executed.
+  const secured=handler=>async(context,req,b,setCookie)=>{
+    sessions.csrf(context,req.headers['x-csrf-token']);
+    return handler(context,req,b,setCookie);
+  };
+  const authenticated=handler=>secured(async(context,req,b)=>{
+    await sessions.actor(context);
+    return handler(context.entry.token,req.headers['idempotency-key'],b);
+  });
+  const publicHandlers=new Map([
+    ['/api/localities',(_context,_req,b)=>service.localities(b)],
+    ['/api/availability',(_context,_req,b)=>service.availability(b)],
+    ['/api/points',(_context,_req,b)=>service.points(b)],
+    ['/api/segment',(_context,_req,b)=>service.segment(b)]
+  ]);
+  const privateHandlers=sessions?new Map([
+    ['/api/login',secured(async(context,_req,b,cookie)=>{const r=await sessions.login(context,b);cookie(r.handle);return r.body;})],
+    ['/api/logout',secured(async(context,_req,b,cookie)=>{if(Object.keys(b).length)throw denial(400,'INVALID_REQUEST');const r=await sessions.logout(context);cookie(null);return r;})],
+    ['/api/reservations/quote',authenticated((token,_key,b)=>business.quote(token,b))],
+    ['/api/reservations',authenticated((token,key,b)=>business.reserve(token,key,b))],
+    ['/api/operator/accept',authenticated((token,key,b)=>business.accept(token,key,b))],
+    ['/api/operations/overview',authenticated((token,_key,b)=>operations.overview(token,b))],
+    ['/api/operations/snapshot',authenticated((token,_key,b)=>operations.snapshot(token,b))],
+    ['/api/operations/command',authenticated((token,key,b)=>operations.command(token,key,b))],
+    ['/api/recovery/overview',authenticated((token,_key,b)=>recovery.overview(token,b))],
+    ['/api/recovery/detail',authenticated((token,_key,b)=>recovery.detail(token,b))],
+    ['/api/recovery/passenger',authenticated((token,_key,b)=>recovery.passenger(token,b))],
+    ['/api/recovery/transfer',authenticated((token,_key,b)=>recovery.transfer(token,b))],
+    ['/api/recovery/command',authenticated((token,key,b)=>recovery.command(token,key,b))],
+    ['/api/terminal/directory',authenticated((token,_key,b)=>terminal.directory(token,b))],
+    ['/api/terminal/sale-context',authenticated((token,_key,b)=>terminal.saleContext(token,b))],
+    ['/api/terminal/quote',authenticated((token,_key,b)=>terminal.quote(token,b))],
+    ['/api/terminal/walk-in',authenticated((token,key,b)=>terminal.walkIn(token,key,b))],
+    ['/api/terminal/return-options',authenticated((token,_key,b)=>terminal.returnOptions(token,b))],
+    ['/api/terminal/command',authenticated((token,key,b)=>terminal.command(token,key,b))]
+  ]):new Map();
   const root=resolve('apps/web/dist');const html=await readFile(resolve(root,'index.html'));
   // Host, same-origin and JSON checks are enforced here, independently of React.
   // Existing CLI-only listeners retain all their original transport restrictions.
@@ -57,35 +96,25 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
           if(!sessions)return send(200,{authenticated:false,mode:'LOCAL_LAB',reservationWritesEnabled:false});
           const result=await sessions.session(context);if(result.handle)setCookie(result.handle);return send(200,result.body);
         }
-        const publicRoutes={'/api/localities':'localities','/api/availability':'availability','/api/points':'points','/api/segment':'segment'};
         if(req.method==='GET'&&sessions&&['/api/passenger/bookings','/api/operator/offers'].includes(req.url)){
           await sessions.actor(context);return send(200,await business[req.url.includes('passenger')?'list':'operatorList'](context.entry.token));
         }
         if(/^\/api\/(admin|driver|passenger)(\/|$)/.test(req.url))throw denial(401,'AUTHENTICATION_REQUIRED');
-        const privateRoutes=['/api/login','/api/logout','/api/reservations/quote','/api/reservations','/api/operator/accept','/api/operations/overview','/api/operations/snapshot','/api/operations/command','/api/recovery/overview','/api/recovery/detail','/api/recovery/passenger','/api/recovery/transfer','/api/recovery/command'];
-        if(!publicRoutes[req.url]&&!(sessions&&privateRoutes.includes(req.url)))throw denial(404,'NOT_FOUND');
+        const handler=publicHandlers.get(req.url)??privateHandlers.get(req.url);
+        if(!handler)throw denial(404,'NOT_FOUND');
         if(req.method!=='POST')throw denial(405,'METHOD_NOT_ALLOWED');
         if(req.headers.origin!==origin)throw denial(403,'SAME_ORIGIN_REQUIRED');
         if(req.headers['content-type']!=='application/json'||req.headers['content-encoding'])throw denial(415,'JSON_REQUIRED');
         if(req.headers['content-length']&&Number(req.headers['content-length'])>2048)throw denial(413,'BODY_TOO_LARGE');
         const b=await jsonBody(req);
-        if(publicRoutes[req.url])return send(200,await service[publicRoutes[req.url]](b));
-        sessions.csrf(context,req.headers['x-csrf-token']);
-        if(req.url==='/api/login'){const r=await sessions.login(context,b);setCookie(r.handle);return send(200,r.body);}
-        if(req.url==='/api/logout'){if(Object.keys(b).length)throw denial(400,'INVALID_REQUEST');const r=await sessions.logout(context);setCookie(null);return send(200,r);}
-        await sessions.actor(context);
-        if(req.url==='/api/reservations/quote')return send(200,await business.quote(context.entry.token,b));
-        const key=req.headers['idempotency-key'];
-        if(req.url.startsWith('/api/recovery/'))return send(200,await recovery[req.url.slice('/api/recovery/'.length)](context.entry.token,...(req.url.endsWith('/command')?[key,b]:[b])));
-        if(req.url.startsWith('/api/operations/'))return send(200,await operations[req.url.slice('/api/operations/'.length)](context.entry.token,...(req.url.endsWith('/command')?[key,b]:[b])));
-        return send(200,await business[req.url==='/api/reservations'?'reserve':'accept'](context.entry.token,key,b));
+        return send(200,await handler(context,req,b,setCookie));
       }
       if(req.method!=='GET')throw denial(405,'METHOD_NOT_ALLOWED');
       if(pages.has(req.url))return send(200,html,'text/html; charset=utf-8');
       const asset=/^\/(app-[A-Z0-9]+\.(js|css))$/.exec(req.url);
       if(asset){let data;try{data=await readFile(resolve(root,asset[1]));}catch{throw denial(404,'NOT_FOUND');}return send(200,data,asset[2]==='js'?'text/javascript; charset=utf-8':'text/css; charset=utf-8');}
       throw denial(404,'NOT_FOUND');
-    }catch(e){const known=/^(INVALID_[A-Z_]+|UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|NO_CAPACITY|CAPACITY_EXCEEDED|FARE_CHANGED|FARE_UNRESOLVED|ROUTE_NOT_ELIGIBLE|TRIP_NOT_QUEUED|TRIP_NOT_IN_TRANSIT|PICKUP_PASSED|PICKUP_PASSED_OR_INCOMPATIBLE|QUOTE_CHANGED|OPERATION_BLOCKED|IDEMPOTENCY_CONFLICT|OFFER_EXPIRED|NOT_DRIVER|FORBIDDEN_SCOPE|STALE_ASSIGNMENT|STALE_OPERATION|NOT_FULL|UNACCEPTED_OFFERS|PICKUPS_PENDING|QUEUE_ORDER|INCOMPATIBLE_TRIP|INDIVIDUAL_HISTORY_ONLY|AGGREGATE_HISTORY_ONLY|OBSERVED_CAPACITY_EXCEEDED|UNSUPPORTED_URBAN_MANIFEST|OUTSIDE_URBAN_SCOPE|OUTSIDE_ROAD_SCOPE|ROUTE_CONDITION_BLOCKED|CONDITION_ACCEPTANCE_REQUIRED|MINOR_REVIEW_REQUIRED|COMPANION_REQUIRED|NO_COMPATIBLE_TRANSFER|NO_FREE_REPLACEMENT|ADMIN_TERMINAL_CHOICE_REQUIRED|REPLACEMENT_AVAILABLE|ADMIN_REVIEW_REQUIRED|SAFE_TRANSFER_REQUIRED|STALE_CONSENT|CONSENT_USED|PRESENCE_REQUIRED|TERMINAL_RESERVATION_BINDING|TRANSFER_CONDITIONS_CHANGED|VEHICLE_OUT_OF_SERVICE)$/;const message=known.test(e.message)?e.message:null;const status=e.status??(message==='INVALID_CREDENTIALS'||message==='UNAUTHENTICATED'?401:message==='FORBIDDEN'||message==='FORBIDDEN_SCOPE'||message==='NOT_DRIVER'?403:message==='NOT_FOUND'?404:message?.startsWith('INVALID_')?400:message?409:503);send(status,{error:e.status?e.code??'REQUEST_REJECTED':message??(req.url.startsWith('/api/local')||req.url==='/api/availability'?'CATALOG_UNAVAILABLE':'SERVICE_UNAVAILABLE')});req.resume();}
+    }catch(e){const known=/^(INVALID_[A-Z_]+|UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|NO_CAPACITY|CAPACITY_EXCEEDED|FARE_CHANGED|FARE_UNRESOLVED|ROUTE_NOT_ELIGIBLE|TRIP_NOT_QUEUED|TRIP_NOT_IN_TRANSIT|PICKUP_PASSED|PICKUP_PASSED_OR_INCOMPATIBLE|QUOTE_CHANGED|OPERATION_BLOCKED|IDEMPOTENCY_CONFLICT|OFFER_EXPIRED|NOT_DRIVER|FORBIDDEN_SCOPE|STALE_ASSIGNMENT|STALE_OPERATION|NOT_FULL|UNACCEPTED_OFFERS|PICKUPS_PENDING|QUEUE_ORDER|INCOMPATIBLE_TRIP|INDIVIDUAL_HISTORY_ONLY|AGGREGATE_HISTORY_ONLY|OBSERVED_CAPACITY_EXCEEDED|UNSUPPORTED_URBAN_MANIFEST|OUTSIDE_URBAN_SCOPE|OUTSIDE_ROAD_SCOPE|ROUTE_CONDITION_BLOCKED|CONDITION_ACCEPTANCE_REQUIRED|MINOR_REVIEW_REQUIRED|COMPANION_REQUIRED|NO_COMPATIBLE_TRANSFER|NO_FREE_REPLACEMENT|ADMIN_TERMINAL_CHOICE_REQUIRED|REPLACEMENT_AVAILABLE|ADMIN_REVIEW_REQUIRED|SAFE_TRANSFER_REQUIRED|STALE_CONSENT|CONSENT_USED|PRESENCE_REQUIRED|TERMINAL_RESERVATION_BINDING|TRANSFER_CONDITIONS_CHANGED|VEHICLE_OUT_OF_SERVICE|PASSENGERS_ONBOARD|TRIP_ALREADY_STARTED|NOT_AVAILABLE|ALREADY_ACTIVE|STALE_PREVIOUS_TRIP)$/;const message=known.test(e.message)?e.message:null;const status=e.status??(message==='INVALID_CREDENTIALS'||message==='UNAUTHENTICATED'?401:message==='FORBIDDEN'||message==='FORBIDDEN_SCOPE'||message==='NOT_DRIVER'?403:message==='NOT_FOUND'?404:message?.startsWith('INVALID_')?400:message?409:503);send(status,{error:e.status?e.code??'REQUEST_REJECTED':message??(req.url.startsWith('/api/local')||req.url==='/api/availability'?'CATALOG_UNAVAILABLE':'SERVICE_UNAVAILABLE')});req.resume();}
     finally{if(entered)inflight--;}
   });
   server.maxConnections=32;server.maxHeadersCount=32;server.on('clientError',(_error,socket)=>{if(socket.writable)socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');});

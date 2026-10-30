@@ -134,3 +134,18 @@ incidencias posteriores ajenas de la misma carrera. El administrador conserva su
 alcances por ruta dirigida/terminal; una asignación de rescate no puede solicitarla
 el chofer. UI, gateway, identidad y pools conservan las fronteras anteriores.
 [Informe, pruebas y procedimiento Windows](REPORTES/ETAPA_3_INCREMENTO_4.md).
+
+## Etapa 3, incremento 5: consolidación de terminal y filas
+
+`web-terminal-service` conecta directorio privado paginado, registro presencial con
+cotización, rechazo, cancelación propia y retorno voluntario. Las reservas WALK_IN
+usan el mismo `reserve_business` y su fuente fijada por servidor, sin una segunda
+existencia de asientos. Directorio deriva métricas de snapshots operativos nativos,
+aplica RLS/ámbito y devuelve solo tarjetas mínimas, sin manifiestos ni identidades.
+
+026 añade `web_request_queue`: actor/ámbito, idempotencia compatible con el recibo
+existente y cero personas observadas a bordo bajo bloqueo, antes de delegar en
+`request_queue`. No añade tablas ni escribe otra fila por su cuenta. La rehabilitación
+web delega en `restore_vehicle`; no crea una entrada administrativa tras retirar una
+unidad. El gateway registra handlers privados con CSRF incondicional por construcción.
+[Auditoría previa, resultados y pendientes](REPORTES/ETAPA_3_INCREMENTO_5.md).

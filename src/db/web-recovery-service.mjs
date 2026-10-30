@@ -4,7 +4,7 @@ import {object,id,actionKey} from '../domain/business.mjs';
 import {closureInput} from '../domain/stage2-closure.mjs';
 
 const commands={
- GROUP_CONSENT:['bookingId','targetTripId','episode'],APPROVE_TRANSFER:['consentId'],
+ GROUP_CONSENT:['bookingId','targetTripId','episode'],APPROVE_TRANSFER:['consentId'],RESTORE_VEHICLE:['vehicleId'],
  TERMINAL_REASSIGN:['incidentId','targetTripId','consentIds','safeTransfer'],
  ASSIGN_URBAN:['tripId','version','targetTripId'],SAFE_URBAN:['tripId','version','onboard'],
  ASSIGN_ROAD:['tripId','version','targetTripId','priority'],SAFE_ROAD:['tripId','version','onboard'],ESCALATE_ROAD:['tripId','version']
@@ -27,7 +27,7 @@ export function createWebRecoveryService(pool){
   await c.query("SELECT set_config('nexo.session_token',$1,true)",[token]);const actor=(await c.query('SELECT nexo.actor()AS id')).rows[0].id;
   if(!actor)throw new Error('UNAUTHENTICATED');const result=await work(c,actor);await c.query('COMMIT');return result;
  }catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}}
- const incidentFields=`SELECT f.id AS "incidentId",f.trip_id AS "tripId",f.context,f.state,f.reason,f.created_at AS "createdAt",t.route_id AS "routeId",t.status,
+ const incidentFields=`SELECT f.id AS "incidentId",f.trip_id AS "tripId",f.original_vehicle AS "originalVehicleId",f.context,f.state,f.reason,f.created_at AS "createdAt",t.route_id AS "routeId",t.status,
   r.name AS route,v.label AS vehicle,o.label AS "originalVehicle",rr.version AS "roadVersion",rr.phase AS "roadPhase",rr.terminal_priority AS priority
   FROM nexo.fleet_incidents f JOIN nexo.trips t ON t.id=f.trip_id JOIN nexo.routes r ON r.id=t.route_id
   JOIN nexo.vehicles v ON v.id=t.vehicle_id LEFT JOIN nexo.vehicles o ON o.id=f.original_vehicle LEFT JOIN nexo.road_rescues rr ON rr.incident_id=f.id`;
@@ -60,7 +60,9 @@ export function createWebRecoveryService(pool){
     JOIN nexo.stops s ON s.route_id=b.route_id AND s.stop_index=b.from_stop JOIN nexo.stops d ON d.route_id=b.route_id AND d.stop_index=b.to_stop
     WHERE EXISTS(SELECT FROM nexo.assignment_episodes e WHERE e.booking_id=b.id AND e.from_trip_id=$1 AND e.created_at>=(SELECT created_at FROM nexo.fleet_incidents WHERE id=$2))
     ORDER BY b.created_at,b.id LIMIT 50`,[i.tripId,i.incidentId])).rows;
-   return{incident:i,snapshot,affectedBookings,candidates,consents:await consents(c,snapshot.bookings.filter(b=>b.status==='CONFIRMED').map(b=>b.bookingId)),snapshotOnly:true,delivery:'DISABLED',candidateLimit:10};
+   const blocked=(await c.query('SELECT blocked,incident_id FROM nexo.vehicle_blocks WHERE vehicle_id=$1',[i.originalVehicleId])).rows[0];
+   const canRestore=blocked?.blocked&&blocked.incident_id===i.incidentId&&(i.context==='TERMINAL'?i.status==='QUEUED'&&snapshot.observedOnboard===0:i.state==='TRANSFERRED');
+   return{incident:i,snapshot,affectedBookings,candidates,consents:await consents(c,snapshot.bookings.filter(b=>b.status==='CONFIRMED').map(b=>b.bookingId)),canRestore:!!canRestore,originalVehicleBlocked:!!blocked?.blocked,snapshotOnly:true,delivery:'DISABLED',candidateLimit:10};
   });},
   transfer:(token,b)=>{object(b,['bookingId']);return tx(token,async c=>{
    const row=(await c.query('SELECT id,trip_id,route_id FROM nexo.bookings WHERE id=$1 AND nexo.manage_route(route_id)',[id(b.bookingId)])).rows[0];
@@ -74,6 +76,7 @@ export function createWebRecoveryService(pool){
    switch(b.kind){
     case'GROUP_CONSENT':{const r=await business.consentGroup(token,key,b.bookingId,b.targetTripId,b.episode,true);return{consentId:r.consentId,seats:r.seats};}
     case'APPROVE_TRANSFER':return business.approveTerminalTransfer(token,key,b.consentId);
+    case'RESTORE_VEHICLE':return business.restoreVehicle(token,key,b.vehicleId,true);
     case'TERMINAL_REASSIGN':return business.closure(token,key,'terminal-reassign',Object.fromEntries(Object.entries(b).filter(([k])=>k!=='kind')));
     case'ASSIGN_URBAN':case'SAFE_URBAN':return business.fleetCommand(token,key,b.tripId,b.version,b.kind==='ASSIGN_URBAN'?'ASSIGN':'SAFE_TRANSFER',b.targetTripId??null,b.onboard??null,true);
     case'ASSIGN_ROAD':case'SAFE_ROAD':case'ESCALATE_ROAD':return business.closure(token,key,'road-command',{tripId:b.tripId,version:b.version,command:{ASSIGN_ROAD:'ASSIGN',SAFE_ROAD:'SAFE_TRANSFER',ESCALATE_ROAD:'ESCALATE'}[b.kind],confirmed:true,...(b.kind==='ASSIGN_ROAD'?{targetTripId:b.targetTripId,priority:b.priority}:b.kind==='SAFE_ROAD'?{onboard:b.onboard}:{})});

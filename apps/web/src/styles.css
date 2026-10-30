@@ -23,3 +23,9 @@
 .consent-check{display:flex!important;align-items:flex-start;gap:.65rem;min-height:44px;padding:.5rem 0;font-weight:400!important}
 .consent-check input{flex:none;width:20px;height:20px;margin-top:.15rem;accent-color:#12483e}
 .driver-incident{border-top:1px solid #d5dfd5;padding:1rem 0}.recovery-detail{margin-top:1rem;overflow-wrap:anywhere}
+
+/* Incremento 5: directorio y operaciones existentes del núcleo, también en móvil. */
+.fleet-directory,.walk-in-sale{margin:24px 0;padding:20px;background:#fff;border:1px solid var(--line);border-radius:14px;min-width:0}
+.fleet-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin:16px 0}.fleet-card{border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;overflow-wrap:anywhere}.fleet-card h3{margin-top:0}
+.terminal-filters{display:flex;flex-wrap:wrap;gap:16px;margin-top:16px}.terminal-filters label{flex:1 1 240px;min-width:0}.terminal-filters select{width:100%}
+.terminal-pagination{display:flex;flex-wrap:wrap;gap:12px}.walk-in-sale fieldset,.return-queue fieldset,.cancel-booking,.reject-offer,.vehicle-restore{border:1px solid var(--line);border-radius:10px;padding:16px;margin:16px 0;min-width:0}.walk-in-sale select,.walk-in-sale input[type=number],.return-queue select{width:100%;min-height:44px}.walk-in-sale label{display:block;margin:12px 0}.walk-in-sale .consent-check{display:flex}.return-queue{margin-top:24px}.reject-offer{flex-basis:100%}

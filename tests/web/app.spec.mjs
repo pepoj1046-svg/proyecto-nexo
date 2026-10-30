@@ -28,7 +28,7 @@ test('reserva demostrativa reconsulta servidor y no ejecuta escrituras ni persis
  await page.reload();await expect(page.getByRole('heading',{name:'Primero, encuentra tu recorrido'})).toBeVisible();
 });
 test('navegación responsive y enlaces profundos de paneles no revelan datos operativos',async({page},info)=>{
- await page.goto('/');if(info.project.name==='mobile')await page.getByRole('button',{name:'Abrir navegación'}).click();await page.getByRole('link',{name:'Administración',exact:true}).click();await expect(page).toHaveURL(/\/administracion$/);await expect(page.getByRole('status')).toContainText('sesión requerida');await expect(page.getByRole('heading',{name:'Asociaciones autorizadas'})).toBeVisible();await expect(page.getByText('Pendiente de conexión',{exact:true})).toHaveCount(4);
+ await page.goto('/');if(info.project.name==='mobile')await page.getByRole('button',{name:'Abrir navegación'}).click();await page.getByRole('link',{name:'Administración',exact:true}).click();await expect(page).toHaveURL(/\/administracion$/);await expect(page.getByRole('status')).toContainText('sesión requerida');await expect(page.getByRole('heading',{name:'Ámbito autorizado'})).toBeVisible();await expect(page.getByText('Sesión requerida',{exact:true})).toHaveCount(4);
  await page.goto('/chofer');await expect(page.getByRole('heading',{name:'Tu recorrido, con claridad.'})).toBeVisible();await page.goto('/pasajero');await expect(page.getByRole('heading',{name:'Tus viajes, en un solo lugar.'})).toBeVisible();await expect(page.getByRole('heading',{name:'Ya llegué',exact:true})).toBeVisible();
 });
 test('servidor protege rutas administrativas e ignora roles inventados en el navegador',async({page,request,baseURL})=>{

@@ -8,6 +8,7 @@ import { resolve, sep } from 'node:path';
 import pg from 'pg';
 import { migrate } from '../../scripts/migrate.mjs';
 import { createBusinessService } from '../../src/db/business-service.mjs';
+import {createWebTerminalService} from '../../src/db/web-terminal-service.mjs';
 import { startBusinessRuntime } from '../../src/http/business-api.mjs';
 import { createService } from '../../src/db/service.mjs';
 import { createIdentity } from '../../src/auth/identity.mjs';
@@ -27,7 +28,7 @@ before(async () => {
   await admin.connect();
   const version = await admin.query('SHOW server_version');
   console.log(`PostgreSQL real: ${version.rows[0].server_version}`);
-  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql','005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql']);
+  assert.deepEqual(await migrate(admin),['001_core.sql','002_operations.sql','003_queue.sql','004_isolation_guard.sql','005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);
   // A real non-owner, non-superuser login exercises grants and RLS.
   await admin.query(`CREATE ROLE nexo_test_runtime LOGIN PASSWORD '${runtimePassword}'
     NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS INHERIT;
@@ -131,7 +132,7 @@ test('migrations: populated schema reapplication preserves every table and regis
   const before=await snapshot();
   assert.deepEqual(await migrate(admin),[]);
   assert.deepEqual(await snapshot(),before);
-  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,25);
+  assert.equal((await admin.query('SELECT * FROM public.nexo_migrations')).rowCount,26);
 });
 test('migrations: failed DDL rolls back; checksum drift is rejected',async()=>{
   const dir=await mkdtemp(resolve('.local','migration-test-'));
@@ -546,8 +547,9 @@ test('G11: authorization revocation preserves active trips, cancellation and ter
   await rejects(hold(),/ROUTE_NOT_ELIGIBLE/);
   assert.equal((await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3)).status,'COMPLETED');
 });
-test('G12: applied migrations 001-024 remain byte-identical',async()=>{
+test('G12: applied migrations 001-025 remain byte-identical',async()=>{
   const expected={
+    '025_web_recovery_reads.sql':'dd132b36adb74f8fd371f5193c221637837bb30ce083c097c0123e1b35e79467',
     '023_web_journeys.sql':'f446f0b0946056c6100b56f43c6ec71855dca636d37788fa69d17e3e9fddb212',
     '024_web_operations.sql':'08d0b3e0b18f6fbbe47b39c5233d29414419b276694bb02241f72d7f5916e2c3',
     '022_rescue_manifest_privacy.sql':'de2572bf53ee04116ba1e4da54aa3feed22385e31af024ea69fdfab44b3ed52b',
@@ -601,7 +603,7 @@ test('G13: additive upgrade of a populated 001-004 database preserves bookings a
     await db.query("INSERT INTO nexo.fares(id,association_id,route_id,from_stop,to_stop,version,amount_bob,valid_from) VALUES($1,$2,$3,0,1,1,10,now())",[fare,a,r]);
     await db.query("INSERT INTO nexo.bookings(id,association_id,trip_id,route_id,passenger_id,created_by,group_id,source,seats,from_stop,to_stop,fare_id,price_bob,fare_version,status,expires_at,driver_accepted) VALUES($1,$2,$3,$4,$5,$5,$1,'APP',2,0,1,$6,20,1,'CONFIRMED',now()+interval '1 hour',true)",[b,a,t,r,u,fare]);
     const before=(await db.query('SELECT * FROM nexo.bookings')).rows;
-    assert.deepEqual(await migrate(db),['005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql']);
+    assert.deepEqual(await migrate(db),['005_geography_authorizations.sql','006_search_authorization_functions.sql','007_eligibility_rls.sql','008_locality_lookup.sql','009_identity_and_provisioning.sql','010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);
     assert.deepEqual((await db.query('SELECT * FROM nexo.bookings')).rows,before);
     assert.deepEqual(await migrate(db),[]);
     assert.equal((await db.query('SELECT * FROM nexo.route_authorizations')).rowCount,0);
@@ -884,7 +886,7 @@ test('H10: populated 001-009 upgrade preserves sessions, tenant roles, permits, 
     assert.equal((await db.query("SELECT nexo.identity_attempt('blocked.fixture','LOGIN') AS r")).rows[0].r.allowed,false);
     assert.equal((await db.query('SELECT count(*)::integer AS n FROM nexo.identity_attempts')).rows[0].n,countBefore+1);
     const before=await snapshot();
-    assert.deepEqual(await migrate(db),['010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql']);
+    assert.deepEqual(await migrate(db),['010_security_and_abuse.sql','011_identity_maintenance.sql','012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);
     assert.deepEqual(await snapshot(),before); assert.deepEqual(await migrate(db),[]);
     await db.query("SELECT set_config('nexo.session_token',$1,false)",[managed.token]);
     assert.equal((await db.query('SELECT nexo.actor() AS actor')).rows[0].actor,account.user_id);
@@ -1240,7 +1242,7 @@ test('B12: populated Stage 1 (001-011) upgrades additively, preserving old booki
     const snapshot=async()=>{
       const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
     };
-    const before=await snapshot();assert.deepEqual(await migrate(db),['012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql']);
+    const before=await snapshot();assert.deepEqual(await migrate(db),['012_business_operations.sql','013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);
     assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
     assert.equal((await db.query('SELECT * FROM nexo.booking_movements')).rowCount,0);
     await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.d0]);
@@ -1487,7 +1489,7 @@ test('I12: populated 001-012 upgrade preserves every old row and aggregate histo
     const snapshot=async()=>{
       const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
     };
-    const before=await snapshot();assert.deepEqual(await migrate(db),['013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql']);assert.deepEqual(await snapshot(),before);
+    const before=await snapshot();assert.deepEqual(await migrate(db),['013_individual_operations.sql','014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);assert.deepEqual(await snapshot(),before);
     assert.equal((await db.query('SELECT * FROM nexo.booking_members')).rowCount,6);
     assert.equal((await db.query('SELECT * FROM nexo.member_movements')).rowCount,0);
     assert.equal((await db.query('SELECT * FROM nexo.absence_drafts')).rowCount,0);
@@ -1655,7 +1657,7 @@ test('J09: populated 001-013 upgrade preserves every old row and aggregate histo
     const snapshot=async()=>{
       const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
     };
-    const before=await snapshot();assert.deepEqual(await migrate(db),['014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql']);assert.deepEqual(await snapshot(),before);
+    const before=await snapshot();assert.deepEqual(await migrate(db),['014_terminal_operations.sql','015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);assert.deepEqual(await snapshot(),before);
     assert.equal((await db.query('SELECT * FROM nexo.booking_members')).rowCount,6);
     assert.equal((await db.query('SELECT * FROM nexo.member_movements')).rowCount,0);
     assert.equal((await db.query('SELECT * FROM nexo.absence_drafts')).rowCount,0);
@@ -1915,7 +1917,7 @@ test('K13: populated 001-014 upgrade preserves all old rows, movements and a leg
   const snapshot=async()=>{
    const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;
   };
-  const before=await snapshot();assert.deepEqual(await migrate(db),['015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
+  const before=await snapshot();assert.deepEqual(await migrate(db),['015_assignment_recovery.sql','016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
   await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.p]);
   const incident=(await db.query('SELECT nexo.assignment_status($1) AS s',[failed.bookingIds[0]])).rows[0].s;
   assert.equal(incident.state,'RECOVERY_PENDING');assert.equal(incident.originalTripId,fixture.trips[0]);assert.equal(incident.assignedTripId,fixture.trips[2]);assert.equal(incident.episodes[0].source,'LEGACY_TRANSFER');
@@ -2224,7 +2226,7 @@ test('F10: populated 001-015 upgrade preserves every old row and history, then c
     await db.query("DO $$ BEGIN IF to_regclass('nexo.booking_contracts') IS NOT NULL THEN ALTER TABLE nexo.bookings ENABLE TRIGGER capture_booking_contract;END IF;END $$");await db.query('ALTER TABLE nexo.bookings ENABLE TRIGGER assignment_tracking');
   await db.query("SELECT setval(pg_get_serial_sequence('nexo.episode_terminal_events','serial'),coalesce(max(serial),1),max(serial) IS NOT NULL) FROM nexo.episode_terminal_events");
   const snapshot=async()=>{const result={};for(const table of [...tables,'authorization_events'])result[table]=(await db.query('SELECT * FROM nexo.'+table+' t ORDER BY to_jsonb(t)::text')).rows;return result;};
-  const before=await snapshot();assert.deepEqual(await migrate(db),['016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
+  const before=await snapshot();assert.deepEqual(await migrate(db),['016_terminal_boarding.sql','017_urban_replacement.sql','018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
   assert.equal((await db.query('SELECT * FROM nexo.urban_runs')).rowCount,0);assert.equal((await db.query('SELECT * FROM nexo.movement_corrections')).rowCount,0);
   await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.d1]);await db.query('SELECT nexo.progress($1,$2,3)',[key(),fixture.trips[1]]);await db.query("SELECT nexo.record_movement($1,$2,'ALIGHT')",[key(),id]);
   assert.equal((await db.query('SELECT price_bob,status FROM nexo.bookings WHERE id=$1',[id])).rows[0].price_bob,'60.00');
@@ -2522,7 +2524,7 @@ test('Q23: populated 001-017 upgrade preserves all original rows, then old board
   await db.query('ALTER TABLE nexo.bookings ENABLE TRIGGER create_booking_members;ALTER TABLE nexo.bookings ENABLE TRIGGER assignment_tracking');
   const oldTables=(await db.query("SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='nexo' AND c.relkind='r' ORDER BY c.relname")).rows.map(r=>r.relname);
   const snapshot=async()=>{const x={};for(const t of oldTables)x[t]=(await db.query('SELECT * FROM nexo.'+db.escapeIdentifier(t)+' t ORDER BY to_jsonb(t)::text')).rows;return x;};
-  const before=await snapshot();assert.deepEqual(await migrate(db),['018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
+  const before=await snapshot();assert.deepEqual(await migrate(db),['018_operating_contracts.sql','019_journey_recovery.sql','020_scoped_administration.sql','021_scope_read_boundaries.sql','022_rescue_manifest_privacy.sql','023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
   assert.equal((await db.query('SELECT * FROM nexo.booking_contracts')).rowCount,0);assert.equal((await db.query('SELECT * FROM nexo.road_rescues')).rowCount,0);
   await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.d0]);await db.query('SELECT nexo.progress($1,$2,3)',[key(),fixture.trips[0]]);await db.query("SELECT nexo.record_movement($1,$2,'ALIGHT')",[key(),id]);
   assert.equal((await db.query('SELECT price_bob FROM nexo.bookings WHERE id=$1',[id])).rows[0].price_bob,'60.00');
@@ -2711,7 +2713,7 @@ test('W11: additive 023 upgrades a populated 001-022 database without rewriting 
  try{const dir=await mkdtemp(resolve('.local','stage3-web-migrations-'));const files=(await admin.query("SELECT name FROM public.nexo_migrations WHERE name<'023'ORDER BY name")).rows.map(x=>x.name);for(const file of files)await writeFile(resolve(dir,file),await readFile(new URL('../../database/migrations/'+file,import.meta.url)));assert.equal((await migrate(db,pathToFileURL(dir+sep))).length,22);
  const tables=['users','sessions','associations','memberships','geo_catalogs','departments','provinces','municipalities','localities','routes','stops','operation_reviewers','route_authorizations','vehicles','trips','fares','bookings','actions','audit_events','booking_members','assignment_episodes','assignment_outcomes','booking_contracts'];
  await db.query('ALTER TABLE nexo.bookings DISABLE TRIGGER capture_booking_contract;ALTER TABLE nexo.bookings DISABLE TRIGGER create_booking_members;ALTER TABLE nexo.bookings DISABLE TRIGGER assignment_tracking');for(const t of tables)for(const row of(await admin.query('SELECT * FROM nexo.'+t)).rows){const cols=Object.keys(row);await db.query(`INSERT INTO nexo.${t}(${cols.map(x=>db.escapeIdentifier(x)).join(',')})OVERRIDING SYSTEM VALUE VALUES(${cols.map((_,i)=>'$'+(i+1)).join(',')})`,Object.values(row));}await db.query('ALTER TABLE nexo.bookings ENABLE TRIGGER capture_booking_contract;ALTER TABLE nexo.bookings ENABLE TRIGGER create_booking_members;ALTER TABLE nexo.bookings ENABLE TRIGGER assignment_tracking');
- const all=(await db.query("SELECT tablename FROM pg_tables WHERE schemaname='nexo'ORDER BY tablename")).rows.map(x=>x.tablename),snapshot=async()=>{const r={};for(const t of all)r[t]=(await db.query('SELECT * FROM nexo.'+db.escapeIdentifier(t)+' x ORDER BY to_jsonb(x)::text')).rows;return r;};const before=await snapshot();assert.deepEqual(await migrate(db),['023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
+ const all=(await db.query("SELECT tablename FROM pg_tables WHERE schemaname='nexo'ORDER BY tablename")).rows.map(x=>x.tablename),snapshot=async()=>{const r={};for(const t of all)r[t]=(await db.query('SELECT * FROM nexo.'+db.escapeIdentifier(t)+' x ORDER BY to_jsonb(x)::text')).rows;return r;};const before=await snapshot();assert.deepEqual(await migrate(db),['023_web_journeys.sql','024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);
  await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.p]);assert.equal((await db.query('SELECT nexo.passenger_reservations()AS r')).rows[0].r.bookings[0].bookingId,g.bookingIds[0]);
  }finally{await db.end();}
 });
@@ -2777,7 +2779,7 @@ test('O11: populated increment-2 database upgrades from 023 to 024 preserving ev
   const dir=await mkdtemp(resolve('.local','stage3-operation-migrations-'));const files=(await admin.query("SELECT name FROM public.nexo_migrations WHERE name<'024'ORDER BY name")).rows.map(x=>x.name);for(const file of files)await writeFile(resolve(dir,file),await readFile(new URL('../../database/migrations/'+file,import.meta.url)));assert.equal((await migrate(db,pathToFileURL(dir+sep))).length,23);
   const tables=['users','sessions','associations','memberships','geo_catalogs','departments','provinces','municipalities','localities','routes','stops','operation_reviewers','route_authorizations','vehicles','trips','fares','bookings','actions','audit_events','booking_members','assignment_episodes','assignment_outcomes','booking_contracts'];
   await db.query('ALTER TABLE nexo.bookings DISABLE TRIGGER create_booking_members;ALTER TABLE nexo.bookings DISABLE TRIGGER assignment_tracking;ALTER TABLE nexo.bookings DISABLE TRIGGER capture_booking_contract');for(const t of tables)for(const row of(await admin.query('SELECT * FROM nexo.'+t)).rows){const cols=Object.keys(row);await db.query(`INSERT INTO nexo.${t}(${cols.map(x=>db.escapeIdentifier(x)).join(',')})OVERRIDING SYSTEM VALUE VALUES(${cols.map((_,i)=>'$'+(i+1)).join(',')})`,Object.values(row));}await db.query('ALTER TABLE nexo.bookings ENABLE TRIGGER create_booking_members;ALTER TABLE nexo.bookings ENABLE TRIGGER assignment_tracking;ALTER TABLE nexo.bookings ENABLE TRIGGER capture_booking_contract');
-  const old=(await db.query("SELECT tablename FROM pg_tables WHERE schemaname='nexo'ORDER BY tablename")).rows.map(x=>x.tablename);const snapshot=async()=>{const r={};for(const t of old)r[t]=(await db.query('SELECT * FROM nexo.'+db.escapeIdentifier(t)+' x ORDER BY to_jsonb(x)::text')).rows;return r;};const before=await snapshot();assert.deepEqual(await migrate(db),['024_web_operations.sql','025_web_recovery_reads.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.p]);const own=(await db.query("SELECT nexo.web_trip_snapshot($1,'PASSENGER')AS r",[fixture.trips[0]])).rows[0].r;assert.equal(own.bookings[0].bookingId,g.bookingIds[0]);assert.equal(own.bookings[0].priceBOB,'20.00');assert.ok(own.points.every(p=>p.kind==='UNCLASSIFIED'));assert.equal(own.mainPointId,null);
+  const old=(await db.query("SELECT tablename FROM pg_tables WHERE schemaname='nexo'ORDER BY tablename")).rows.map(x=>x.tablename);const snapshot=async()=>{const r={};for(const t of old)r[t]=(await db.query('SELECT * FROM nexo.'+db.escapeIdentifier(t)+' x ORDER BY to_jsonb(x)::text')).rows;return r;};const before=await snapshot();assert.deepEqual(await migrate(db),['024_web_operations.sql','025_web_recovery_reads.sql','026_web_queue_return.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.p]);const own=(await db.query("SELECT nexo.web_trip_snapshot($1,'PASSENGER')AS r",[fixture.trips[0]])).rows[0].r;assert.equal(own.bookings[0].bookingId,g.bookingIds[0]);assert.equal(own.bookings[0].priceBOB,'20.00');assert.ok(own.points.every(p=>p.kind==='UNCLASSIFIED'));assert.equal(own.mainPointId,null);
  }finally{await db.end();}
 });
 test('O12: an expired declaration remains visible as history, without renewing presence or cancelling seats',async()=>{
@@ -2842,6 +2844,79 @@ test('R08: populated 024 upgrade preserves all rows and adds only minimal recove
  const dir=await mkdtemp(resolve('.local','stage3-recovery-migrations-'));const files=(await admin.query("SELECT name FROM public.nexo_migrations WHERE name<'025'ORDER BY name")).rows.map(x=>x.name);for(const file of files)await writeFile(resolve(dir,file),await readFile(new URL('../../database/migrations/'+file,import.meta.url)));assert.equal((await migrate(db,pathToFileURL(dir+sep))).length,24);
  const tables=['users','sessions','associations','memberships','geo_catalogs','departments','provinces','municipalities','localities','routes','stops','operation_reviewers','route_authorizations','vehicles','trips','fares','bookings','actions','audit_events','booking_members','assignment_episodes','assignment_outcomes','booking_contracts'];
  await db.query('ALTER TABLE nexo.bookings DISABLE TRIGGER create_booking_members;ALTER TABLE nexo.bookings DISABLE TRIGGER assignment_tracking;ALTER TABLE nexo.bookings DISABLE TRIGGER capture_booking_contract');for(const t of tables)for(const row of(await admin.query('SELECT * FROM nexo.'+t)).rows){const cols=Object.keys(row);await db.query(`INSERT INTO nexo.${t}(${cols.map(x=>db.escapeIdentifier(x)).join(',')})OVERRIDING SYSTEM VALUE VALUES(${cols.map((_,i)=>'$'+(i+1)).join(',')})`,Object.values(row));}await db.query('ALTER TABLE nexo.bookings ENABLE TRIGGER create_booking_members;ALTER TABLE nexo.bookings ENABLE TRIGGER assignment_tracking;ALTER TABLE nexo.bookings ENABLE TRIGGER capture_booking_contract');
- const old=(await db.query("SELECT tablename FROM pg_tables WHERE schemaname='nexo'ORDER BY tablename")).rows.map(x=>x.tablename),snapshot=async()=>{const r={};for(const t of old)r[t]=(await db.query('SELECT * FROM nexo.'+db.escapeIdentifier(t)+' x ORDER BY to_jsonb(x)::text')).rows;return r;};const before=await snapshot();assert.deepEqual(await migrate(db),['025_web_recovery_reads.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.p]);const own=(await db.query('SELECT nexo.web_booking_recovery($1)AS r',[g.bookingIds[0]])).rows[0].r;assert.equal(own.status,'CONFIRMED');assert.equal(own.groupSeats,2);
+ const old=(await db.query("SELECT tablename FROM pg_tables WHERE schemaname='nexo'ORDER BY tablename")).rows.map(x=>x.tablename),snapshot=async()=>{const r={};for(const t of old)r[t]=(await db.query('SELECT * FROM nexo.'+db.escapeIdentifier(t)+' x ORDER BY to_jsonb(x)::text')).rows;return r;};const before=await snapshot();await writeFile(resolve(dir,'025_web_recovery_reads.sql'),await readFile(new URL('../../database/migrations/025_web_recovery_reads.sql',import.meta.url)));assert.deepEqual(await migrate(db,pathToFileURL(dir+sep)),['025_web_recovery_reads.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),['026_web_queue_return.sql']);assert.deepEqual(await snapshot(),before);assert.deepEqual(await migrate(db),[]);await db.query("SELECT set_config('nexo.session_token',$1,false)",[fixture.tokens.p]);const own=(await db.query('SELECT nexo.web_booking_recovery($1)AS r',[g.bookingIds[0]])).rows[0].r;assert.equal(own.status,'CONFIRMED');assert.equal(own.groupSeats,2);
  }finally{await db.end();await admin.query('DROP DATABASE '+admin.escapeIdentifier(name));}
+});
+
+const terminalWeb=()=>createWebTerminalService(pool);
+const terminalBody=(kind,fields)=>({kind,confirmed:true,...fields});
+const saleBody=(seats=2)=>({tripId:fixture.trips[0],boardingPointId:fixture.ra+':0',alightingPointId:fixture.ra+':3',seats});
+async function quotedSale(s,seats=2){const b=saleBody(seats),q=await s.quote(fixture.tokens.adminA,b);return{...b,quote:{fareId:q.fareId,fareVersion:q.fareVersion,totalBOB:q.totalBOB},confirmed:true};}
+test('Z01: administrative directory is scoped, paginated and counts simultaneous segments without passenger identities',async()=>{
+ const s=terminalWeb();const g=await fixed(4);await acceptAll(g);
+ const first=await s.directory(fixture.tokens.adminA,{limit:1});assert.equal(first.trips.length,1);assert.equal(first.hasMore,true);assert.equal(first.trips[0].confirmed,4);assert.equal(first.trips[0].reserved,4);assert.equal(first.trips[0].onboard,0);
+ const a=await fixed(6,1,{from:0,to:1}),b=await fixed(6,1,{from:1,to:3});await acceptAll(a);await acceptAll(b);const disjoint=(await s.directory(fixture.tokens.adminA,{})).trips.find(t=>t.tripId===fixture.trips[1]);assert.equal(disjoint.reserved,6);assert.equal(disjoint.confirmed,6);assert.ok(!JSON.stringify(first).includes(fixture.p));const next=await s.directory(fixture.tokens.adminA,{limit:1,offset:1});assert.notEqual(first.trips[0].tripId,next.trips[0].tripId);
+ await rejects(s.directory(fixture.tokens.p,{}),/FORBIDDEN/);await rejects(s.directory(fixture.tokens.d0,{}),/FORBIDDEN/);
+ assert.equal((await s.directory(fixture.tokens.adminA,{routeId:fixture.rb})).trips.length,0);
+ await provisionPool.query('SELECT nexo.configure_admin_scope($1,$2,$3,true)',[fixture.adminA,fixture.A,[]]);assert.equal((await s.directory(fixture.tokens.adminA,{})).trips.length,0);
+});
+test('Z02: web walk-ins share APP inventory, preserve quoted amount and repeat one native receipt',async()=>{
+ const s=terminalWeb(),q=await quotedSale(s,4),k=key();await rejects(s.walkIn(fixture.tokens.p,key(),q),/FORBIDDEN/);await rejects(s.saleContext(fixture.tokens.adminB,{tripId:fixture.trips[0]}),/FORBIDDEN/);
+ const r=await s.walkIn(fixture.tokens.adminA,k,q),again=await s.walkIn(fixture.tokens.adminA,k,q);assert.deepEqual(again,r);assert.equal(r.initialStatus,'HELD');assert.equal(r.totalPriceBOB,'40.00');
+ const b=await business().booking(fixture.tokens.adminA,r.bookingIds[0]);assert.equal(b.source,'WALK_IN');assert.equal(b.passenger_id,undefined);assert.equal((await admin.query('SELECT passenger_id FROM nexo.bookings WHERE id=$1',[r.bookingIds[0]])).rows[0].passenger_id,null);assert.equal(b.seats,4);
+ const app=await api.reserve(fixture.tokens.p,key(),{routeId:fixture.ra,from:0,to:3,seats:2,parts:[{tripId:fixture.trips[0],seats:2}]});
+ assert.equal((await s.directory(fixture.tokens.adminA,{})).trips[0].reserved,6);
+ await rejects(s.walkIn(fixture.tokens.adminA,key(),await quotedSale(s,1)),/QUEUE_ORDER|NO_CAPACITY/);
+ await api.respond(fixture.tokens.d0,key(),r.bookingIds[0],true);await acceptAll(app);await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);
+ assert.deepEqual(await s.walkIn(fixture.tokens.adminA,k,q),r,'receipt survives departure');assert.equal((await business().booking(fixture.tokens.adminA,r.bookingIds[0])).price_bob,'40.00');
+});
+test('Z03: simultaneous APP and web terminal requests never commit more than six in the same segment',async()=>{
+ const s=terminalWeb(),q=await quotedSale(s,4);
+ const rs=await Promise.allSettled([s.walkIn(fixture.tokens.adminA,key(),q),api.reserve(fixture.tokens.p,key(),{routeId:fixture.ra,from:0,to:3,seats:4,parts:[{tripId:fixture.trips[0],seats:4}]})]);
+ assert.equal(rs.filter(r=>r.status==='fulfilled').length,1);assert.match(rs.find(r=>r.status==='rejected').reason.message,/QUEUE_ORDER|NO_CAPACITY/);
+ assert.equal((await s.directory(fixture.tokens.adminA,{})).trips[0].reserved,4);
+});
+test('Z04: own-group cancellation and driver rejection are explicit, atomic and cannot access foreign reservations',async()=>{
+ const s=terminalWeb(),g=await fixed(4),id=g.bookingIds[0];
+ await rejects(s.command(fixture.tokens.other,key(),terminalBody('CANCEL_BOOKING',{bookingId:id})),/FORBIDDEN/);
+ await rejects(s.command(fixture.tokens.p,key(),terminalBody('REJECT_OFFER',{bookingId:id})),/FORBIDDEN/);
+ const rejectKey=key();await s.command(fixture.tokens.d0,rejectKey,terminalBody('REJECT_OFFER',{bookingId:id}));await s.command(fixture.tokens.d0,rejectKey,terminalBody('REJECT_OFFER',{bookingId:id}));assert.equal((await business().booking(fixture.tokens.p,id)).status,'REJECTED');
+ const h=await fixed(3);await acceptAll(h);const body=terminalBody('CANCEL_BOOKING',{bookingId:h.bookingIds[0]}),k=key();const rs=await Promise.all(Array.from({length:6},()=>s.command(fixture.tokens.p,k,body)));assert.ok(rs.every(r=>r.status==='CANCELLED'));
+ assert.equal((await admin.query("SELECT count(*)::integer AS n FROM nexo.audit_events WHERE entity_id=$1 AND action='GROUP_CANCELLED'",[h.groupId])).rows[0].n,1);
+ const onboard=await individualFixture(2);await business().terminalObservation(fixture.tokens.adminA,key(),onboard.bookingIds[0],null,'BOARD',2,3,true);await rejects(s.command(fixture.tokens.p,key(),terminalBody('CANCEL_BOOKING',{bookingId:onboard.bookingIds[0]})),/PASSENGERS_ONBOARD/);
+});
+test('Z05: voluntary destination return requires observed disembarkation and concurrent requests append exactly once',async()=>{
+ const s=terminalWeb(),g=await individualFixture(),target=await reverseQueue();await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);await business().movement(fixture.tokens.d0,key(),g.bookingIds[0],'BOARD');await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3);
+ const body=terminalBody('RETURN_QUEUE',{tripId:fixture.trips[0],routeId:target});assert.equal((await s.returnOptions(fixture.tokens.d0,{tripId:fixture.trips[0]})).reason,'ONBOARD_PENDING');
+ await rejects(s.command(fixture.tokens.d0,key(),body),/PASSENGERS_ONBOARD/);await rejects(s.command(fixture.tokens.adminA,key(),body),/FORBIDDEN/);await rejects(s.command(fixture.tokens.d3,key(),body),/FORBIDDEN/);
+ await business().movement(fixture.tokens.d0,key(),g.bookingIds[0],'ALIGHT');assert.equal((await s.returnOptions(fixture.tokens.d0,{tripId:fixture.trips[0]})).canReturn,true);
+ const keys=[key(),key()],rs=await Promise.allSettled(keys.map(k=>s.command(fixture.tokens.d0,k,body)));assert.equal(rs.filter(r=>r.status==='fulfilled').length,1);assert.match(rs.find(r=>r.status==='rejected').reason.message,/ALREADY_ACTIVE/);
+ const winner=rs.findIndex(r=>r.status==='fulfilled'),r=rs[winner].value;assert.equal(Number(r.position),3);await business().terminalImpediment(fixture.tokens.d0,key(),r.tripId,'REPORT','MECHANICAL_FAILURE',true);
+ assert.deepEqual(await s.command(fixture.tokens.d0,keys[winner],body),r,'replay is retained even after a later incident');assert.deepEqual(await api.requestQueue(fixture.tokens.d0,keys[winner],fixture.trips[0],target),r);await admin.query("UPDATE nexo.memberships SET active=false WHERE user_id=$1 AND role='DRIVER'",[fixture.drivers[0]]);await rejects(s.command(fixture.tokens.d0,keys[winner],body),/FORBIDDEN/);
+ assert.equal((await business().booking(fixture.tokens.p,g.bookingIds[0])).status,'COMPLETED');assert.equal((await admin.query('SELECT count(*)::integer AS n FROM nexo.trips WHERE route_id=$1',[target])).rows[0].n,2);
+});
+test('Z06: vehicle restoration uses native scope/repair rules, never dispatches or creates a replacement',async()=>{
+ const x=await terminalIncident(),r=await recoveries();const details=await r.detail(fixture.tokens.adminA,{incidentId:x.incidentId});assert.equal(details.canRestore,true);assert.equal(details.originalVehicleBlocked,true);
+ const body=recoveryBody('RESTORE_VEHICLE',{vehicleId:fixture.vehicles[0]});await rejects(r.command(fixture.tokens.d0,key(),body),/FORBIDDEN/);await rejects(r.command(fixture.tokens.adminB,key(),body),/FORBIDDEN/);
+ const k=key();await r.command(fixture.tokens.adminA,k,body);await r.command(fixture.tokens.adminA,k,body);assert.equal((await r.detail(fixture.tokens.adminA,{incidentId:x.incidentId})).originalVehicleBlocked,false);
+ assert.equal((await admin.query('SELECT status FROM nexo.trips WHERE id=$1',[fixture.trips[0]])).rows[0].status,'QUEUED');assert.equal((await admin.query("SELECT count(*)::integer AS n FROM nexo.fleet_events WHERE kind='VEHICLE_RESTORED'")).rows[0].n,1);await business().terminalObservation(fixture.tokens.adminA,key(),x.g.bookingIds[0],null,'BOARD',4,3,true);const later=await business().terminalImpediment(fixture.tokens.d0,key(),fixture.trips[0],'REPORT','MECHANICAL_FAILURE',true);assert.equal((await r.detail(fixture.tokens.adminA,{incidentId:later.incidentId})).canRestore,false);await rejects(r.command(fixture.tokens.adminA,key(),body),/INVALID_RECOVERY_STATE/);
+});
+test('Z07: every fixed private POST is CSRF guarded, public reads cannot select a mutation and revoked sessions stay denied',async()=>{
+ const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
+ const initial=await fetch(web.url+'/api/session'),anon=await initial.json(),cookie=initial.headers.get('set-cookie').split(';')[0];
+ for(const path of ['/api/login','/api/logout','/api/reservations','/api/reservations/quote','/api/operator/accept','/api/operations/overview','/api/operations/snapshot','/api/operations/command','/api/recovery/overview','/api/recovery/detail','/api/recovery/passenger','/api/recovery/transfer','/api/recovery/command','/api/terminal/directory','/api/terminal/sale-context','/api/terminal/quote','/api/terminal/walk-in','/api/terminal/return-options','/api/terminal/command']){
+  const r=await postJson(web.url,path,{}, {Origin:web.url,Cookie:cookie});assert.equal(r.status,403,path);assert.equal(r.body.error,'CSRF_REQUIRED',path);
+ }
+ assert.equal((await postJson(web.url,'/api/terminal/command',{}, {Origin:web.url,Cookie:cookie,'X-CSRF-Token':anon.csrf})).status,401);
+ for(const path of ['/api/terminal/constructor','/api/login/','/api/recovery/command?public=true'])assert.equal((await postJson(web.url,path,{}, {Origin:web.url,Cookie:cookie})).status,404);
+ assert.equal((await postJson(web.url,'/api/localities',{query:'Ya'}, {Origin:web.url})).status,200);
+ assert.equal((await postJson(web.url,'/api/localities',{kind:'RETURN_QUEUE'}, {Origin:web.url})).status,400);
+ const a=await browserLogin(web,'terminal.revocation');await postJson(web.url,'/api/logout',{}, {Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf});assert.equal((await postJson(web.url,'/api/terminal/directory',{}, {Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf})).status,403);
+ }finally{await web.close();}
+});
+test('Z08: new return wrapper exposes no generic privileges and revoked sessions block reads and mutations',async()=>{
+ const s=terminalWeb();await admin.query('UPDATE nexo.sessions SET revoked_at=clock_timestamp()WHERE user_id=$1',[fixture.drivers[0]]);await rejects(s.returnOptions(fixture.tokens.d0,{tripId:fixture.trips[0]}),/UNAUTHENTICATED/);
+ await rejects(s.command(fixture.tokens.d0,key(),terminalBody('RETURN_QUEUE',{tripId:fixture.trips[0],routeId:fixture.ra})),/UNAUTHENTICATED/);
+ const privileges=(await admin.query("SELECT has_function_privilege('nexo_app','nexo.web_request_queue(text,uuid,uuid)','EXECUTE')AS app,has_function_privilege('nexo_app','nexo.scope_core_restore_vehicle(text,uuid,boolean)','EXECUTE')AS internal")).rows[0];assert.equal(privileges.app,true);assert.equal(privileges.internal,false);
+ const path=(await admin.query("SELECT proconfig FROM pg_proc WHERE oid='nexo.web_request_queue(text,uuid,uuid)'::regprocedure")).rows[0].proconfig;assert.ok(path.some(x=>x==='search_path=pg_catalog, nexo, pg_temp'));const acl=(await admin.query("SELECT EXISTS(SELECT FROM pg_proc p,LATERAL aclexplode(coalesce(p.proacl,acldefault('f',p.proowner)))a WHERE p.oid='nexo.web_request_queue(text,uuid,uuid)'::regprocedure AND a.grantee=0 AND a.privilege_type='EXECUTE')AS public")).rows[0];assert.equal(acl.public,false);
 });

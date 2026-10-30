@@ -188,3 +188,28 @@ Siguen sin activarse cancelaciones por ausencia, GPS, dinero, avisos reales,
 despliegues o políticas comerciales/legales. Los controles de origen/loopback,
 separación de pools y límites de transporte permanecen. La configuración SQL del
 testigo E2E circula únicamente por IPC de pruebas, nunca en HTTP o evidencias públicas.
+
+## Etapa 3, incremento 5: controles de terminal y sesiones web
+
+Los POST privados están registrados como handlers protegidos por el mismo wrapper
+CSRF; los autenticados comprueban además la sesión real antes de llamar a adaptadores.
+No hay selección dinámica de métodos por sufijos ni un flag público que omita controles.
+El catálogo anónimo conserva únicamente consultas existentes de lectura.
+
+El directorio requiere administración y alcance; las cotizaciones/reservas presenciales
+se autorizan con el snapshot ADMIN y la mutación nativa. `source`, asociación, rol y
+actor no son campos aceptados desde el navegador. La cancelación web exige APP propia;
+rechazo/rehabilitación revalidan autoridad en los RPCs existentes. 026 añade solo una
+envoltura de retorno con EXECUTE restringido, search_path fijado y comprobación física
+antes de la mutación existente; no expone el registro genérico de acciones.
+
+Se invalidan respuestas antiguas de Mis reservas al cerrar/cambiar sesión. El progreso
+consultado de una asignación anterior se retira al cambiar viaje/vehículo/estado; las
+demás consultas siguen siendo instantáneas manuales, sin seguimiento entre pestañas.
+Se conserva la frontera SQL: una operación ya autorizada puede terminar tras revocar
+su sesión. No se presenta como cancelación transaccional de trabajos en curso.
+
+Los límites actuales son **120 solicitudes API/minuto por listener** y seis solicitudes
+simultáneas globales; no constituyen un limitador distribuido por cuenta. Cuerpo 2048
+bytes y acceso loopback/mismo origen conservados. Identidad real, MFA/TLS, pruebas de
+carga, retención y producción continúan fuera de este laboratorio.
