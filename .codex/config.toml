@@ -1,0 +1,5 @@
+# Configuracion exclusiva de subagentes para Trufis Bolivia.
+# La sesion principal conserva el control de las modificaciones.
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 2
