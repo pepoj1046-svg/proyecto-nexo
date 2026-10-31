@@ -461,3 +461,60 @@ Contratos de futuras aplicaciones: consulta de rutas/tarifas sin cuenta; reserva
 con cuenta; registro previsto Google, nombre/celular, sin edad/carnet obligatorios;
 notificaciones dentro de app. Solo son requisitos de integración futura. No se añade
 Google OAuth real, interfaces móviles/web completas ni envíos de ninguna clase.
+
+## Actualización autorizada: Etapa 3, Incremento 8A (029–030)
+
+Esta decisión del propietario reemplaza la aceptación discrecional para **reservas
+nuevas** de origen terminal, APP o presencial, expreso y partes terminales de grupos
+voluntariamente divididos. `reserve` y `reserve_enroute` clasifican el punto en SQL
+mediante `web_point_profiles`, nunca por nombre, `source`, `flow` o índice cero.
+Terminal explícita o expreso: `TURN_ASSIGNED`, `CONFIRMED` en el mismo commit de
+inventario, con `driver_accepted=false`. El chofer no puede aceptar/rechazar esta
+obligación; ante un impedimento utiliza incidencias. No crea BOARD ni salida.
+Recogidas autorizadas URBAN/ROAD y puntos UNCLASSIFIED conservan aceptación, HELD y
+su vencimiento técnico provisional de dos minutos. No se habilitan domicilios
+arbitrarios ni desvíos. El contrato actual comparte origen/destino entre las partes:
+no admite mezclar distintos puntos de subida en una misma petición.
+
+`booking_assignment_rules` registra el modo y motivo para cada reserva nueva.
+No hay backfill: las HELD históricas, incluidas vencidas o parcialmente aceptadas,
+conservan su contrato, recibos y expiración. Una repetición de su clave no las
+convierte en nuevas asignaciones directas. `initialStatus` es el estado del recibo
+original: CONFIRMED para nuevas terminales directas; HELD donde siga correspondiendo.
+El estado actual sigue consultándose por reserva, sin renovar el TTL.
+
+El núcleo 002 ya confirma **todas las partes** cuando acepta el último chofer de
+un grupo HELD. Las aceptaciones humanas anteriores son individuales, pero la
+transición final conjunta sí es transaccional. 029 conserva esta coordinación y
+considera listas las partes asignadas por turno sin falsificar aceptación humana.
+Para nuevas terminales el grupo completo nace confirmado o la transacción revierte.
+
+La sustitución terminal 019 conserva una única unidad compatible, fila, capacidad
+por segmentos y consentimiento vigente de cada grupo. Con personas abordadas,
+`safeTransfer` del administrador acredita **coordinación humana**, no recepción
+completada. 030 captura únicamente integrantes efectivamente abordados en una
+instantánea inmutable de origen, destino, episodio y hechos originales. Las reservas
+se reasignan lógicamente, pero la custodia física permanece en el origen hasta cada
+recepción real. El chofer receptor activo registra RECEIVE_MEMBER/RECEIVE_GROUP y,
+solo cuando recibió todos los esperados, CONFIRM_SAFE. No se crean BOARD/ALIGHT.
+Se bloquean salida, progreso y cambios incompatibles mientras falta esa confirmación.
+Un integrante reservado que no abordó no forma parte de la recepción ni se marca
+recibido. Administración supervisa, sin sustituir la declaración del receptor.
+En rescate urbano/carretera, SAFE_TRANSFER también exige al receptor actual activo,
+comprobado después de los locks; se conservan selección/exclusividad nativas.
+
+El reporte mecánico bloquea la unidad inmediatamente; confirmación, retiro y
+rehabilitación son estados/acciones separados. Rehabilitar no añade otra entrada a
+fila ni recupera automáticamente una carrera retirada.
+
+Las discrepancias NOT_BOARDED, ALIGHT_INCORRECT, WRONG_REPLACEMENT y OTHER_OPERATIONAL
+son registros privados, inmutables, auditables e idempotentes de revisión. El servidor
+captura episodio, importe, unidad y hechos; no acepta evidencias o autoridad del
+navegador. El responsable abre el reporte y su administrador autorizado lo consulta.
+Se muestran conteo y últimos 50 reportes por reserva; el historial íntegro se conserva.
+No hay corrección de hechos, sanción, cancelación, liberación de plazas ni pago
+por reportar. La política comercial de atención/retención sigue pendiente.
+
+Las tablas privadas nuevas niegan DML/lectura directa a `nexo_app`; RPC con actor,
+alcance, permisos, RLS y `search_path` fijado. Aliases internos sin EXECUTE público o
+de aplicación. Las cuatro rutas `/api/safety/*` requieren sesión y CSRF. Solo laboratorio.

@@ -1,17 +1,17 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incrementos 7A/7B,
+asociación, reservas por segmentos, asignación por turno, recogidas y despacho. Etapa 3, Incremento 8A,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 7.
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Incremento 8B.
 
 ## Etapa 3: interfaz web local
 
 React + TypeScript, búsqueda por origen/destino conectada a PostgreSQL, plazas por
 tramo y estados independientes por ruta. Inicio/cierre de sesión de prueba, puntos
 intermedios autorizados, solicitudes persistidas con idempotencia y «Mis reservas».
-`HELD` significa **pendiente**; solo el chofer asignado acepta en `/operador`.
+Las nuevas reservas de terminal y expresas se confirman por turno. `HELD` conserva su significado **pendiente** para recogidas autorizadas, puntos sin clasificar e historial anterior; solo el chofer asignado acepta esas ofertas en `/operador`.
 Terminal, presencia, abordajes individuales/grupales, despacho y progreso conectados
 a paneles de administrador y chofer con permisos reales. Sin OAuth ni despliegue.
 001–027 intactas en 7A/7B; 028 añade estimaciones y decisiones de condiciones. 027 conserva paginación web y cancelación
@@ -63,6 +63,14 @@ propias y consulta su presencia aunque exceda el primer bloque de 50. Los cambio
 concurrentes de listado exigen actualizar, sin concatenar páginas incompatibles.
 Motivo y confirmación obligatorios para cancelar administrativamente el grupo;
 revisión de condiciones separada de su aceptación por el responsable. Sin dinero.
+
+## Incremento 8A: turnos y traslados seguros
+
+Terminal, presencial y expreso se asignan sin rechazo discrecional. El chofer declara
+una falla mecánica mediante incidencias; la unidad queda bloqueada. Una sustitución
+con abordados exige recepción real y confirmación del chofer receptor antes de
+continuar. El pasajero puede reportar discrepancias para revisión sin cambiar plazas,
+hechos ni importes. [Informe y prueba en Windows](docs/REPORTES/ETAPA_3_INCREMENTO_8A.md).
 
 ## Etapa 2: reservas y negocio local
 

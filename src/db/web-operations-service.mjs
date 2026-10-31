@@ -32,7 +32,8 @@ export function createWebOperationsService(pool){
   snapshot:(token,b)=>{object(b,['view','tripId','limit','cursor','bookingId']);view(b);id(b.tripId);if(b.bookingId!==undefined){id(b.bookingId);if(b.view!=='PASSENGER')throw new Error('INVALID_VIEW');}const q=cursorPage(Object.fromEntries(Object.entries(b).filter(([k])=>['limit','cursor'].includes(k))));return tx(token,async c=>{
    const r=(await c.query('SELECT nexo.web_trip_page($1,$2,$3,$4,$5)AS result',[b.tripId,b.view,q.limit,q.cursor,b.bookingId??null])).rows[0].result;
    const rows=(await c.query("SELECT b.id,b.express,$2::boolean AND EXISTS(SELECT FROM nexo.passenger_decisions d WHERE d.booking_id=b.id AND d.decision='CANCEL_REQUEST'AND b.status IN('HELD','CONFIRMED')AND NOT EXISTS(SELECT FROM nexo.passenger_decisions f WHERE f.booking_id=b.id AND f.decision='CANCEL_CONFIRMED'AND f.id>d.id))AS pending FROM nexo.bookings b WHERE b.id=ANY($1::uuid[])",[r.bookings.map(b=>b.bookingId),b.view==='ADMIN'])).rows;
-   for(const entry of r.bookings){const row=rows.find(x=>x.id===entry.bookingId);if(row?.express)entry.express=true;if(b.view==='ADMIN'&&row?.pending)entry.cancelRequested=true;}return r;
+   const notices=b.view==='ADMIN'?(await c.query('SELECT nexo.trip_discrepancy_notices($1)AS r',[b.tripId])).rows[0].r:[];
+   for(const entry of r.bookings){const reports=notices.find(n=>n.bookingId===entry.bookingId)?.reports;if(reports)entry.discrepancyReports=reports;const row=rows.find(x=>x.id===entry.bookingId);if(row?.express)entry.express=true;if(b.view==='ADMIN'&&row?.pending)entry.cancelRequested=true;}if(b.view!=='PASSENGER'){const handoffs=(await c.query('SELECT nexo.trip_handoffs($1)AS r',[b.tripId])).rows[0].r.handoffs;if(handoffs.length)r.handoffs=handoffs;}return r;
   });},
   command:async(token,key,request)=>{
    const b=validateOperation(request);actionKey(key);

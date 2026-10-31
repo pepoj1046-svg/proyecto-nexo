@@ -40,3 +40,11 @@
 .route-condition-form textarea{min-height:96px;resize:vertical}
 .route-condition-form .button,.condition-card .button{max-width:100%;white-space:normal;min-height:44px;margin:.4rem 0}
 @media(max-width:600px){.route-condition-form .button,.condition-card .button{width:100%}.route-condition-form fieldset,.condition-card fieldset{padding:.75rem}}
+.safety-review,.handoff-panel{min-width:0;max-width:100%;margin:1rem 0;overflow-wrap:anywhere}
+.safety-review fieldset,.handoff-panel fieldset{min-width:0;max-width:100%;margin:1rem 0;border:1px solid var(--line);border-radius:10px;padding:1rem}
+.safety-review legend,.handoff-panel legend{max-width:100%;white-space:normal}
+.safety-review label,.handoff-panel label{display:block;margin:.75rem 0;line-height:1.5}
+.safety-review select{display:block;width:100%;max-width:100%;min-width:0;min-height:44px;padding:.6rem;border:1px solid #8a9d91;border-radius:8px;background:#fff;color:#253d34}
+.safety-review .button,.handoff-panel .button{max-width:100%;min-height:44px;white-space:normal;margin:.4rem 0}
+.handoff-group{min-width:0;border-top:1px solid var(--line);margin-top:1rem;padding-top:.5rem}
+@media(max-width:600px){.safety-review fieldset,.handoff-panel fieldset{padding:.75rem}.safety-review .button,.handoff-panel .button{width:100%}}

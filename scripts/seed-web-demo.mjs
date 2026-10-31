@@ -23,6 +23,7 @@ export async function seedWebDemo(db,pool) {
     localities[code]=randomUUID();await db.query('INSERT INTO nexo.localities VALUES($1,$2,$3,$4,$5)',[localities[code],catalog,municipalities[municipality],'LAB-'+code,name]);
   }
   const core=createService(pool),business=createBusinessService(pool),runs=[];
+  const acceptPending=async(token,k,id,accept)=>{const row=(await db.query('SELECT status FROM nexo.bookings WHERE id=$1',[id])).rows[0];if(row.status==='HELD')return core.respond(token,k,id,accept);if(row.status!=='CONFIRMED')throw new Error('INVALID_DEMO_ASSIGNMENT');};
   const names=['Horizonte del Chaco','Unión del Sur','Camino del Valle'];
   for(let n=0;n<3;n++) {
     const association=randomUUID(),route=randomUUID();
@@ -45,7 +46,7 @@ export async function seedWebDemo(db,pool) {
   }
   const reserve=async(run,trip,seats,from=0,to=3,actor=users.passenger)=>{
     const g=await core.reserve(actor.token,randomUUID(),{routeId:run.route,from,to,seats,parts:[{tripId:trip.id,seats}]});
-    for(const id of g.bookingIds)await core.respond(trip.driver.token,randomUUID(),id,true);return g;
+    if(g.status!=='CONFIRMED')for(const id of g.bookingIds)await acceptPending(trip.driver.token,randomUUID(),id,true);return g;
   };
   const a=runs[0];await reserve(a,a.trips[0],4,0,3,users.terminal0);const filler=await reserve(a,a.trips[0],2);
   await reserve(a,a.trips[1],2,0,1);await reserve(a,a.trips[1],4,1,3);
@@ -55,7 +56,7 @@ export async function seedWebDemo(db,pool) {
   await core.progress(a.trips[2].driver.token,randomUUID(),a.trips[2].id,1);
   await business.movement(a.trips[2].driver.token,randomUUID(),moving.bookingIds[0],'ALIGHT');
   const pickup=await business.closure(users.passenger.token,randomUUID(),'reserve-enroute',{tripId:a.trips[2].id,routeId:a.route,from:1,to:3,seats:2});
-  await core.respond(a.trips[2].driver.token,randomUUID(),pickup.bookingId,true);
+  await acceptPending(a.trips[2].driver.token,randomUUID(),pickup.bookingId,true);
   await reserve(runs[1],runs[1].trips[0],2);
   await business.closure(users.admin.token,randomUUID(),'route-condition',{routeId:runs[1].route,state:'DESVIO',reason:'BLOCKADE',description:'Desvío de prueba declarado por la asociación. Confirmar las condiciones antes de viajar.',affectedStops:[],confirmed:true});
   await business.closure(users.admin.token,randomUUID(),'route-condition',{routeId:runs[2].route,state:'SUSPENDIDA',reason:'LANDSLIDE',description:'Salida suspendida en esta simulación. La asociación mantiene atención administrativa.',affectedStops:[],confirmed:true});
@@ -118,7 +119,7 @@ export async function seedWebDemo(db,pool) {
     await core.cancel(users.terminal0.token,randomUUID(),g.bookingIds[0]);
    }
    const fresh=await core.reserve(users.terminal0.token,randomUUID(),{routeId:a.route,from:0,to:3,seats:1,parts:[{tripId:a.trips[0].id,seats:1}]});
-   await core.respond(users.driver0.token,randomUUID(),fresh.bookingIds[0],true);
+   await acceptPending(users.driver0.token,randomUUID(),fresh.bookingIds[0],true);
    await business.closure(users.adminH.token,randomUUID(),'route-condition',{routeId:a.route,state:'NORMAL',reason:'NORMAL',description:'Condiciones ficticias para revisión administrativa',affectedStops:[],confirmed:true});
   }
   if(process.env.NEXO_WEB_JOURNEY_FIXTURE==='1'){
@@ -126,7 +127,7 @@ export async function seedWebDemo(db,pool) {
    while((await db.query("SELECT 1 FROM nexo.trips WHERE route_id=$1 AND status='QUEUED' AND nexo.fits(id,0,3,4) LIMIT 1",[a.route])).rowCount){
     const g=await core.reserve(users.passenger.token,randomUUID(),{routeId:a.route,from:0,to:3,seats:4});
     const b=(await db.query('SELECT trip_id FROM nexo.bookings WHERE id=$1',[g.bookingIds[0]])).rows[0];
-    const t=(await db.query('SELECT driver_id FROM nexo.trips WHERE id=$1',[b.trip_id])).rows[0];const driver=Object.values(users).find(u=>u.id===t.driver_id);await core.respond(driver.token,randomUUID(),g.bookingIds[0],true);
+    const t=(await db.query('SELECT driver_id FROM nexo.trips WHERE id=$1',[b.trip_id])).rows[0];const driver=Object.values(users).find(u=>u.id===t.driver_id);await acceptPending(driver.token,randomUUID(),g.bookingIds[0],true);
    }
    for(const b of(await db.query("SELECT id FROM nexo.bookings WHERE route_id=$1 AND passenger_id=$2 AND status='CONFIRMED'",[runs[1].route,users.passenger.id])).rows)await core.cancel(users.passenger.token,randomUUID(),b.id);
   }

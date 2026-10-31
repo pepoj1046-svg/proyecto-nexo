@@ -36,11 +36,13 @@ export async function operationEvidence(project){
    const fleet=(await db.query('SELECT kind FROM nexo.fleet_events WHERE trip_id=$1 ORDER BY created_at,id',[tripId])).rows;
    const incidents=(await db.query(`SELECT f.id,f.context,f.state,f.original_vehicle,f.replacement_vehicle,f.replacement_queue_trip,r.phase AS road_phase,r.version AS road_version FROM nexo.fleet_incidents f LEFT JOIN nexo.road_rescues r ON r.incident_id=f.id WHERE f.trip_id=$1 ORDER BY f.created_at,f.id`,[tripId])).rows;
    const journey=(await db.query('SELECT kind FROM nexo.journey_events WHERE trip_id=$1 ORDER BY created_at,id',[tripId])).rows;
-   const onboard=movements.filter(m=>m.kind==='BOARD'&&!movements.some(a=>a.kind==='ALIGHT'&&a.booking_id===m.booking_id&&a.member_id===m.member_id))
+   const fromMovements=movements.filter(m=>m.kind==='BOARD'&&!movements.some(a=>a.kind==='ALIGHT'&&a.booking_id===m.booking_id&&a.member_id===m.member_id))
     .reduce((n,m)=>n+(m.member_id?1:bookings.find(b=>b.id===m.booking_id).seats),0);
+   const custody=(await db.query(`SELECT h.source_trip,h.target_trip,m.booking_id,m.member_id,m.episode,r.member_id IS NOT NULL AS received,u.label AS receiver,EXISTS(SELECT FROM nexo.terminal_handoff_confirmations c WHERE c.handoff_id=h.id)AS complete FROM nexo.terminal_handoffs h JOIN nexo.terminal_handoff_members m ON m.handoff_id=h.id LEFT JOIN nexo.terminal_handoff_receipts r ON r.handoff_id=h.id AND r.member_id=m.member_id LEFT JOIN nexo.users u ON u.id=r.actor_id WHERE h.source_trip=$1 OR h.target_trip=$1 ORDER BY h.id,m.member_id`,[tripId])).rows;
+   const onboard=fromMovements+custody.filter(m=>!m.received).reduce((n,m)=>n+(m.source_trip===tripId?1:-1),0);
    expect(trip.read_only).toBe('on');expect(trip.capacity).toBe(6);expect(onboard).toBe(trip.native_onboard);expect(onboard).toBeGreaterThanOrEqual(0);expect(onboard).toBeLessThanOrEqual(6);
    for(const s of segments){expect(s.reserved).toBeGreaterThanOrEqual(0);expect(s.reserved).toBeLessThanOrEqual(6);expect(s.confirmed).toBeLessThanOrEqual(s.reserved);}
-   return{trip,bookings,movements,segments,events,audits,fleet,incidents,journey,onboard};
+   return{trip,bookings,movements,segments,events,audits,fleet,incidents,journey,custody,onboard};
   }finally{await db.query('ROLLBACK');}
  },async record(label,state){steps.push({label,...state});await mkdir('.local/e2e-incremento-3',{recursive:true});await writeFile(`.local/e2e-incremento-3/estados-${project}.json`,JSON.stringify(steps,null,2));}};
 }

@@ -55,7 +55,7 @@ export function createWebRecoveryService(pool){
    else{const fn=i.context==='TERMINAL'?'terminal_replacement_candidate':'free_replacement';const candidate=(await c.query(`SELECT nexo.${fn}($1)AS id`,[i.incidentId])).rows[0].id;if(candidate)choices=[{tripId:candidate}];}
    const candidates=[];for(const choice of choices.slice(0,10)){const row=await vehicle(c,choice.tripId);if(row)candidates.push({...choice,...row});}
    let affectedBookings=snapshot.bookings.filter(b=>['CONFIRMED','COMPLETED'].includes(b.status)).map(b=>({...b,vehicle:snapshot.vehicleLabel}));
-   if(i.context==='TERMINAL'&&i.state==='TRANSFERRED')affectedBookings=(await c.query(`SELECT b.id AS "bookingId",b.seats,b.status,b.price_bob AS "priceBOB",s.name AS "boardingName",d.name AS "alightingName",v.label AS vehicle
+   if(i.context==='TERMINAL'&&['ASSIGNED','TRANSFERRED'].includes(i.state))affectedBookings=(await c.query(`SELECT b.id AS "bookingId",b.seats,b.status,b.price_bob AS "priceBOB",s.name AS "boardingName",d.name AS "alightingName",v.label AS vehicle
     FROM nexo.bookings b JOIN nexo.trips t ON t.id=b.trip_id JOIN nexo.vehicles v ON v.id=t.vehicle_id
     JOIN nexo.stops s ON s.route_id=b.route_id AND s.stop_index=b.from_stop JOIN nexo.stops d ON d.route_id=b.route_id AND d.stop_index=b.to_stop
     WHERE EXISTS(SELECT FROM nexo.assignment_episodes e WHERE e.booking_id=b.id AND e.from_trip_id=$1 AND e.created_at>=(SELECT created_at FROM nexo.fleet_incidents WHERE id=$2))

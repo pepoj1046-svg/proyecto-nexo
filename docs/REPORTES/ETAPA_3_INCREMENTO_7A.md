@@ -153,3 +153,15 @@ adicional, requiere un contrato separado. Permanecen verificación legal de meno
 responsables presenciales/configuración de cuentas, correcciones/recuperación especial
 y los procedimientos comerciales/legales indicados anteriormente. Solo laboratorio;
 no se cierra toda la Etapa 3 ni se inicia el incremento 8.
+
+## Aclaración técnica posterior — revisión del Incremento 8A
+
+La auditoría de 8A verificó que `002 respond_offer` ya cambia todas las partes HELD
+a CONFIRMED en la transacción que recibe la última aceptación. La explicación de
+este informe sobre ausencia de confirmación coordinada fue imprecisa: faltaba la
+nueva asignación directa autorizada por el propietario, no la atomicidad de la
+transición final de grupos. 029 conserva la coordinación existente y confirma
+terminales/expreso directamente por turno, sin aceptación ficticia. Las instrucciones
+de aceptación manual anteriores corresponden al contrato histórico de 7A; consultar
+el [contrato actualizado](../ETAPA_2_CONTRATOS.md#actualización-autorizada-etapa-3-incremento-8a-029030)
+y el [informe 8A](ETAPA_3_INCREMENTO_8A.md) para operaciones nuevas.

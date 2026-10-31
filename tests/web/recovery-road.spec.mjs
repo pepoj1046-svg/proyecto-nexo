@@ -8,7 +8,7 @@ test('rescate en carretera: tres roles, terminal autorizada, dos asignaciones co
  try{
   await login(page,'operativo0','/pasajero');const booking=page.locator('.saved-booking');await expect(booking).toHaveCount(1);
   const a=await(await context()).newPage(),d=await(await context()).newPage();await operational(a,'adminR','/administracion');const tripId=await a.getByLabel('Vehículo autorizado').inputValue(),before=await audit.read(tripId);expect(before.trip.phase).toBe('MAIN_TRIP');expect(before.trip.current_stop).toBe(2);expect(before.onboard).toBe(6);
-  await operational(d,'driver5','/chofer');await commandClick(d,d.getByRole('button',{name:'Reportar avería ficticia observada',exact:true}),'/api/operations/command');await expect(d.getByRole('button',{name:'Registrar llegada final Terminal Villa Montes (ficticia)',exact:true})).toBeDisabled();
+  await operational(d,'driver5','/chofer');await commandClick(d,d.getByRole('button',{name:'Reportar falla mecánica',exact:true}),'/api/operations/command');await expect(d.getByRole('button',{name:'Registrar llegada final Terminal Villa Montes (ficticia)',exact:true})).toBeDisabled();
   await a.getByRole('button',{name:'Actualizar operación',exact:true}).click();await expect(a.getByRole('button',{name:'Confirmar incidencia reportada',exact:true})).toBeVisible();await confirmIncident(a);const incidentId=await consoleIncident(a,'FICTICIO-OPERATIVO');
   await a.getByLabel('Terminal prioritaria',{exact:true}).selectOption('DESTINATION');await expect(a.locator('.recovery-detail')).toContainText('Primera opción autorizada: FICTICIO-RESCATE-DESTINO');
   const detailResponse=await api(a,'/api/recovery/detail',{incidentId,priority:'DESTINATION'}),detail=await detailResponse.json(),target=detail.candidates[0].tripId;

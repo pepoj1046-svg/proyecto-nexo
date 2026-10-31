@@ -190,3 +190,7 @@ Se conserva la limitación de confirmación coordinada descrita en 7A. Permanece
 procedimientos de menores/responsables, configuración de cuentas y correcciones/
 recuperación especial de los informes anteriores. No se cierra toda la Etapa 3 ni se
 declara el sistema listo para producción; sin incremento 8, despliegues o gastos nuevos.
+
+Aclaración posterior de 8A: la limitación de coordinación citada desde 7A se precisó
+al auditar el núcleo: la última aceptación ya confirma todas las partes en una
+transacción. Ver la aclaración de [7A](ETAPA_3_INCREMENTO_7A.md) y el contrato 029–030.
