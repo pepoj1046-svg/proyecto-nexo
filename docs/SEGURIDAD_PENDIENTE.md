@@ -124,3 +124,136 @@ Los pendientes operativos/legales anteriores se concretan en
 [decisiones actuales](DECISIONES_PENDIENTES_ETAPA_2.md) y el
 [informe de cierre](REPORTES/ETAPA_2_CIERRE_TECNICO.md); los informes previos conservan
 sus resultados históricos y no constituyen habilitación de producción.
+
+
+## Etapa 3, incremento 2: sesiones del navegador local
+
+La fachada web conserva el listener CLI anterior y sus contratos. El navegador
+recibe una cookie opaca HttpOnly/SameSite=Strict y un CSRF; el token de PostgreSQL
+permanece en memoria del servidor. Login rota ambos valores; las consultas privadas
+validan la sesión en SQL en cada operación. Logout revoca SQL y elimina el contexto.
+Los pools `nexo_identity` y `nexo_app` son distintos y no tienen aprovisionamiento.
+No se admiten identidades, roles ni asociaciones enviados por el cliente como autoridad.
+
+La cookie HTTP carece de Secure exclusivamente porque el laboratorio solo escucha
+127.0.0.1 con Host/Origin exactos, sin proxy ni CORS. Esto NO es una configuración
+para Internet: necesitaría HTTPS y política de cookies, identidad pública, protección
+de infraestructura y auditoría antes de cualquier propuesta de despliegue.
+Los puertos no aíslan cookies frente a otro proceso local hostil ni al administrador
+del SO. Los accesos generados son datos ficticios privados de una ejecución y se
+eliminan al detenerla; .local está excluido de Git. Una detención abrupta puede dejar
+archivos locales que el propietario deberá retirar. Nada debe contener datos reales.
+
+023 expone solo paradas/segmentos públicos elegibles y reservas APP propias mediante
+proyecciones con SECURITY DEFINER, search_path fijado y permisos explícitos.
+El historial propio excluye pasajeros ajenos aunque el actor tenga rol administrativo.
+No se habilitan nuevos permisos de escritura SQL ni se modifican 001–022.
+
+
+## Etapa 3, incremento 3: operaciones de terminal y viaje
+
+El modo ADMIN/DRIVER/PASSENGER solicitado por la interfaz no concede autoridad.
+`web_trip_snapshot` exige pertenencia/alcance real de administrador, conducción del
+viaje o reserva APP propia. Un pasajero recibe solo integrantes y presencia propios,
+no el manifiesto de otros grupos. Los snapshots son informativos y las mutaciones
+siguen revalidando permisos, estado, capacidad y parada bajo locks del núcleo.
+
+`web_observation` vincula el hecho al viaje/episodio mostrado. Toma los locks de
+idempotencia exterior/interior antes del lock de ruta y delega a terminal_observation,
+sin reconstruir BOARD/ALIGHT, sin DML de inventario ni modificar 001–023. Un ámbito
+revocado o un cliente que inventa rol, asociación, usuario o destino no autoriza nada.
+`web_point_profiles` solo se aprovisiona offline; no hay DML concedido a nexo_app.
+
+Los reportes/confirmaciones de incidencia son declaraciones ficticias auditadas,
+no atestación de seguridad vial ni asistencia de emergencia. Bloquean según el
+contrato existente y no cancelan reservas ni activan comunicaciones. Política de
+retención, operación comercial, correcciones tardías y resolución/rescate completos
+siguen sujetos a las decisiones y contratos previos. Solo datos ficticios locales.
+
+## Etapa 3, incremento 4: recuperación de laboratorio
+
+La web no expone RPCs arbitrarios, SQL, aprovisionamiento ni manifiestos de rescate.
+Los comandos permitidos reutilizan los contratos de consentimiento, traslado,
+sustitución y custodia segura existentes, con sesión, CSRF, confirmación y clave
+idempotente. La autoridad y los bloqueos se revalidan en PostgreSQL, incluidos los
+alcances de ambas terminales para el rescate interurbano.
+
+025 es solo lectura: pasajero APP propio y chofer activo de su asociación. Al perder
+la conducción, el chofer ve únicamente su incidencia histórica y el vehículo que se
+autorizó en ella; no recibe el estado/manifiesto de incidencias posteriores ajenas,
+conteos actuales ni autoridad de conducción. Las reservas afectadas se consultan
+por episodio desde el ámbito administrativo autorizado, conservando los precios.
+
+Siguen sin activarse cancelaciones por ausencia, GPS, dinero, avisos reales,
+despliegues o políticas comerciales/legales. Los controles de origen/loopback,
+separación de pools y límites de transporte permanecen. La configuración SQL del
+testigo E2E circula únicamente por IPC de pruebas, nunca en HTTP o evidencias públicas.
+
+## Etapa 3, incremento 5: controles de terminal y sesiones web
+
+Los POST privados están registrados como handlers protegidos por el mismo wrapper
+CSRF; los autenticados comprueban además la sesión real antes de llamar a adaptadores.
+No hay selección dinámica de métodos por sufijos ni un flag público que omita controles.
+El catálogo anónimo conserva únicamente consultas existentes de lectura.
+
+El directorio requiere administración y alcance; las cotizaciones/reservas presenciales
+se autorizan con el snapshot ADMIN y la mutación nativa. `source`, asociación, rol y
+actor no son campos aceptados desde el navegador. La cancelación web exige APP propia;
+rechazo/rehabilitación revalidan autoridad en los RPCs existentes. 026 añade solo una
+envoltura de retorno con EXECUTE restringido, search_path fijado y comprobación física
+antes de la mutación existente; no expone el registro genérico de acciones.
+
+Se invalidan respuestas antiguas de Mis reservas al cerrar/cambiar sesión. El progreso
+consultado de una asignación anterior se retira al cambiar viaje/vehículo/estado; las
+demás consultas siguen siendo instantáneas manuales, sin seguimiento entre pestañas.
+Se conserva la frontera SQL: una operación ya autorizada puede terminar tras revocar
+su sesión. No se presenta como cancelación transaccional de trabajos en curso.
+
+Los límites actuales son **120 solicitudes API/minuto por listener** y seis solicitudes
+simultáneas globales; no constituyen un limitador distribuido por cuenta. Cuerpo 2048
+bytes y acceso loopback/mismo origen conservados. Identidad real, MFA/TLS, pruebas de
+carga, retención y producción continúan fuera de este laboratorio.
+
+## Etapa 3, incremento 6: cancelación administrativa y páginas privadas
+
+La cancelación web administrativa requiere motivo técnico, confirmación, ámbito de
+todas las partes y asignación actual. La envoltura reclama claves antes de rutas y
+delega en `cancel`, sin omitir BOARD efectivo o viajes iniciados. La auditoría añade
+el motivo solo al producir un cambio, y un reintento autorizado conserva el recibo.
+El contrato CLI previo permanece compatible. No hay sanciones o dinero.
+
+Los cursores no son credenciales: cada página valida actor, vista, ruta/terminal o
+reserva APP propia. El helper de formato queda privado; no hay nuevos grants de DML,
+identidad o provisión. Cambios del conjunto invalidan la navegación, sin mezclar filas.
+La UI invalida respuestas antiguas al desmontar/cambiar sesión; se conserva la frontera
+de que una operación ya autorizada puede terminar después de revocarse su sesión.
+
+Se preservan plazos y contratos existentes. Las páginas son consultas vivas y la huella
+actual requiere evaluación de carga antes de cualquier propuesta productiva. Identidad
+real, MFA/TLS, retención, política legal y autorización de despliegue siguen pendientes.
+
+La corrección de sesiones web comparte solo lecturas simultáneas en vuelo y ordena
+login/logout con ellas para que una respuesta anónima anterior no reemplace la cookie
+nueva. No mantiene credenciales en una caché duradera ni sustituye revocación/autoridad
+SQL por estado del navegador. Formulario bloqueado mientras se prepara el contexto,
+sin nuevos reintentos ni timeouts ampliados; la sincronización entre pestañas sigue
+fuera del prototipo actual. Regresiones antes/después y E2E de respuesta retrasada.
+
+## Etapa 3, 7A/7B: nuevas superficies del laboratorio
+
+Expreso/división delegan al mismo inventario y tarifa: se rechaza dividir expresos,
+grupos con menores declarados, sumas inválidas, consentimiento ausente, cupo cambiado
+o salto de fila. La declaración de adultos no es verificación legal y no recoge edades.
+
+Los cuatro endpoints /api/conditions/* usan el wrapper fijo autenticado/CSRF. Solo
+administración de la ruta declara y resuelve; solo el responsable decide. Versión,
+actor y permisos se revalidan con bloqueos, sesiones revocables, recibos y auditoría.
+028 conserva 001–027, fija search_path, revoca PUBLIC/helpers y no concede acceso
+directo a la tabla privada de estimaciones. El rechazo registrado impide una posterior
+aceptación contradictoria incluso desde el RPC anterior y bloquea el abordaje.
+
+No hay cancelación automática ni liberación al solicitar revisión. Subsisten límites
+de resolución de grupos/observaciones, confirmación coordinada de varios choferes,
+verificación legal de menores/responsables, reversión de decisiones, retención, cobros
+y reembolsos. Estimación 0–10080 min es un límite técnico local, no una política o ETA.
+[Informes y comprobaciones](REPORTES/ETAPA_3_INCREMENTO_7B.md).

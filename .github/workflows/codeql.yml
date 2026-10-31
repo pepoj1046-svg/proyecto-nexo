@@ -1,0 +1,50 @@
+name: CodeQL - JavaScript y TypeScript
+
+on:
+  push:
+    branches:
+      - desarrollo/etapa-3
+    paths:
+      - 'apps/**'
+      - 'src/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/codeql.yml'
+  pull_request:
+    branches:
+      - desarrollo/etapa-3
+    paths:
+      - 'apps/**'
+      - 'src/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/codeql.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    name: CodeQL JavaScript/TypeScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - name: Obtener codigo
+        uses: actions/checkout@v4
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+      - name: Analizar
+        uses: github/codeql-action/analyze@v4

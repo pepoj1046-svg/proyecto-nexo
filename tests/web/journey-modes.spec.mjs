@@ -1,0 +1,20 @@
+import{test,expect}from'@playwright/test';
+import{readFile,mkdir}from'node:fs/promises';
+import AxeBuilder from'@axe-core/playwright';
+import{operationEvidence}from'./support/operation-evidence.mjs';
+const accounts=JSON.parse(await readFile(process.env.NEXO_WEB_CREDENTIALS_FILE,'utf8')).accounts;
+const login=async(page,user)=>{await page.getByLabel('Usuario ficticio',{exact:true}).fill(accounts[user].login);await page.getByLabel('Contraseña de prueba',{exact:true}).fill(accounts[user].password);await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await expect(page.getByRole('button',{name:'Revisar solicitud',exact:true})).toBeVisible();};
+async function choose(page,association){await page.goto('/');await page.getByRole('button',{name:'Probar Yacuiba'}).click();await page.getByRole('article',{name:association+' · ficticia',exact:true}).getByRole('button',{name:'Elegir viaje',exact:true}).first().click();}
+test('división voluntaria muestra dos vehículos e importe, exige responsable adulto y consentimiento, y conserva un grupo atómico',async({page},info)=>{
+ const audit=await operationEvidence(info.project.name);try{
+  await choose(page,'Horizonte del Chaco');await page.getByLabel('¿Cuántas plazas necesitas?',{exact:true}).selectOption('3');await page.getByRole('button',{name:'Reservar con sesión',exact:true}).click();await login(page,'viajero4');await page.getByRole('button',{name:'Revisar solicitud',exact:true}).click();const quote=page.locator('.checkout .quote');await expect(quote).toContainText('Trufi 1');await expect(quote).toContainText('Trufi 2');await expect(quote).toContainText('Bs 105');
+  await mkdir('.local/e2e-incremento-7a',{recursive:true});await page.locator('.checkout').screenshot({path:`.local/e2e-incremento-7a/proposal-${info.project.name}.png`,scale:'css'});await page.getByLabel('Confirmo el recorrido').check();const save=page.getByRole('button',{name:'Registrar solicitud',exact:true});await expect(save).toBeDisabled();await page.getByLabel('Declaro que este grupo').check();await expect(save).toBeDisabled();await page.getByLabel('Consiento explícitamente dividir').check();await expect(save).toBeEnabled();
+  const response=page.waitForResponse(r=>r.url().endsWith('/api/reservations')&&r.request().method()==='POST');await save.click();const r=await response;expect(r.status()).toBe(200);const body=await r.json();expect(body.bookings).toHaveLength(2);expect(body.bookings.map(b=>b.seats).sort()).toEqual([1,2]);
+  for(const b of body.bookings){const s=await audit.read(b.tripId);expect(s.segments.every(s=>s.reserved<=6)).toBe(true);expect(s.trip.departed_at).toBeNull();}
+  await mkdir('.local/e2e-incremento-7a',{recursive:true});await page.screenshot({path:`.local/e2e-incremento-7a/split-${info.project.name}.png`,fullPage:true});
+ }finally{await audit.close();}
+});
+test('expreso cotiza tarifa configurada del vehículo completo sin dividir ni afirmar seis personas',async({page},info)=>{
+ await choose(page,'Unión del Sur');await page.getByLabel('Modalidad',{exact:true}).selectOption('EXPRESS');await page.getByRole('button',{name:'Reservar con sesión',exact:true}).click();await login(page,'viajero5');await page.getByRole('button',{name:'Revisar solicitud',exact:true}).click();await expect(page.locator('.checkout .quote')).toContainText('Bs 150');await expect(page.getByLabel('Consiento explícitamente dividir')).toHaveCount(0);await expect(page.locator('.checkout')).toContainText('sin afirmar seis personas');await page.getByLabel('Confirmo el recorrido').check();await page.getByRole('button',{name:'Registrar solicitud',exact:true}).click();await expect(page.locator('.checkout [role=status]')).toContainText('Solicitud registrada');
+ expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);await page.locator('.checkout').screenshot({path:`.local/e2e-incremento-7a/express-${info.project.name}.png`,scale:'css'});await page.goto('/pasajero');await expect(page.locator('.saved-booking')).toContainText('Vehículo completo');await expect(page.locator('.saved-booking')).toContainText('Bs 150');
+});

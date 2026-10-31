@@ -94,3 +94,91 @@ inventario ni despacho. [Contratos y fronteras](ETAPA_2_CONTRATOS.md).
 terminal/episodios, sustitución urbana y rescate interurbano, ventas en ruta,
 condiciones declaradas y administración restringida. No servicios públicos ni apps.
 [Contratos actuales](ETAPA_2_CONTRATOS.md) y [evidencia/fronteras de cierre](REPORTES/ETAPA_2_CIERRE_TECNICO.md).
+
+## Etapa 3, incremento 1 autorizado: interfaz web local
+
+React/TypeScript compilado estáticamente con esbuild. El gateway de mismo origen
+sirve assets y una lista de consultas públicas sobre los servicios PostgreSQL
+existentes, con nexo_app y sesión técnica de catálogo solo en servidor. La conexión
+propietaria se cierra antes de escuchar. Sin base paralela, SQL desde navegador ni
+escrituras web. Paneles privados pendientes, APIs 401. El runner existente inicia
+y detiene el clúster efímero de 001–022 y el gateway. No Next.js/SSR ni proveedores.
+[Informe, seguridad y ejecución](REPORTES/ETAPA_3_INCREMENTO_1.md).
+
+
+## Etapa 3: incrementos 2–3 de laboratorio
+
+El gateway de mismo origen conserva sesiones web opacas con cookie protegida y CSRF,
+identidad SQL separada del pool nexo_app y setup cerrado antes de escuchar. No se
+promueve a Internet el listener CLI previo. Las operaciones web se limitan a comandos
+expresamente admitidos; cada RPC vuelve a autorizar con la sesión y el ámbito SQL.
+
+023 proyecta puntos/segmentos y reservas propias. 024 añade tipos de puntos declarados
+offline, un snapshot operativo por rol y una envoltura de observación vinculada a
+viaje/episodio. Esta envoltura reclama idempotencia antes de bloquear ruta y delega
+el hecho al RPC existente; no mantiene otro inventario. Presencia, verificación,
+abordaje, salida, fin de recogidas y llegada siguen separados y auditados.
+[Operaciones web, límites y procedimiento](REPORTES/ETAPA_3_INCREMENTO_3.md).
+
+## Etapa 3, incremento 4: recuperación operativa en la web
+
+`web-recovery-service` es una fachada con comandos cerrados sobre consent_group_transfer,
+approve_terminal_transfer, reassign_terminal_incident, fleet_command y road_command.
+Las lecturas usan RLS y las funciones existentes de candidatos/estado; la transacción
+de escritura sigue siendo la del núcleo, con sus locks, versiones e idempotencia.
+No hay inventario ni motor de sustitución nuevo en React o en Node.
+
+025 añade únicamente proyecciones de lectura por reserva APP propia y por chofer.
+Un chofer sustituido consulta su incidencia histórica, sin manifiesto ni datos de
+incidencias posteriores ajenas de la misma carrera. El administrador conserva sus
+alcances por ruta dirigida/terminal; una asignación de rescate no puede solicitarla
+el chofer. UI, gateway, identidad y pools conservan las fronteras anteriores.
+[Informe, pruebas y procedimiento Windows](REPORTES/ETAPA_3_INCREMENTO_4.md).
+
+## Etapa 3, incremento 5: consolidación de terminal y filas
+
+`web-terminal-service` conecta directorio privado paginado, registro presencial con
+cotización, rechazo, cancelación propia y retorno voluntario. Las reservas WALK_IN
+usan el mismo `reserve_business` y su fuente fijada por servidor, sin una segunda
+existencia de asientos. Directorio deriva métricas de snapshots operativos nativos,
+aplica RLS/ámbito y devuelve solo tarjetas mínimas, sin manifiestos ni identidades.
+
+026 añade `web_request_queue`: actor/ámbito, idempotencia compatible con el recibo
+existente y cero personas observadas a bordo bajo bloqueo, antes de delegar en
+`request_queue`. No añade tablas ni escribe otra fila por su cuenta. La rehabilitación
+web delega en `restore_vehicle`; no crea una entrada administrativa tras retirar una
+unidad. El gateway registra handlers privados con CSRF incondicional por construcción.
+[Auditoría previa, resultados y pendientes](REPORTES/ETAPA_3_INCREMENTO_5.md).
+
+## Etapa 3, incremento 6: administración y consulta completa
+
+027 conserva 001–026 y los RPCs nativos. Añade una proyección privada con el contrato
+de campos 023–024, lectura paginada y cancelación administrativa con motivo sobre
+`cancel`. Cursores vinculados a actor/vista/viaje/tamaño y huella de IDs/fecha/viaje/
+estado detectan cambios del conjunto; no conceden autoridad ni son un histórico
+congelado. Los comandos revalidan en el núcleo, con sus locks y auditoría.
+
+`web-management-service` conecta revisión del grupo, condición vigente y acciones
+cerradas. ADMIN_REVIEW no sustituye ACCEPT del responsable. `web_trip_page` conserva
+metadatos globales de capacidad aunque muestre solo una página; no limita inventario
+a lo visible. La presencia propia puede enfocarse por reserva. Se mantienen RLS,
+identidad/pools separados, same-origin/CSRF y el límite loopback.
+[Informe, límites y guía Windows](REPORTES/ETAPA_3_INCREMENTO_6.md).
+
+## Etapa 3, incrementos 7A y 7B
+
+La web conecta expresos y división voluntaria usando quote/reserve_business/parts del
+mismo núcleo. `proposal:true` solicita una propuesta derivada de disponibilidad nativa;
+quote conserva su forma anterior si no se solicita. No hay inventario alternativo.
+Las retenciones de todas las partes son atómicas; la aceptación de cada chofer sigue
+su contrato. La presentación del grupo distingue aceptación parcial de confirmación
+completa. Expreso significa seis plazas técnicas durante el segmento contratado,
+con tarifa expresa configurada y sin dividirlo ni inferir seis personas observadas.
+
+028 añade estimaciones inmutables por ruta/versión, cuatro RPC web restringidos y
+REJECT en el registro de decisiones existente. El rechazo no cambia el estado de la
+reserva; impide aceptación contradictoria y abordaje bajo esa versión. La solicitud
+CANCEL_REQUEST conserva inventario y precio; la resolución explícita delega al RPC
+nativo de resolución tardía, manteniendo sus límites. Puntos, tarifas y actor se
+validan en servidor, con versión esperada y bloqueos. Sin ETA, GPS o recargos.
+[7A](REPORTES/ETAPA_3_INCREMENTO_7A.md) · [7B](REPORTES/ETAPA_3_INCREMENTO_7B.md).

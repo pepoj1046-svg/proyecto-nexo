@@ -85,3 +85,16 @@ No cambia filas previas ni inventario; las reservas antiguas carecen de observac
 hasta registrarlas válidamente. `reserve_business` reutiliza `reserve` y valida la
 instantánea de precio esperada dentro de la misma transacción.
 [Semántica, datos y límites](ETAPA_2_CONTRATOS.md).
+
+## Etapa 3: condiciones versionadas, migración 028
+
+`route_condition_estimates(route_id,revision)` enlaza la versión exacta de
+`condition_history`, con minutos adicionales opcionales, actor y fecha. Es privada,
+con RLS e inmutabilidad; no cambia la estructura/filas de route_conditions ni importa
+estimaciones entre versiones. Los contratos antiguos sin estimación conservan NULL.
+
+`condition_decisions` admite REJECT además de ACCEPT/ADMIN_REVIEW. La exclusión de
+ACCEPT/REJECT por reserva/versión se comprueba bajo bloqueo de ruta; las filas siguen
+inmutables. No aparece un estado nuevo en bookings. CANCEL_REQUEST/CANCEL_CONFIRMED
+siguen en passenger_decisions y la reserva conserva precio y plazas hasta la operación
+nativa autorizada. Las referencias de grupo y partes continúan en bookings.
