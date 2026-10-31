@@ -2,7 +2,7 @@ import {spawn} from 'node:child_process';
 import {access,writeFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const run=(args,env=process.env)=>new Promise((resolve,reject)=>{const p=spawn(process.execPath,args,{stdio:'inherit',env,windowsHide:true});p.once('error',reject);p.once('exit',code=>resolve(code??1));});
-const allSuites=['app.spec.mjs','functional.spec.mjs','operations.spec.mjs','operation-permissions.spec.mjs','checkout-races.spec.mjs','recovery-transfer.spec.mjs','recovery-terminal.spec.mjs','recovery-urban.spec.mjs','recovery-road.spec.mjs','recovery-urgent.spec.mjs','terminal-sales.spec.mjs','terminal-return.spec.mjs','administration.spec.mjs'];
+const allSuites=['app.spec.mjs','functional.spec.mjs','operations.spec.mjs','operation-permissions.spec.mjs','checkout-races.spec.mjs','recovery-transfer.spec.mjs','recovery-terminal.spec.mjs','recovery-urban.spec.mjs','recovery-road.spec.mjs','recovery-urgent.spec.mjs','terminal-sales.spec.mjs','terminal-return.spec.mjs','administration.spec.mjs','journey-modes.spec.mjs','conditions.spec.mjs'];
 const options=process.argv.slice(2);if(options.some(a=>!/^--(suite|project)=/.test(a))||new Set(options.map(a=>a.split('=')[0])).size!==options.length)throw new Error('INVALID_TEST_SELECTION');
 const suiteOption=options.find(a=>a.startsWith('--suite='))?.slice(8),projectOption=options.find(a=>a.startsWith('--project='))?.slice(10);
 const suites=suiteOption===undefined?allSuites:suiteOption.split(',');
@@ -12,9 +12,9 @@ let failed=await run(['node_modules/typescript/bin/tsc','--noEmit','-p','apps/we
 if(!failed)failed=await run(['scripts/build-web.mjs']);
 if(!failed) {
  projects:for(const project of projects) for(const suite of suites) {
-  const needsAudit=['operations.spec.mjs','operation-permissions.spec.mjs'].includes(suite)||suite.startsWith('recovery-')||suite.startsWith('terminal-')||suite==='administration.spec.mjs';
+  const needsAudit=['operations.spec.mjs','operation-permissions.spec.mjs'].includes(suite)||suite.startsWith('recovery-')||suite.startsWith('terminal-')||['administration.spec.mjs','journey-modes.spec.mjs','conditions.spec.mjs'].includes(suite);
   const child=spawn(process.execPath,['scripts/test-postgres.mjs','--serve-web'],{stdio:['ignore','pipe','pipe','ipc'],windowsHide:true,
-    env:{...process.env,NEXO_WEB_TEST_AUDIT:needsAudit?'1':'0',NEXO_WEB_ADMIN_FIXTURE:suite==='administration.spec.mjs'?'1':'0',NEXO_WEB_RECOVERY_SCENARIO:suite==='recovery-urgent.spec.mjs'?'ROAD_NO_FREE':['recovery-road.spec.mjs','terminal-return.spec.mjs'].includes(suite)?'ROAD':suite==='recovery-urban.spec.mjs'?'URBAN':'DEFAULT',DATABASE_URL:'postgres://invalid@external.invalid/production',HOST:'0.0.0.0',PORT:'80'}});
+    env:{...process.env,NEXO_WEB_JOURNEY_FIXTURE:['journey-modes.spec.mjs','conditions.spec.mjs'].includes(suite)?'1':'0',NEXO_WEB_TEST_AUDIT:needsAudit?'1':'0',NEXO_WEB_ADMIN_FIXTURE:suite==='administration.spec.mjs'?'1':'0',NEXO_WEB_RECOVERY_SCENARIO:suite==='recovery-urgent.spec.mjs'?'ROAD_NO_FREE':['recovery-road.spec.mjs','terminal-return.spec.mjs'].includes(suite)?'ROAD':suite==='recovery-urban.spec.mjs'?'URBAN':'DEFAULT',DATABASE_URL:'postgres://invalid@external.invalid/production',HOST:'0.0.0.0',PORT:'80'}});
   let output='',diagnostic='';child.stdout.on('data',data=>{output=(output+data).slice(-16000);});child.stderr.on('data',data=>{diagnostic=(diagnostic+data).slice(-16000);});
   const done=new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',code=>resolve(code??1));});
   const timeout=setTimeout(()=>child.kill(),180000);let code=1;

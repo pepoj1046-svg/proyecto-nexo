@@ -238,3 +238,22 @@ nueva. No mantiene credenciales en una caché duradera ni sustituye revocación/
 SQL por estado del navegador. Formulario bloqueado mientras se prepara el contexto,
 sin nuevos reintentos ni timeouts ampliados; la sincronización entre pestañas sigue
 fuera del prototipo actual. Regresiones antes/después y E2E de respuesta retrasada.
+
+## Etapa 3, 7A/7B: nuevas superficies del laboratorio
+
+Expreso/división delegan al mismo inventario y tarifa: se rechaza dividir expresos,
+grupos con menores declarados, sumas inválidas, consentimiento ausente, cupo cambiado
+o salto de fila. La declaración de adultos no es verificación legal y no recoge edades.
+
+Los cuatro endpoints /api/conditions/* usan el wrapper fijo autenticado/CSRF. Solo
+administración de la ruta declara y resuelve; solo el responsable decide. Versión,
+actor y permisos se revalidan con bloqueos, sesiones revocables, recibos y auditoría.
+028 conserva 001–027, fija search_path, revoca PUBLIC/helpers y no concede acceso
+directo a la tabla privada de estimaciones. El rechazo registrado impide una posterior
+aceptación contradictoria incluso desde el RPC anterior y bloquea el abordaje.
+
+No hay cancelación automática ni liberación al solicitar revisión. Subsisten límites
+de resolución de grupos/observaciones, confirmación coordinada de varios choferes,
+verificación legal de menores/responsables, reversión de decisiones, retención, cobros
+y reembolsos. Estimación 0–10080 min es un límite técnico local, no una política o ETA.
+[Informes y comprobaciones](REPORTES/ETAPA_3_INCREMENTO_7B.md).

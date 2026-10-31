@@ -1,7 +1,7 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incremento 6,
+asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 3, incrementos 7A/7B,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
 permanece abierto y sin fusionar. Sin producción, pagos, GPS ni incremento 7.
@@ -14,7 +14,7 @@ intermedios autorizados, solicitudes persistidas con idempotencia y «Mis reserv
 `HELD` significa **pendiente**; solo el chofer asignado acepta en `/operador`.
 Terminal, presencia, abordajes individuales/grupales, despacho y progreso conectados
 a paneles de administrador y chofer con permisos reales. Sin OAuth ni despliegue.
-001–026 intactas en el incremento 6; 027 añade paginación web y cancelación
+001–027 intactas en 7A/7B; 028 añade estimaciones y decisiones de condiciones. 027 conserva paginación web y cancelación
 administrativa con motivo, delegando la transición en el núcleo existente. Se mantienen las
 proyecciones por rol y los contratos de reservas, despacho, incidencias y rescates.
 
@@ -91,8 +91,8 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**53 unitarias y 229 integraciones PostgreSQL real**. La batería web ampliada
-ejecuta 66 casos de escritorio/móvil (resultados y CI en el informe del incremento 6),
+**57 unitarias y 239 integraciones PostgreSQL real**. La batería web ampliada
+ejecuta 74 casos de escritorio/móvil (resultados y CI en los informes 7A y 7B),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar
@@ -192,3 +192,7 @@ y por defecto solo simula. Cierre de laboratorio de Etapa 1 aceptado; Etapa 2 en
 [Propuesta original de Etapa 2](docs/PROPUESTA_ETAPA_2.md).
 La revisión final conserva **001–011 intactas**, alinea Node y refuerza el rechazo
 de encabezados HTTP vacíos. El PR permanece abierto hasta autorización del propietario.
+
+Expresos y división voluntaria, declaración de condiciones y decisiones del responsable:
+[7A](docs/REPORTES/ETAPA_3_INCREMENTO_7A.md) · [7B](docs/REPORTES/ETAPA_3_INCREMENTO_7B.md).
+Solo laboratorio; revisar las limitaciones de aceptación conjunta y resolución administrativa.

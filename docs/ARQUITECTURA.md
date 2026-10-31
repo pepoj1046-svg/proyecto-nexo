@@ -164,3 +164,21 @@ metadatos globales de capacidad aunque muestre solo una página; no limita inven
 a lo visible. La presencia propia puede enfocarse por reserva. Se mantienen RLS,
 identidad/pools separados, same-origin/CSRF y el límite loopback.
 [Informe, límites y guía Windows](REPORTES/ETAPA_3_INCREMENTO_6.md).
+
+## Etapa 3, incrementos 7A y 7B
+
+La web conecta expresos y división voluntaria usando quote/reserve_business/parts del
+mismo núcleo. `proposal:true` solicita una propuesta derivada de disponibilidad nativa;
+quote conserva su forma anterior si no se solicita. No hay inventario alternativo.
+Las retenciones de todas las partes son atómicas; la aceptación de cada chofer sigue
+su contrato. La presentación del grupo distingue aceptación parcial de confirmación
+completa. Expreso significa seis plazas técnicas durante el segmento contratado,
+con tarifa expresa configurada y sin dividirlo ni inferir seis personas observadas.
+
+028 añade estimaciones inmutables por ruta/versión, cuatro RPC web restringidos y
+REJECT en el registro de decisiones existente. El rechazo no cambia el estado de la
+reserva; impide aceptación contradictoria y abordaje bajo esa versión. La solicitud
+CANCEL_REQUEST conserva inventario y precio; la resolución explícita delega al RPC
+nativo de resolución tardía, manteniendo sus límites. Puntos, tarifas y actor se
+validan en servidor, con versión esperada y bloqueos. Sin ETA, GPS o recargos.
+[7A](REPORTES/ETAPA_3_INCREMENTO_7A.md) · [7B](REPORTES/ETAPA_3_INCREMENTO_7B.md).

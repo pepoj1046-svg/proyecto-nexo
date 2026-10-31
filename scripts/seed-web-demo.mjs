@@ -32,6 +32,7 @@ export async function seedWebDemo(db,pool) {
     for(const [index,[name,locality]]of [['Terminal de Yacuiba (ficticia)',localities.yacuiba],['Parada Palmar (ficticia)',localities.palmar],['Parada Paso del Chaco (ficticia)',localities.paso],['Terminal Villa Montes (ficticia)',localities.villa]].entries())await db.query('INSERT INTO nexo.stops(association_id,route_id,stop_index,name,catalog_id,locality_id)VALUES($1,$2,$3,$4,$5,$6)',[association,route,index,name,catalog,locality]);
     await db.query("INSERT INTO nexo.route_authorizations(association_id,route_id,issuer,reference,status,valid_from,valid_until,requested_by,reviewed_by,review_reason)VALUES($1,$2,'Emisor ficticio','SIMULACIÓN SIN VALIDEZ LEGAL','VERIFIED',clock_timestamp()-interval '1 hour',clock_timestamp()+interval '1 day',$3,$4,'Permiso ficticio de laboratorio')",[association,route,users.admin.id,users.reviewer.id]);
     for(let from=0;from<3;from++)for(let to=from+1;to<4;to++)await db.query("INSERT INTO nexo.fares(association_id,route_id,from_stop,to_stop,express,version,amount_bob,valid_from)VALUES($1,$2,$3,$4,false,1,$5,clock_timestamp()-interval '1 hour')",[association,route,from,to,(to-from)*10+5+n*5]);
+    if(process.env.NEXO_WEB_JOURNEY_FIXTURE==='1')for(let from=0;from<3;from++)for(let to=from+1;to<4;to++)await db.query("INSERT INTO nexo.fares(association_id,route_id,from_stop,to_stop,express,version,amount_bob,valid_from)VALUES($1,$2,$3,$4,true,1,$5,clock_timestamp()-interval '1 hour')",[association,route,from,to,120+n*30]);
     const trips=[];
     for(let j=0;j<(n===0?3:1);j++){
       const driver=users['driver'+(n===0?j:n+2)],vehicle=randomUUID(),trip=randomUUID();
@@ -119,6 +120,15 @@ export async function seedWebDemo(db,pool) {
    const fresh=await core.reserve(users.terminal0.token,randomUUID(),{routeId:a.route,from:0,to:3,seats:1,parts:[{tripId:a.trips[0].id,seats:1}]});
    await core.respond(users.driver0.token,randomUUID(),fresh.bookingIds[0],true);
    await business.closure(users.adminH.token,randomUUID(),'route-condition',{routeId:a.route,state:'NORMAL',reason:'NORMAL',description:'Condiciones ficticias para revisión administrativa',affectedStops:[],confirmed:true});
+  }
+  if(process.env.NEXO_WEB_JOURNEY_FIXTURE==='1'){
+   // Make splitting genuinely useful: no queued whole-group alternative in this lab.
+   while((await db.query("SELECT 1 FROM nexo.trips WHERE route_id=$1 AND status='QUEUED' AND nexo.fits(id,0,3,4) LIMIT 1",[a.route])).rowCount){
+    const g=await core.reserve(users.passenger.token,randomUUID(),{routeId:a.route,from:0,to:3,seats:4});
+    const b=(await db.query('SELECT trip_id FROM nexo.bookings WHERE id=$1',[g.bookingIds[0]])).rows[0];
+    const t=(await db.query('SELECT driver_id FROM nexo.trips WHERE id=$1',[b.trip_id])).rows[0];const driver=Object.values(users).find(u=>u.id===t.driver_id);await core.respond(driver.token,randomUUID(),g.bookingIds[0],true);
+   }
+   for(const b of(await db.query("SELECT id FROM nexo.bookings WHERE route_id=$1 AND passenger_id=$2 AND status='CONFIRMED'",[runs[1].route,users.passenger.id])).rows)await core.cancel(users.passenger.token,randomUUID(),b.id);
   }
   const accounts={};
   for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1']){

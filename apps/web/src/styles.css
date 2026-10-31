@@ -32,3 +32,11 @@
 .terminal-filters select,.walk-in-sale select,.walk-in-sale input[type=number],.return-queue select{min-height:44px;border:1px solid #93a79a;border-radius:8px;padding:.65rem;background:#fff;color:#243e33;font:inherit}
 
 .page-controls{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:1rem 0}.page-controls p{flex-basis:100%}.admin-booking-review{margin:1rem 0}.admin-booking-review fieldset{border:1px solid var(--line);border-radius:12px;padding:1rem}.admin-booking-review select{min-height:44px;width:100%;padding:.6rem}.admin-cancellation,.condition-review{margin:1rem 0}
+/* Versioned condition forms must fit the actual mobile viewport; no clipped actions. */
+.route-condition-form,.condition-card{min-width:0;max-width:100%;margin:1rem 0;overflow-wrap:anywhere}
+.route-condition-form fieldset,.condition-card fieldset,.admin-booking-review fieldset{min-width:0;max-width:100%;border:1px solid var(--line);border-radius:10px;padding:1rem}
+.route-condition-form label,.condition-card label{display:block;margin:.75rem 0;line-height:1.5}
+.route-condition-form select,.route-condition-form textarea,.route-condition-form input:not([type=checkbox]){display:block;width:100%;max-width:100%;min-height:44px;padding:.65rem;border:1px solid #93a79a;border-radius:8px;background:#fff;color:#243a34;font:inherit}
+.route-condition-form textarea{min-height:96px;resize:vertical}
+.route-condition-form .button,.condition-card .button{max-width:100%;white-space:normal;min-height:44px;margin:.4rem 0}
+@media(max-width:600px){.route-condition-form .button,.condition-card .button{width:100%}.route-condition-form fieldset,.condition-card fieldset{padding:.75rem}}
