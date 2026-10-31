@@ -1,5 +1,12 @@
-# Configuracion exclusiva de subagentes para Trufis Bolivia.
-# La sesion principal conserva el control de las modificaciones.
+# Configuracion de subagentes para Trufis Bolivia (solo en esta rama).
 [agents]
 enabled = true
 max_concurrent_threads_per_session = 2
+
+[agents.seguridad-contratos]
+description = "Audita en solo lectura seguridad, contratos PostgreSQL, RLS, concurrencia, asignaciones y rescates."
+config_file = "agents/seguridad-contratos.toml"
+
+[agents.pruebas-regresiones]
+description = "Audita en solo lectura pruebas y regresiones del proyecto, sin editar ni ejecutar matrices completas."
+config_file = "agents/pruebas-regresiones.toml"
