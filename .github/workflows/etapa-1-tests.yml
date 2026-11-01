@@ -1,9 +1,9 @@
 name: Laboratorio - dominio y PostgreSQL
 on:
   push:
-    branches: [desarrollo/etapa-1, desarrollo/etapa-2, desarrollo/etapa-3]
+    branches: [desarrollo/etapa-1, desarrollo/etapa-2, desarrollo/etapa-3, desarrollo/etapa-4]
   pull_request:
-    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2]
+    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2, planificacion/etapa-4a, desarrollo/etapa-4]
 permissions:
   contents: read
 jobs:

@@ -56,3 +56,6 @@
 .care-panel .button,.care-accounts .button,.responsible-reservations .button,.discrepancy-review .button{max-width:100%;min-height:44px;white-space:normal;margin:.4rem 0}
 .care-member,.responsible-booking{min-width:0;border-top:1px solid var(--line);margin:1rem 0;padding-top:1rem;overflow-wrap:anywhere}
 @media(max-width:600px){.care-panel .button,.care-accounts .button,.responsible-reservations .button,.discrepancy-review .button{width:100%}.care-panel fieldset,.care-accounts fieldset,.responsible-reservations fieldset,.discrepancy-review fieldset{padding:.75rem}}
+
+/* Administrative catalogue: independent of trips, read-only. */
+.administrative-directory{margin-block:1.5rem;padding:1rem;border:1px solid var(--line,#d9e1d8);border-radius:1rem;scroll-margin-top:1rem}.directory-tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-block:1rem}.directory-items{list-style:none;padding:0;display:grid;gap:1rem}.directory-items>li{border:1px solid var(--line,#d9e1d8);border-radius:.75rem;padding:1rem;min-width:0}.directory-items p{overflow-wrap:anywhere}.directory-id{font-size:.8rem}.directory-tabs [aria-pressed=true]{outline:2px solid currentColor;outline-offset:2px}.administrative-directory h3:focus{outline:2px solid currentColor;outline-offset:3px}

@@ -1,3 +1,4 @@
+import {createWebDirectoryService} from '../db/web-directory-service.mjs';
 import{createWebConditionService}from'../db/web-condition-service.mjs';
 import{createWebSafetyService}from'../db/web-safety-service.mjs';
 import{createWebCareService}from'../db/web-care-service.mjs';
@@ -33,6 +34,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   const conditions=identityPool?createWebConditionService(pool):null;
   const safety=identityPool?createWebSafetyService(pool):null;
   const care=identityPool?createWebCareService(pool):null;
+  const directory=identityPool?createWebDirectoryService(pool):null;
   const management=identityPool?createWebManagementService(pool):null;
   const sessions=identityPool?createWebSessions({identity:createIdentity(identityPool),business}):null;
   // Fixed handler tables: every private POST is constructed with the CSRF gate.
@@ -52,6 +54,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
     ['/api/segment',(_context,_req,b)=>service.segment(b)]
   ]);
   const privateHandlers=sessions?new Map([
+    ['/api/directory/page',authenticated((token,_key,b)=>directory.page(token,b))],
     ['/api/care/context',authenticated((token,_key,b)=>care.context(token,b))],
     ['/api/care/list',authenticated((token,_key,b)=>care.list(token,b))],
     ['/api/care/code',authenticated((token,key,b)=>care.code(token,key,b))],

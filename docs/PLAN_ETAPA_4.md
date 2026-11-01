@@ -1,5 +1,9 @@
 # Trufis Bolivia — plan propuesto de Etapa 4
 
+> Vigencia posterior: autorizado únicamente el incremento de programación 4A.1.
+> El resto conserva el estado histórico de la propuesta; resultados actuales en
+> [el informe de 4A.1](REPORTES/ETAPA_4_INCREMENTO_4A1.md).
+
 Fecha: 01/11/2026. Referencia: `1f07fd9cb69676258bf277a561d9e8aa711bacb2`.
 **Diagnóstico de 4A; programación pendiente de autorización.**
 
@@ -154,3 +158,11 @@ Etapa 4 requerirá contratos aprobados implementados, operación sin fixtures ma
 para ese alcance, regresiones y cierre técnico separado. **Este plan no implementa
 4A ni cierra Etapa 4.** Tras entregar el diagnóstico se espera autorización del
 primer incremento; sin servicios, GPS, dinero, comunicaciones reales ni gastos.
+
+## Actualización de ejecución: 4A.1
+
+El propietario autorizó posteriormente solo la programación de 4A.1, desde
+`4223675` en `desarrollo/etapa-4`. El texto anterior conserva la planificación
+original. [Contrato de lectura](ETAPA_4_DIRECTORIO_ADMINISTRATIVO.md) y
+[informe de implementación](REPORTES/ETAPA_4_INCREMENTO_4A1.md) distinguen resultados
+ejecutados y pendientes. No se autoriza 4A.2 ni se declara cerrada Etapa 4.

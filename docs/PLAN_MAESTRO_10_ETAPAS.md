@@ -1,5 +1,9 @@
 # Trufis Bolivia — propuesta de plan maestro de diez etapas
 
+> Vigencia posterior: autorizado únicamente el incremento de programación 4A.1.
+> El resto conserva el estado histórico de la propuesta; resultados actuales en
+> [el informe de 4A.1](REPORTES/ETAPA_4_INCREMENTO_4A1.md).
+
 Fecha: 01/11/2026. Base técnica: `1f07fd9cb69676258bf277a561d9e8aa711bacb2`.
 **Solo el diagnóstico documental de 4A está autorizado. La programación espera otro encargo.**
 
@@ -92,3 +96,11 @@ conservan en [los informes](REPORTES/).
 La venta integral y la aptitud para producción son evaluaciones distintas. La
 entrega deberá distinguir implementación, simulación y habilitaciones necesarias
 antes de que el comprador opere con personas o dinero reales.
+
+## Actualización de ejecución: 4A.1
+
+El propietario autorizó posteriormente solo la programación de 4A.1, desde
+`4223675` en `desarrollo/etapa-4`. El texto anterior conserva la planificación
+original. [Contrato de lectura](ETAPA_4_DIRECTORIO_ADMINISTRATIVO.md) y
+[informe de implementación](REPORTES/ETAPA_4_INCREMENTO_4A1.md) distinguen resultados
+ejecutados y pendientes. No se autoriza 4A.2 ni se declara cerrada Etapa 4.

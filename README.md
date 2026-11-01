@@ -4,7 +4,37 @@ Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
 asociación, reservas por segmentos, asignación por turno, recogidas y despacho. Etapa 3, auditoría y cierre técnico de laboratorio,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 4.
+permanece abierto y sin fusionar. Sin producción, pagos ni GPS real. Solo 4A.1 autorizado actualmente.
+
+## Etapa 4A.1: directorio administrativo de lectura
+
+Rama `desarrollo/etapa-4` desde planificación `4223675`. [PR #5](https://github.com/pepoj1046-svg/proyecto-nexo/pull/5)
+hacia `planificacion/etapa-4a`; PR #3 y etapas anteriores se conservan.
+En Administración, usar «Ir al directorio administrativo» y consultar asociación,
+choferes, vehículos, rutas/puntos y tarifas sin elegir un viaje. No hay altas ni edición.
+
+001–033 intactas; 034 añade solo proyecciones autorizadas. ADMIN limitado consulta
+rutas/puntos/tarifas de su ámbito; padrones completos DRIVER/vehículos requieren
+alcance completo. Las tarifas futuras/vencidas son configuración, no habilitación
+para vender. Sin viaje activo no significa vehículo apto ni inventario libre.
+
+Para el escenario ficticio completo en PowerShell:
+
+```powershell
+$env:NEXO_WEB_ADMIN_DIRECTORY_FIXTURE='1'
+npm run dev:web
+# Ctrl+C al terminar
+Remove-Item Env:NEXO_WEB_ADMIN_DIRECTORY_FIXTURE
+```
+
+Leer accesos generados en el archivo privado indicado por la terminal. La cuenta
+`admin` solo se publica en ese fixture local; `adminH` conserva su ámbito limitado.
+El fixture crea más de 50 entidades por colección antes de escuchar; la API no
+crea registros de respuesta. No compartir contraseñas ni archivos de `.local`.
+
+[Contrato](docs/ETAPA_4_DIRECTORIO_ADMINISTRATIVO.md) y
+[informe y resultados exactos](docs/REPORTES/ETAPA_4_INCREMENTO_4A1.md).
+No se inicia 4A.2 ni se declara completada toda la Etapa 4.
 
 ## Etapa 3: interfaz web local
 
@@ -101,8 +131,9 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**62 unitarias y 278 integraciones PostgreSQL real**. La batería web ampliada
-ejecuta 82 casos de escritorio/móvil (resultados y CI en el informe 8B),
+**64 unitarias y 291 integraciones PostgreSQL real**. La batería web ampliada
+comprende 88 casos de escritorio/móvil (pasadas locales e incidentes documentados
+en el informe 4A.1; ratificación de CI en el registro del PR #5),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar
