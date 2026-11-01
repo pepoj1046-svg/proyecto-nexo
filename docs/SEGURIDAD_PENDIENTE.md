@@ -33,12 +33,14 @@ real no propietaria para comprobar permisos, además de una conexión de setup a
 2. Aprobar retención/borrado y acceso a sesiones, intentos, recuperación, idempotencia,
    auditoría y backups. Existe mantenimiento local de filas inválidas con cutoff
    obligatorio y simulación por defecto; no hay cron ni política legal automática.
-3. Revisar particiones y vínculos verificados menores/responsables. En el prototipo
-   solo se admiten solicitudes declaradas sin menores; no hay verificación de edades.
+3. Aprobar verificación legal de menores y responsables. Hay casos técnicos de
+   acompañamiento y revisión, sin edades ni documentos reales; dividir grupos con
+   menores declarados sigue bloqueado. No confundir comprobación simulada con legal.
 4. Procedimiento real de altas/documentación (roles y bajas locales ya modelados), turnos con horarios, validación de terminales,
    rutas/paradas geográficas reales, cambios de trazado versionados y GPS consentido.
-5. Progreso individual de pasajeros, incidentes, recuperación ante fallos, notificaciones,
-   política de ausencias, revisión funcional del plazo de ofertas y del manifiesto de salida.
+5. Aprobar operación real, notificaciones, tolerancias de ausencia y plazos de
+   ofertas/manifiesto. Observaciones individuales, incidencias y recuperación de
+   laboratorio ya están implementadas; la política comercial sigue pendiente.
 6. QR, pagos/conciliación y reembolsos; licencias y reglas de 18:00/20:00. No existen
    funciones para verificar pagos ni un cron que suspenda/cancele reservas.
 7. Revisión independiente de seguridad, carga, backups, operación y autorización de piloto.
@@ -257,3 +259,22 @@ de resolución de grupos/observaciones, confirmación coordinada de varios chofe
 verificación legal de menores/responsables, reversión de decisiones, retención, cobros
 y reembolsos. Estimación 0–10080 min es un límite técnico local, no una política o ETA.
 [Informes y comprobaciones](REPORTES/ETAPA_3_INCREMENTO_7B.md).
+
+## Auditoría integral de Etapa 3
+
+Se reproducen y corrigen dos usos de claves antiguas tras una actuación web ya
+confirmada: revisión PENDING posterior a verificación de menor y emisión de otro
+código después de consumir el anterior. El intento se retira de memoria únicamente
+tras POST y recarga resueltos; una respuesta incierta conserva su clave. No se
+eliminan recibos ni se modifica la idempotencia del núcleo.
+
+033 cierra la diferencia entre RLS/contexto y el listado propio WALK_IN de un actor
+con ámbito administrativo restringido: total, filas y cursor usan el mismo alcance,
+con bloqueo compartido de ámbito y sesión revalidada al terminar la espera. Solo
+mostraba datos del propio responsable, sin evidencia de datos ajenos.
+
+El registro nativo inicial de responsables por administrador confiable conserva
+su contrato previo por UUID/confirmación ficticia. El flujo web gestionado exige
+código del titular; no se presentan ambas fronteras como equivalentes. Unificar o
+retirar esa compatibilidad y acordar verificación de identidad antes de piloto.
+[Dictamen, pruebas actuales y límites](REPORTES/ETAPA_3_AUDITORIA_Y_CIERRE.md).

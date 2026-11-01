@@ -98,3 +98,15 @@ ACCEPT/REJECT por reserva/versión se comprueba bajo bloqueo de ruta; las filas 
 inmutables. No aparece un estado nuevo en bookings. CANCEL_REQUEST/CANCEL_CONFIRMED
 siguen en passenger_decisions y la reserva conserva precio y plazas hasta la operación
 nativa autorizada. Las referencias de grupo y partes continúan en bookings.
+
+## Estado del modelo al cierre de Etapa 3
+
+029 fija `booking_assignment_rules` sin convertir HELD históricas. 030 conserva
+custodia observada mediante handoffs, integrantes, recibos y confirmación separados
+y `passenger_discrepancies`. 031 separa persona presencial ficticia, vínculo de
+cuenta y revisiones inmutables. 032 añade ausencia observada, revisión de reportes
+y autoridad de solicitudes/decisiones; reutiliza miembros, movimientos e inventario.
+033 solo sustituye una función de listado por otra con alcance coherente; no crea
+entidades ni cambia filas históricas. El [contrato de cuidados](ETAPA_3_CUIDADOS_Y_REVISIONES.md)
+precisa restricciones y frontera CLI heredada. Nada de este esquema certifica
+identidad/parentesco, dinero, posición real o habilitación comercial.

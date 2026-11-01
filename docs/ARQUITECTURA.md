@@ -182,3 +182,17 @@ CANCEL_REQUEST conserva inventario y precio; la resolución explícita delega al
 nativo de resolución tardía, manteniendo sus límites. Puntos, tarifas y actor se
 validan en servidor, con versión esperada y bloqueos. Sin ETA, GPS o recargos.
 [7A](REPORTES/ETAPA_3_INCREMENTO_7A.md) · [7B](REPORTES/ETAPA_3_INCREMENTO_7B.md).
+
+## Auditoría y cierre técnico de Etapa 3
+
+El alcance ejecutable es React/TypeScript estático, gateway de mismo origen en
+loopback y PostgreSQL como autoridad única; no aplicaciones nativas ni servicios
+públicos. 029–032 incorporan asignación directa terminal, custodia/recepción,
+responsables sin cuenta, ausencias y revisiones; 033 corrige únicamente la proyección
+de responsables por alcance. La memoria del navegador distingue intento incierto
+(reusa clave) de nueva actuación posterior a éxito confirmado (nueva clave), sin
+cambiar los recibos SQL ni reconstruir inventario.
+
+El [informe de auditoría y cierre](REPORTES/ETAPA_3_AUDITORIA_Y_CIERRE.md) clasifica
+alcance verificado, límites y funciones pospuestas. Los diagramas conceptuales
+anteriores son antecedentes, no prueba de funciones futuras implementadas.

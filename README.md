@@ -1,7 +1,7 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, asignación por turno, recogidas y despacho. Etapa 3, Incremento 8B,
+asociación, reservas por segmentos, asignación por turno, recogidas y despacho. Etapa 3, auditoría y cierre técnico de laboratorio,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
 permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 4.
@@ -27,8 +27,10 @@ npm run dev:web
 
 La terminal muestra también la ruta de `.local/accesos-<identificador>.json`.
 En una segunda terminal PowerShell: `Get-Content -Raw <ruta-del-archivo>`.
-Usar `viajero0` para reservar; abrir otra sesión de navegador con `driver0` en
-`/operador` para aceptar su oferta al primer trufi de Horizonte. No compartir ni
+Usar `viajero0` para reservar. Las nuevas reservas de terminal se confirman
+por turno: no requieren aceptación en `/operador`. El chofer del vehículo asignado
+consulta su manifiesto en `/chofer` y registra la salida explícitamente.
+`/operador` conserva aceptación solo para recogidas autorizadas y ofertas históricas. No compartir ni
 subir ese archivo: sus contraseñas se generan en cada arranque y se elimina al cerrar.
 **La base es efímera: reiniciar pierde cuentas, sesiones y reservas.**
 
@@ -99,7 +101,7 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**57 unitarias y 239 integraciones PostgreSQL real**. La batería web ampliada
+**62 unitarias y 278 integraciones PostgreSQL real**. La batería web ampliada
 ejecuta 82 casos de escritorio/móvil (resultados y CI en el informe 8B),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
@@ -213,3 +215,11 @@ y revisión de discrepancias con rectificación nativa limitada. No establece
 requisitos legales ni consecuencias automáticas. 001–030 intactas; nuevas 031–032.
 [Contrato](docs/ETAPA_3_CUIDADOS_Y_REVISIONES.md) ·
 [Informe y Windows](docs/REPORTES/ETAPA_3_INCREMENTO_8B.md).
+
+## Auditoría y cierre de Etapa 3
+
+[Dictamen, matriz de requisitos y procedimiento Windows](docs/REPORTES/ETAPA_3_AUDITORIA_Y_CIERRE.md).
+La validez del cierre de laboratorio depende del commit y checks aprobados del
+[registro final](https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6561718192).
+001–032 conservadas; 033 corrige el listado de responsables. No se autoriza producción,
+merge ni Etapa 4. Los contratos comerciales/jurídicos pendientes siguen explícitos.

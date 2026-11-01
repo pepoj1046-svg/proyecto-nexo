@@ -20,7 +20,7 @@ Los formularios no solicitan nombres, edades ni documentos.
 
 Cada registro, vínculo, desvinculación o corrección agrega una revisión monotónica
 inmutable con actor/motivo/momento. La corrección revoca acceso futuro de la cuenta
-anterior; no borra sus actuaciones. Nueva cuenta requiere nuevo código. Volver a
+anterior; no borra sus actuaciones. En el flujo gestionado 8B, una nueva cuenta requiere nuevo código. Volver a
 la misma cuenta no renueva consentimiento antiguo. Los traslados comparan snapshot
 con revisión del responsable; solicitudes y decisiones guardan su revisión.
 
@@ -33,6 +33,21 @@ legal ni técnica de menores.
 La autoría histórica del operador no conserva permisos sobre WALK_IN después de
 su revocación. RLS restrictiva y límites en RPC antiguas protegen lectura y escritura,
 con revalidación después del bloqueo de ruta. La autoría APP anterior se conserva.
+
+## Frontera nativa heredada de primer registro
+
+`register_responsible` conserva el contrato local anterior para una WALK_IN que
+aún no se gestiona por revisiones 8B: administrador autorizado, ámbito vigente y
+confirmación presencial ficticia, con UUID de usuario existente y auditoría. No
+requiere el código del titular. No es autoservicio: pasajero, tercero o referencia
+por sí solos no conceden autoridad. Una reserva gestionada por 8B bloquea ese acceso
+antiguo y usa la corrección/vinculación versionadas.
+
+Esta es una **limitación de compatibilidad del operador confiable del laboratorio**,
+no una verificación equivalente al código de un uso ni una habilitación legal.
+Antes de un piloto debe decidirse la unificación/deprecación de ese contrato y
+la prueba de identidad/consentimiento correspondiente. Se conserva su historial
+y las pruebas anteriores; no se inventa una política de identidad al cerrar la web.
 
 ## Menores y acompañantes
 
@@ -60,8 +75,10 @@ conserva la observación anterior como historia. Expreso reserva seis plazas té
 sin contrato de composición física no se deducen seis personas ausentes.
 
 No cambia inventario, importe, estado de reserva, custodia ni movimientos. No cancela,
-libera, sanciona, cobra o envía avisos. Los borradores 10+5 minutos anteriores siguen
-siendo infraestructura provisional desactivada, no una política aprobada.
+libera, sanciona, cobra o envía avisos. Los borradores 10+5 minutos anteriores permanecen inactivos. El núcleo conserva
+la referencia simulada READY→aviso5→revisión8 y recogida cinco minutos desde
+PICKUP_ARRIVED, sin scheduler, envío o liberación automática; no son plazos
+comerciales definitivos aprobados.
 
 ## Discrepancias y rectificaciones
 
@@ -123,3 +140,15 @@ retención y eliminación de códigos/evidencia/revisiones, acceso histórico tr
 responsable, plazos/avisos de ausencia y condiciones de una salida con faltantes,
 resolución de grupos divididos y renovación/reversión de consentimiento de ruta.
 No se asignan plazos de conservación definitivos ni consecuencias automáticas.
+
+## Corrección técnica de cierre
+
+La migración 033 filtra el listado propio de presenciales por alcance vigente,
+incluidos total y cursor, y serializa lectura con cambios offline de alcance.
+Después de esperar vuelve a validar la sesión. No cambia tablas ni historia.
+
+En la web, POST confirmado y recarga terminada cierran el intento en memoria: una
+nueva actuación expresamente confirmada obtiene otra clave. Una respuesta incierta
+o recarga que rechaza su promesa conserva la clave de ese intento; no se borra el
+mapa completo ni los recibos persistentes SQL. Evita devolver una revisión antigua
+del menor o un código consumido como si fueran actuaciones nuevas.

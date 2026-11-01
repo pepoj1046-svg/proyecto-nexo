@@ -8,6 +8,11 @@ PR #1 y main se conservan. Sin Etapa 3, producción, gastos ni datos reales.
 Para el cierre propuesto prevalece «Cierre técnico: contratos adicionales 018–022»
 al final. En particular, 10+5 es antecedente inactivo; rige simulación 0/5/8.
 
+Para la interfaz de Etapa 3 prevalecen además las actualizaciones 029–033 y el
+[contrato de cuidados y revisiones](ETAPA_3_CUIDADOS_Y_REVISIONES.md). El cierre
+actual se documenta en la [auditoría integral](REPORTES/ETAPA_3_AUDITORIA_Y_CIERRE.md);
+las secciones iniciales siguientes conservan su contexto histórico.
+
 ## Superficies y ejecución
 
 ```sh
