@@ -1,9 +1,9 @@
 name: Laboratorio - dominio y PostgreSQL
 on:
   push:
-    branches: [desarrollo/etapa-1, desarrollo/etapa-2]
+    branches: [desarrollo/etapa-1, desarrollo/etapa-2, desarrollo/etapa-3]
   pull_request:
-    branches: [main, desarrollo/etapa-1]
+    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2]
 permissions:
   contents: read
 jobs:
@@ -15,7 +15,10 @@ jobs:
         node: ['22', '24']
     name: tests (${{ matrix.os }}, Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    # 8B: 38 isolated browser/PG labs (8A: 32). The last Windows/22 job
+    # needed 18m59s; allow the added coverage. Existing per-test, HTTP, SQL and
+    # launcher deadlines remain unchanged; retries stay disabled.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,3 +29,7 @@ jobs:
         run: npm ci --no-fund
       - name: Dominio y PostgreSQL local aislado
         run: npm run test:all
+      - name: Instalar Chromium de pruebas
+        run: npx --no-install playwright install chromium
+      - name: Interfaz web local - escritorio y móvil
+        run: npm run test:web

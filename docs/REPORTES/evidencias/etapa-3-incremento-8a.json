@@ -1,0 +1,80 @@
+{
+  "scope": "Etapa 3 Incremento 8A, solo laboratorio local ficticio",
+  "baseCommit": "c0978af56b064c9818d79f5227f0c8658ee18e63",
+  "verification": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6549354304",
+  "local": {
+    "node": "24.19.0",
+    "postgres": "18.4",
+    "chromium": "154",
+    "unit": 59,
+    "postgresql": 254,
+    "e2e": 76,
+    "desktop": 38,
+    "mobile": 38,
+    "labsClosed": 32,
+    "failed": 0,
+    "skipped": 0
+  },
+  "logs": [
+    {
+      "file": ".local/i8a-final-all.log",
+      "sha256": "4324bb3c76ecc45ef61da3b3889af47a19206ec43d732a39e25180ccd1974183",
+      "public": false
+    },
+    {
+      "file": ".local/i8a-final-web.log",
+      "sha256": "9455d6c483ab5905c7b54c98d7e7c6aa10fd3af2514ac6836552c38d09c8e0f3",
+      "public": false
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8a/asignacion-presencial-desktop.png",
+      "bytes": 69202,
+      "sha256": "1ab927a0f5eba96791882045d30e7705f56040ef40860f9374104e1c4dc111f9",
+      "scenario": "asignacion-presencial",
+      "device": "desktop",
+      "data": "fictional"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8a/recepcion-segura-desktop.png",
+      "bytes": 230607,
+      "sha256": "bd28293b849f1d34e79dabbd4835ac11bcc00095ca8c6b9445f89cba9cd5b6c7",
+      "scenario": "recepcion-segura",
+      "device": "desktop",
+      "data": "fictional"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8a/reporte-discrepancia-desktop.png",
+      "bytes": 73936,
+      "sha256": "64680ac772e5077cc4271d5a44d10bbeda576c905f691af526e5d6cc654271ae",
+      "scenario": "reporte-discrepancia",
+      "device": "desktop",
+      "data": "fictional"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8a/asignacion-presencial-mobile.png",
+      "bytes": 73624,
+      "sha256": "402a16dba5844242fc9808fef14c730dfbb1681c261c2faa973f755246c4c6e6",
+      "scenario": "asignacion-presencial",
+      "device": "mobile",
+      "data": "fictional"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8a/recepcion-segura-mobile.png",
+      "bytes": 226064,
+      "sha256": "bc1cdd4744212c94c9a1d66e4b7972526a39e1ae01d56961e2ead5dd01c37116",
+      "scenario": "recepcion-segura",
+      "device": "mobile",
+      "data": "fictional"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8a/reporte-discrepancia-mobile.png",
+      "bytes": 85524,
+      "sha256": "51dedf331849c89c65e1e4a29e8fdecdb8e328fe79092bf6f0402ca62f4faf3f",
+      "scenario": "reporte-discrepancia",
+      "device": "mobile",
+      "data": "fictional"
+    }
+  ]
+}

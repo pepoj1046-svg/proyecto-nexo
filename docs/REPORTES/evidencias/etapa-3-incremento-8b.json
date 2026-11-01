@@ -1,0 +1,235 @@
+{
+  "scope": "Etapa 3 Incremento 8B, laboratorio local ficticio",
+  "baseCommit": "6a9784a2872ad5a897c011f675acb701544d1bb9",
+  "verification": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6558579460",
+  "local": {
+    "os": "Debian GNU/Linux 13 (trixie)",
+    "node": "24.19.0",
+    "postgres": "18.4",
+    "chromium": "154",
+    "playwright": "1.64.1",
+    "unit": 62,
+    "postgresql": 275,
+    "e2e": 82,
+    "desktop": 41,
+    "mobile": 41,
+    "e2eBatches": [
+      80,
+      2
+    ],
+    "labsClosed": 38,
+    "failed": 0,
+    "skipped": 0
+  },
+  "logs": [
+    {
+      "file": ".local/i8b-unit-release.log",
+      "sha256": "5554d44a98de608067af0a2771ece605b65218ffe0e83397c50b898b102d5851",
+      "public": false
+    },
+    {
+      "file": ".local/i8b-full-local.log",
+      "sha256": "92786e0b77541ce9bcf96e785aa996ed9dc82f29b4c451b8e6c45f598390bb23",
+      "public": false
+    },
+    {
+      "file": ".local/i8b-final-postgresql.log",
+      "sha256": "97fa1fc7233a1c45cd31b7130646c6aa7c1b4d6c59ff5bc20224fbe5e48cc9c2",
+      "public": false
+    },
+    {
+      "file": ".local/i8b-full-web.log",
+      "sha256": "526b50e2643add072dc25b3ea902b1e8cf66fff643caf48d02e69d3b15399744",
+      "public": false
+    },
+    {
+      "file": ".local/i8b-accounts-web-corrected.log",
+      "sha256": "d4250414584be1bc78e9b02b13ad087ab602fcc684dc37fa2cbb9d58aac61674",
+      "public": false
+    },
+    {
+      "file": ".local/i8b-build-final.log",
+      "sha256": "0897de59689025c0a4746c82eb1d5cc2b3a6032df3e784e6f11e87f861136900",
+      "public": false
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8b/responsable-presencial-desktop.png",
+      "scenario": "responsable-presencial",
+      "project": "desktop",
+      "bytes": 213323,
+      "sha256": "b9fb8b18efbc36227f4a6fb87cfddad427ff1bcc6690cb66f18e636aaa07186f"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8b/responsable-presencial-mobile.png",
+      "scenario": "responsable-presencial",
+      "project": "mobile",
+      "bytes": 230518,
+      "sha256": "3df49cc47ec924e282daf37344aae8cfda141e4aa597336095ed5faf0d9a6f9b"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8b/admin-menor-ausencia-desktop.png",
+      "scenario": "admin-menor-ausencia",
+      "project": "desktop",
+      "bytes": 207399,
+      "sha256": "c852a8a92cad9118bde4a0731de5117c249f2f590537de3081d842ecf38fe136"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8b/admin-menor-ausencia-mobile.png",
+      "scenario": "admin-menor-ausencia",
+      "project": "mobile",
+      "bytes": 219934,
+      "sha256": "f5a5da76ce90b54bd30041e62d3451df0c84aadbeb9b371fc79ada8025f82b03"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8b/pasajero-revision-desktop.png",
+      "scenario": "pasajero-revision",
+      "project": "desktop",
+      "bytes": 234625,
+      "sha256": "686cae2036343bae435722dc469df1cd2080aae527f5e2e35231401ffd443d07"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8b/pasajero-revision-mobile.png",
+      "scenario": "pasajero-revision",
+      "project": "mobile",
+      "bytes": 254178,
+      "sha256": "c350dd1a0131ebfcf976b6fac1f2005f59dc017c4965438bfad32799b52f3de1"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8b/ausencia-tras-salida-desktop.png",
+      "scenario": "ausencia-tras-salida",
+      "project": "desktop",
+      "bytes": 94446,
+      "sha256": "42bc23fb5fb88d60fdda15b2a7f97b40fe7ed4262727c5a20e85010dfbbabf28"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8b/ausencia-tras-salida-mobile.png",
+      "scenario": "ausencia-tras-salida",
+      "project": "mobile",
+      "bytes": 98905,
+      "sha256": "a71c964f0c86ea9b205ea3d683a3d1b5819a6f8458918900bc3faf86da9efff6"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8b/cuentas-revocacion-desktop.png",
+      "scenario": "cuentas-revocacion",
+      "project": "desktop",
+      "bytes": 37056,
+      "sha256": "738f2f5167174a69b27528dc0a948686cb05dea19c473f6a450a404262882db1"
+    },
+    {
+      "file": "docs/REPORTES/evidencias/etapa-3-incremento-8b/cuentas-revocacion-mobile.png",
+      "scenario": "cuentas-revocacion",
+      "project": "mobile",
+      "bytes": 39247,
+      "sha256": "311b9f0ab9ce3adeddf22686c567903de1d25630d5d5145a2ea56366f55ed661"
+    }
+  ],
+  "sqlWitnessSummary": {
+    "desktop": {
+      "tripStatus": "QUEUED",
+      "departure": null,
+      "observedOnboard": 2,
+      "segments": [
+        {
+          "stop_index": 0,
+          "confirmed": 4,
+          "reserved": 4
+        },
+        {
+          "stop_index": 1,
+          "confirmed": 6,
+          "reserved": 6
+        },
+        {
+          "stop_index": 2,
+          "confirmed": 6,
+          "reserved": 6
+        }
+      ],
+      "absences": 1,
+      "nativeCorrections": 1,
+      "minorReviews": [
+        {
+          "kind": "AUTHORIZED_COMPANION",
+          "result": "VERIFIED_SIMULATED"
+        }
+      ],
+      "walkInResponsibilityHistory": [
+        {
+          "revision": 1,
+          "kind": "CREATE_OFFLINE",
+          "accountLinked": false
+        },
+        {
+          "revision": 2,
+          "kind": "LINK_ACCOUNT",
+          "accountLinked": true
+        },
+        {
+          "revision": 3,
+          "kind": "UNLINK_ACCOUNT",
+          "accountLinked": false
+        },
+        {
+          "revision": 4,
+          "kind": "REPLACE_OFFLINE",
+          "accountLinked": false
+        }
+      ]
+    },
+    "mobile": {
+      "tripStatus": "QUEUED",
+      "departure": null,
+      "observedOnboard": 2,
+      "segments": [
+        {
+          "stop_index": 0,
+          "confirmed": 4,
+          "reserved": 4
+        },
+        {
+          "stop_index": 1,
+          "confirmed": 6,
+          "reserved": 6
+        },
+        {
+          "stop_index": 2,
+          "confirmed": 6,
+          "reserved": 6
+        }
+      ],
+      "absences": 1,
+      "nativeCorrections": 1,
+      "minorReviews": [
+        {
+          "kind": "AUTHORIZED_COMPANION",
+          "result": "VERIFIED_SIMULATED"
+        }
+      ],
+      "walkInResponsibilityHistory": [
+        {
+          "revision": 1,
+          "kind": "CREATE_OFFLINE",
+          "accountLinked": false
+        },
+        {
+          "revision": 2,
+          "kind": "LINK_ACCOUNT",
+          "accountLinked": true
+        },
+        {
+          "revision": 3,
+          "kind": "UNLINK_ACCOUNT",
+          "accountLinked": false
+        },
+        {
+          "revision": 4,
+          "kind": "REPLACE_OFFLINE",
+          "accountLinked": false
+        }
+      ]
+    }
+  },
+  "privacy": "Solo datos ficticios. Sin cuentas reales, documentos, edades, códigos de vinculación, tokens, cookies o conexiones en los archivos publicados."
+}

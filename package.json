@@ -5,19 +5,32 @@
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "db:migrate": "node scripts/migrate.mjs",
-    "test:integration": "node scripts/test-postgres.mjs",
+    "test:integration": "npm run web:build && node scripts/test-postgres.mjs",
     "test:all": "npm test && npm run test:integration && npm run test:runner && npm run test:local-api",
     "test:runner": "node scripts/verify-test-exit.mjs",
     "test:local-api": "node scripts/verify-local-api.mjs",
-    "dev:local": "node scripts/test-postgres.mjs --serve-http"
+    "dev:local": "node scripts/test-postgres.mjs --serve-http",
+    "web:check": "tsc --noEmit -p apps/web/tsconfig.json",
+    "web:build": "npm run web:check && node scripts/build-web.mjs",
+    "dev:web": "npm run web:build && node scripts/test-postgres.mjs --serve-web",
+    "test:web": "node scripts/test-web.mjs"
   },
   "engines": {
     "node": "^22.0.0 || ^24.0.0"
   },
   "dependencies": {
-    "pg": "8.23.1"
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
-    "embedded-postgres": "18.4.0-beta.17"
+    "@axe-core/playwright": "4.11.1",
+    "@playwright/test": "1.64.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "async-exit-hook": "2.0.1",
+    "embedded-postgres": "18.4.0-beta.17",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3"
   }
 }

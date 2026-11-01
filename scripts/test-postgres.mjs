@@ -1,4 +1,5 @@
 import EmbeddedPostgres from 'embedded-postgres';
+import exitHook from 'async-exit-hook';
 import { randomBytes } from 'node:crypto';
 import { mkdir, mkdtemp, realpath } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
@@ -6,6 +7,7 @@ import { createServer } from 'node:net';
 import { spawn } from 'node:child_process';
 import pg from 'pg';
 import { launchLocalDemo } from './local-demo.mjs';
+import { launchWebDemo } from './web-demo.mjs';
 
 // Always a fresh local cluster. No DATABASE_URL or remote database is consumed.
 const root = resolve('.local');
@@ -43,6 +45,16 @@ const control = args => new Promise((resolveControl,reject) => {
   child.on('error',reject);
   child.on('exit',code=>code===0?resolveControl():reject(new Error(`pg_ctl failed (${code}): ${output}`)));
 });
+// pg_ctl owns this process's cluster, not embedded-postgres.process. Its default
+// signal hook exits immediately, racing the async finally below. Own these signals
+// for serve modes, including during startup, and keep repeated Ctrl+C idempotent.
+const serving=process.argv.includes('--serve-http')||process.argv.includes('--serve-web');
+let requestStop;const stopRequested=new Promise(resolve=>{requestStop=resolve;});
+const stop=()=>requestStop();const message=value=>{if(value==='stop-local-test')stop();};
+if(serving){
+  exitHook.unhookEvent('SIGINT');exitHook.unhookEvent('SIGTERM');
+  process.on('SIGINT',stop);process.on('SIGTERM',stop);process.on('message',message);
+}
 let started = false;
 try {
   await postgres.initialise();
@@ -54,22 +66,21 @@ try {
   await setup.connect();
   try { await setup.query(`CREATE DATABASE ${setup.escapeIdentifier(database)}`); }
   finally { await setup.end(); }
-  if(process.argv.includes('--serve-http')) {
-    const local=await launchLocalDemo({host:'127.0.0.1',port,user:'postgres',password,database});
+  if(process.argv.includes('--serve-http')||process.argv.includes('--serve-web')) {
+    const isWeb=process.argv.includes('--serve-web');
+    const local=await (isWeb?launchWebDemo:launchLocalDemo)({host:'127.0.0.1',port,user:'postgres',password,database});
     try {
-      console.log('Local test API: '+local.url);
-      console.log('Local business API: '+local.businessUrl);
-      await new Promise(resolveStop=>{
-        const stop=()=>{process.off('SIGINT',stop);process.off('SIGTERM',stop);process.off('message',message);resolveStop();};
-        const message=value=>{if(value==='stop-local-test')stop();};
-        process.once('SIGINT',stop);process.once('SIGTERM',stop);process.on('message',message);
-      });
+      if(isWeb){console.log('Trufis Bolivia web local: '+local.url);process.send?.({type:'web-ready',url:local.url,postgresPort:port,credentialsFile:local.credentialsFile,
+        // Private parent/child test IPC only. Never returned by HTTP or written to the access file.
+        ...(process.env.NEXO_WEB_TEST_AUDIT==='1'&&process.connected?{auditConfig:{host:'127.0.0.1',port,user:'postgres',password,database}}:{})});}
+      else{console.log('Local test API: '+local.url);console.log('Local business API: '+local.businessUrl);}
+      await stopRequested;
     } finally {await local.close();}
   } else {
   const code = await new Promise((resolveCode, reject) => {
     const args = process.argv.includes('--verify-failure')
       ? ['--test','--nexo-invalid-test-option']
-      : ['--test','--test-concurrency=1','tests/integration/postgres.test.mjs'];
+      : ['--test','--test-concurrency=1',...process.argv.filter(arg=>arg.startsWith('--test-name-pattern=')),'tests/integration/postgres.test.mjs'];
     const child = spawn(process.execPath, args, {
       stdio: 'inherit', windowsHide: true,
       env: { ...process.env, NEXO_TEST_LOCAL: '1',
@@ -82,7 +93,8 @@ try {
   }
 } finally {
   if (started) await control(['stop','-D',databaseDir,'-m','fast','-w','-t','30']);
-  if(started && process.argv.includes('--serve-http')) console.log('Local test API stopped; PostgreSQL stopped.');
+  if(serving){process.off('SIGINT',stop);process.off('SIGTERM',stop);process.off('message',message);}
+  if(started && serving) console.log('Local test API stopped; PostgreSQL stopped.');
   // Kept under ignored .local for diagnostics; no recursive deletion of computed paths.
 }
 

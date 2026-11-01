@@ -1,10 +1,78 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, aceptación del chofer y despacho. Etapa 2 activa
-en `desarrollo/etapa-2`, desde el cierre aceptado de Etapa 1. PR de esta etapa hacia
-`desarrollo/etapa-1`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 3.
+asociación, reservas por segmentos, asignación por turno, recogidas y despacho. Etapa 3, auditoría y cierre técnico de laboratorio,
+en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
+`desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 4.
+
+## Etapa 3: interfaz web local
+
+React + TypeScript, búsqueda por origen/destino conectada a PostgreSQL, plazas por
+tramo y estados independientes por ruta. Inicio/cierre de sesión de prueba, puntos
+intermedios autorizados, solicitudes persistidas con idempotencia y «Mis reservas».
+Las nuevas reservas de terminal y expresas se confirman por turno. `HELD` conserva su significado **pendiente** para recogidas autorizadas, puntos sin clasificar e historial anterior; solo el chofer asignado acepta esas ofertas en `/operador`.
+Terminal, presencia, abordajes individuales/grupales, despacho y progreso conectados
+a paneles de administrador y chofer con permisos reales. Sin OAuth ni despliegue.
+001–027 intactas en 7A/7B; 028 añade estimaciones y decisiones de condiciones. 027 conserva paginación web y cancelación
+administrativa con motivo, delegando la transición en el núcleo existente. Se mantienen las
+proyecciones por rol y los contratos de reservas, despacho, incidencias y rescates.
+
+```sh
+npm ci --no-fund
+npm run dev:web
+# Abrir la dirección http://127.0.0.1:<puerto> que muestra el terminal.
+# Ctrl+C detiene HTTP y PostgreSQL. Datos ficticios nuevos en cada arranque.
+```
+
+La terminal muestra también la ruta de `.local/accesos-<identificador>.json`.
+En una segunda terminal PowerShell: `Get-Content -Raw <ruta-del-archivo>`.
+Usar `viajero0` para reservar. Las nuevas reservas de terminal se confirman
+por turno: no requieren aceptación en `/operador`. El chofer del vehículo asignado
+consulta su manifiesto en `/chofer` y registra la salida explícitamente.
+`/operador` conserva aceptación solo para recogidas autorizadas y ofertas históricas. No compartir ni
+subir ese archivo: sus contraseñas se generan en cada arranque y se elimina al cerrar.
+**La base es efímera: reiniciar pierde cuentas, sesiones y reservas.**
+
+[Procedimiento del incremento 2](docs/REPORTES/ETAPA_3_INCREMENTO_2.md).
+[Informe histórico del incremento 1](docs/REPORTES/ETAPA_3_INCREMENTO_1.md).
+
+[Recorrido completo Windows, paneles y evidencia del incremento 3](docs/REPORTES/ETAPA_3_INCREMENTO_3.md):
+`operativo0` declara presencia en Mis reservas; `adminH` verifica/observa en
+Administración; `driver5` inicia salida con cuatro abordados, recoge dos en Palmar,
+registra inicio del viaje principal, llegada final y descensos. Usar contextos de
+navegador separados para cada rol. Seis confirmadas no provocan salida automática.
+Para pruebas de navegador: `npx --no-install playwright install chromium` si hace
+falta, y `npm run test:web`. Escritorio y móvil emulado, solo en loopback.
+
+[Incremento 4: incidencias, sustituciones y rescates](docs/REPORTES/ETAPA_3_INCREMENTO_4.md).
+El responsable consiente todo su grupo; administración revalida el traslado o asigna
+una unidad libre desde la terminal autorizada. El chofer sustituto registra el
+traslado seguro antes de continuar. Sin vehículo disponible queda revisión humana,
+sin cancelaciones, cobros ni notificaciones automáticas. Cuentas y procedimientos
+ficticios para Windows y resultados de la batería ampliada en el informe.
+
+[Incremento 5: directorio, presenciales, rechazo, cancelación propia y retorno voluntario](docs/REPORTES/ETAPA_3_INCREMENTO_5.md).
+Las reservas presenciales fijan su origen en servidor y comparten inventario con APP;
+el chofer acepta o rechaza sin movimientos automáticos. El directorio pagina servicios
+por ruta/estado y la rehabilitación ficticia respeta el procedimiento nativo. Gateway
+con handlers privados protegidos por CSRF y regresión de respuestas de sesión tardías.
+Resultados, CodeQL, capturas y recorridos Windows en el informe del incremento.
+
+[Incremento 6: cancelación administrativa, revisión y paginación real](docs/REPORTES/ETAPA_3_INCREMENTO_6.md).
+Administrador y chofer recorren todo el manifiesto; el pasajero navega sus reservas
+propias y consulta su presencia aunque exceda el primer bloque de 50. Los cambios
+concurrentes de listado exigen actualizar, sin concatenar páginas incompatibles.
+Motivo y confirmación obligatorios para cancelar administrativamente el grupo;
+revisión de condiciones separada de su aceptación por el responsable. Sin dinero.
+
+## Incremento 8A: turnos y traslados seguros
+
+Terminal, presencial y expreso se asignan sin rechazo discrecional. El chofer declara
+una falla mecánica mediante incidencias; la unidad queda bloqueada. Una sustitución
+con abordados exige recepción real y confirmación del chofer receptor antes de
+continuar. El pasajero puede reportar discrepancias para revisión sin cambiar plazas,
+hechos ni importes. [Informe y prueba en Windows](docs/REPORTES/ETAPA_3_INCREMENTO_8A.md).
 
 ## Etapa 2: reservas y negocio local
 
@@ -33,7 +101,8 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**33 unitarias, 177 integraciones PostgreSQL real**,
+**62 unitarias y 278 integraciones PostgreSQL real**. La batería web ampliada
+ejecuta 82 casos de escritorio/móvil (resultados y CI en el informe 8B),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar
@@ -133,3 +202,24 @@ y por defecto solo simula. Cierre de laboratorio de Etapa 1 aceptado; Etapa 2 en
 [Propuesta original de Etapa 2](docs/PROPUESTA_ETAPA_2.md).
 La revisión final conserva **001–011 intactas**, alinea Node y refuerza el rechazo
 de encabezados HTTP vacíos. El PR permanece abierto hasta autorización del propietario.
+
+Expresos y división voluntaria, declaración de condiciones y decisiones del responsable:
+[7A](docs/REPORTES/ETAPA_3_INCREMENTO_7A.md) · [7B](docs/REPORTES/ETAPA_3_INCREMENTO_7B.md).
+Solo laboratorio; revisar las limitaciones de aceptación conjunta y resolución administrativa.
+
+## Incremento 8B: responsables y revisión humana
+
+Reservas presenciales con responsable ficticio separado de su cuenta; vínculo y
+corrección auditados, menores/acompañantes, ausencias observadas sin liberar plazas
+y revisión de discrepancias con rectificación nativa limitada. No establece
+requisitos legales ni consecuencias automáticas. 001–030 intactas; nuevas 031–032.
+[Contrato](docs/ETAPA_3_CUIDADOS_Y_REVISIONES.md) ·
+[Informe y Windows](docs/REPORTES/ETAPA_3_INCREMENTO_8B.md).
+
+## Auditoría y cierre de Etapa 3
+
+[Dictamen, matriz de requisitos y procedimiento Windows](docs/REPORTES/ETAPA_3_AUDITORIA_Y_CIERRE.md).
+La validez del cierre de laboratorio depende del commit y checks aprobados del
+[registro final](https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6561718192).
+001–032 conservadas; 033 corrige el listado de responsables. No se autoriza producción,
+merge ni Etapa 4. Los contratos comerciales/jurídicos pendientes siguen explícitos.

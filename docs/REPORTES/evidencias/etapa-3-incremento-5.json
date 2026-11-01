@@ -1,0 +1,814 @@
+{
+  "scope": "Etapa 3 incremento 5; laboratorio ficticio",
+  "codeCommit": "12bec7ea3a51ea70a17d5d15c1d85b96b9b8ec52",
+  "results": {
+    "unit": 49,
+    "postgres": 220,
+    "chromium": 60,
+    "total": 329,
+    "previousCasesPreserved": 315
+  },
+  "records": [
+    {
+      "scenario": "terminal",
+      "project": "desktop",
+      "rawSHA256": "38b339aa469a81116000570bd9aa58b94cd1813d7698cb221411ed6d7e2d69d3",
+      "state": {
+        "trip": {
+          "id": "a66aec64-a300-45be-9b30-ed9b7c41152f",
+          "vehicle": "FICTICIO-WEB-0-0",
+          "status": "QUEUED",
+          "current_stop": 0,
+          "capacity": 6,
+          "phase": null,
+          "native_onboard": 0,
+          "read_only": "on",
+          "postgres": "18.4"
+        },
+        "bookings": [
+          {
+            "id": "3cc9537e-47a9-4595-95a0-d6ed6f2fe6f2",
+            "group_id": "6c48a4dd-b80e-4cb0-ac7d-ab2d18b8a723",
+            "source": "APP",
+            "seats": 2,
+            "from_stop": 0,
+            "to_stop": 3,
+            "status": "CANCELLED",
+            "price_bob": "70.00",
+            "fare_version": 1,
+            "members": 2,
+            "member_ids": [
+              "da5abf64-e107-47d4-a485-c686338fe949",
+              "edf85bb0-6ebc-4fb9-a848-dfd0671dd7d2"
+            ]
+          },
+          {
+            "id": "8ffec2bb-025f-481c-be67-62e14d6c66ae",
+            "group_id": "5689541d-db1a-48ca-ad2a-3105b0ec6690",
+            "source": "APP",
+            "seats": 4,
+            "from_stop": 0,
+            "to_stop": 3,
+            "status": "CANCELLED",
+            "price_bob": "140.00",
+            "fare_version": 1,
+            "members": 4,
+            "member_ids": [
+              "24f9fc3b-3da6-49a4-870d-83722c853769",
+              "1fbd5442-5577-49c9-ab32-14e7ebc346aa",
+              "ae81741f-266d-48e9-b367-d6106096abd3",
+              "04809340-308d-4ec9-a0a3-524fb2314ba8"
+            ]
+          },
+          {
+            "id": "baf3c6ac-1b44-446c-9808-fe71d0529405",
+            "group_id": "f5cd8475-9ab8-4dee-b016-a2f316952df6",
+            "source": "WALK_IN",
+            "seats": 2,
+            "from_stop": 0,
+            "to_stop": 3,
+            "status": "REJECTED",
+            "price_bob": "70.00",
+            "fare_version": 1,
+            "members": 2,
+            "member_ids": [
+              "5482487e-6297-4061-b0a3-3a741c6a5144",
+              "9ef6d98c-a67f-441c-9b61-2c81af622d49"
+            ]
+          },
+          {
+            "id": "bef1a435-c553-45c7-8dd1-f06f51db8d7e",
+            "group_id": "6cc1fe9b-5efa-40a1-876e-5f90e2b6d29f",
+            "source": "APP",
+            "seats": 2,
+            "from_stop": 0,
+            "to_stop": 3,
+            "status": "CANCELLED",
+            "price_bob": "70.00",
+            "fare_version": 1,
+            "members": 2,
+            "member_ids": [
+              "8f5254c8-7d4e-42af-9942-8b4d8cfd990c",
+              "7f98b349-fed0-4f55-9fab-27804c24953c"
+            ]
+          }
+        ],
+        "segments": [
+          {
+            "stop_index": 0,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 1,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 2,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "onboard": 0,
+        "movements": [],
+        "fleet": [
+          {
+            "kind": "BREAKDOWN_REPORTED"
+          },
+          {
+            "kind": "BREAKDOWN_CONFIRMED"
+          },
+          {
+            "kind": "VEHICLE_RESTORED"
+          }
+        ],
+        "incidents": [
+          {
+            "context": "TERMINAL",
+            "state": "CLEARED",
+            "road_phase": null
+          }
+        ],
+        "audits": [
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "8ffec2bb-025f-481c-be67-62e14d6c66ae"
+          },
+          {
+            "action": "OFFER_ACCEPTED",
+            "entity_id": "8ffec2bb-025f-481c-be67-62e14d6c66ae"
+          },
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "3cc9537e-47a9-4595-95a0-d6ed6f2fe6f2"
+          },
+          {
+            "action": "OFFER_ACCEPTED",
+            "entity_id": "3cc9537e-47a9-4595-95a0-d6ed6f2fe6f2"
+          },
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "bef1a435-c553-45c7-8dd1-f06f51db8d7e"
+          },
+          {
+            "action": "OFFER_ACCEPTED",
+            "entity_id": "bef1a435-c553-45c7-8dd1-f06f51db8d7e"
+          },
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "baf3c6ac-1b44-446c-9808-fe71d0529405"
+          },
+          {
+            "action": "OFFER_REJECTED",
+            "entity_id": "baf3c6ac-1b44-446c-9808-fe71d0529405"
+          },
+          {
+            "action": "TERMINAL_IMPEDIMENT_REPORT",
+            "entity_id": "a66aec64-a300-45be-9b30-ed9b7c41152f"
+          },
+          {
+            "action": "TERMINAL_IMPEDIMENT_CONFIRM",
+            "entity_id": "a66aec64-a300-45be-9b30-ed9b7c41152f"
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "retorno",
+      "project": "desktop",
+      "rawSHA256": "d2f7b03cce3bac5ea1f44267720f86fe1ff7472ba9eba642bc1762a5b275a120",
+      "source": {
+        "trip": {
+          "id": "76e6bb94-3672-43e5-88cc-2cffb17d968f",
+          "vehicle": "FICTICIO-OPERATIVO",
+          "status": "COMPLETED",
+          "current_stop": 3,
+          "capacity": 6,
+          "phase": "COMPLETED",
+          "native_onboard": 0,
+          "read_only": "on",
+          "postgres": "18.4"
+        },
+        "bookings": [
+          {
+            "id": "522941c6-d82f-4374-9f94-3c0e019c4603",
+            "group_id": "0f6c7030-859f-4e3c-8710-846a5c717210",
+            "source": "APP",
+            "seats": 4,
+            "from_stop": 0,
+            "to_stop": 3,
+            "status": "COMPLETED",
+            "price_bob": "140.00",
+            "fare_version": 1,
+            "members": 4,
+            "member_ids": [
+              "66eb44c1-41f4-4cf0-a50a-4e93d0e480cb",
+              "2e1f7bfc-c30d-495b-a222-8034066c5568",
+              "f9f50199-400f-409c-b589-9294c9bf16d3",
+              "8f446cde-b0f1-4666-91db-8749db410cfd"
+            ]
+          },
+          {
+            "id": "ad8b6efe-4f96-427c-b934-eae913ce35b7",
+            "group_id": "fbf9b59a-5160-4c74-b339-9afa69a9fe55",
+            "source": "APP",
+            "seats": 2,
+            "from_stop": 1,
+            "to_stop": 3,
+            "status": "COMPLETED",
+            "price_bob": "50.00",
+            "fare_version": 1,
+            "members": 2,
+            "member_ids": [
+              "a1baef79-1902-4dcf-93c4-1e17272ed038",
+              "b952cd3c-b7be-46e3-9f6d-0386a1ff6b40"
+            ]
+          }
+        ],
+        "segments": [
+          {
+            "stop_index": 0,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 1,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 2,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "onboard": 0,
+        "movements": [
+          {
+            "booking_id": "522941c6-d82f-4374-9f94-3c0e019c4603",
+            "member_id": null,
+            "kind": "BOARD",
+            "stop_index": 0,
+            "actor": "FICTICIO-WEB-admin"
+          },
+          {
+            "booking_id": "ad8b6efe-4f96-427c-b934-eae913ce35b7",
+            "member_id": null,
+            "kind": "BOARD",
+            "stop_index": 1,
+            "actor": "FICTICIO-WEB-driver5"
+          },
+          {
+            "booking_id": "522941c6-d82f-4374-9f94-3c0e019c4603",
+            "member_id": null,
+            "kind": "ALIGHT",
+            "stop_index": 3,
+            "actor": "FICTICIO-WEB-driver5"
+          },
+          {
+            "booking_id": "ad8b6efe-4f96-427c-b934-eae913ce35b7",
+            "member_id": null,
+            "kind": "ALIGHT",
+            "stop_index": 3,
+            "actor": "FICTICIO-WEB-driver5"
+          }
+        ],
+        "fleet": [
+          {
+            "kind": "URBAN_STARTED"
+          },
+          {
+            "kind": "PROGRESS"
+          },
+          {
+            "kind": "MAIN_TRIP_STARTED"
+          },
+          {
+            "kind": "PROGRESS"
+          },
+          {
+            "kind": "PROGRESS"
+          }
+        ],
+        "incidents": [],
+        "audits": [
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "522941c6-d82f-4374-9f94-3c0e019c4603"
+          },
+          {
+            "action": "OFFER_ACCEPTED",
+            "entity_id": "522941c6-d82f-4374-9f94-3c0e019c4603"
+          },
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "ad8b6efe-4f96-427c-b934-eae913ce35b7"
+          },
+          {
+            "action": "OFFER_ACCEPTED",
+            "entity_id": "ad8b6efe-4f96-427c-b934-eae913ce35b7"
+          },
+          {
+            "action": "BOOKING_BOARDED",
+            "entity_id": "522941c6-d82f-4374-9f94-3c0e019c4603"
+          },
+          {
+            "action": "DEPARTED",
+            "entity_id": "76e6bb94-3672-43e5-88cc-2cffb17d968f"
+          },
+          {
+            "action": "PROGRESS",
+            "entity_id": "76e6bb94-3672-43e5-88cc-2cffb17d968f"
+          },
+          {
+            "action": "BOOKING_BOARDED",
+            "entity_id": "ad8b6efe-4f96-427c-b934-eae913ce35b7"
+          },
+          {
+            "action": "FLEET_MAIN_START",
+            "entity_id": "76e6bb94-3672-43e5-88cc-2cffb17d968f"
+          },
+          {
+            "action": "PROGRESS",
+            "entity_id": "76e6bb94-3672-43e5-88cc-2cffb17d968f"
+          },
+          {
+            "action": "PROGRESS",
+            "entity_id": "76e6bb94-3672-43e5-88cc-2cffb17d968f"
+          },
+          {
+            "action": "BOOKING_ALIGHTED",
+            "entity_id": "522941c6-d82f-4374-9f94-3c0e019c4603"
+          },
+          {
+            "action": "BOOKING_ALIGHTED",
+            "entity_id": "ad8b6efe-4f96-427c-b934-eae913ce35b7"
+          }
+        ]
+      },
+      "target": {
+        "trip": {
+          "id": "70f65c43-fc5f-423e-80ef-2e6c7e914de3",
+          "vehicle": "FICTICIO-OPERATIVO",
+          "status": "QUEUED",
+          "current_stop": 0,
+          "capacity": 6,
+          "phase": null,
+          "native_onboard": 0,
+          "read_only": "on",
+          "postgres": "18.4"
+        },
+        "bookings": [],
+        "segments": [
+          {
+            "stop_index": 0,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 1,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 2,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "onboard": 0,
+        "movements": [],
+        "fleet": [],
+        "incidents": [],
+        "audits": [
+          {
+            "action": "QUEUE_REQUESTED",
+            "entity_id": "70f65c43-fc5f-423e-80ef-2e6c7e914de3"
+          }
+        ]
+      },
+      "concurrentStatuses": [
+        200,
+        409
+      ]
+    },
+    {
+      "scenario": "terminal",
+      "project": "mobile",
+      "rawSHA256": "ecc67073eeb1e66311a5ef49a422ad4c10695d18b23ced710fb206d27a0b9bbf",
+      "state": {
+        "trip": {
+          "id": "de24e9c0-81fc-44d6-90d7-ff1ef319e096",
+          "vehicle": "FICTICIO-WEB-0-0",
+          "status": "QUEUED",
+          "current_stop": 0,
+          "capacity": 6,
+          "phase": null,
+          "native_onboard": 0,
+          "read_only": "on",
+          "postgres": "18.4"
+        },
+        "bookings": [
+          {
+            "id": "10c7ed7f-da1e-40f6-ab97-789d4ab4fed1",
+            "group_id": "71384866-82b1-4b4b-a463-0108c3708d62",
+            "source": "APP",
+            "seats": 4,
+            "from_stop": 0,
+            "to_stop": 3,
+            "status": "CANCELLED",
+            "price_bob": "140.00",
+            "fare_version": 1,
+            "members": 4,
+            "member_ids": [
+              "33469c1e-a70b-41c0-bab7-6b89ad743161",
+              "a012ba62-9f97-46ef-a4d4-b5cf1cd01929",
+              "8fb39355-6857-48f8-9c0f-c10c1fc22a0d",
+              "0b4d97c5-6f4d-48c4-b30f-53881d4c9eac"
+            ]
+          },
+          {
+            "id": "4a075008-60b2-4911-af56-c4d1c55891fd",
+            "group_id": "cb1002d8-46d1-429f-9f2b-71585b9520f4",
+            "source": "APP",
+            "seats": 2,
+            "from_stop": 0,
+            "to_stop": 3,
+            "status": "CANCELLED",
+            "price_bob": "70.00",
+            "fare_version": 1,
+            "members": 2,
+            "member_ids": [
+              "be285f53-9afd-44b9-8e34-1a6dc32d067e",
+              "f86b83a8-a7e9-4b8b-b154-0d1867dddcea"
+            ]
+          },
+          {
+            "id": "520df35e-8168-485a-b89c-764eaebb20b9",
+            "group_id": "a1ea5ae1-0047-4be3-bbac-a731c988077e",
+            "source": "APP",
+            "seats": 2,
+            "from_stop": 0,
+            "to_stop": 3,
+            "status": "CANCELLED",
+            "price_bob": "70.00",
+            "fare_version": 1,
+            "members": 2,
+            "member_ids": [
+              "0b37f63c-41d1-45b6-bc0f-44f1fe4670ba",
+              "06496922-fb90-48dd-b0de-c05ad85847fe"
+            ]
+          },
+          {
+            "id": "fc961319-2e32-4fa2-9c78-0d898fa1c978",
+            "group_id": "d4ff1d7d-dadb-43b4-a90a-47b0d4aa58b3",
+            "source": "WALK_IN",
+            "seats": 2,
+            "from_stop": 0,
+            "to_stop": 3,
+            "status": "REJECTED",
+            "price_bob": "70.00",
+            "fare_version": 1,
+            "members": 2,
+            "member_ids": [
+              "71d5b558-7b42-4e03-9422-1dcfb6aae25e",
+              "0fc1610c-f817-41ab-a527-74ca6092d82b"
+            ]
+          }
+        ],
+        "segments": [
+          {
+            "stop_index": 0,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 1,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 2,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "onboard": 0,
+        "movements": [],
+        "fleet": [
+          {
+            "kind": "BREAKDOWN_REPORTED"
+          },
+          {
+            "kind": "BREAKDOWN_CONFIRMED"
+          },
+          {
+            "kind": "VEHICLE_RESTORED"
+          }
+        ],
+        "incidents": [
+          {
+            "context": "TERMINAL",
+            "state": "CLEARED",
+            "road_phase": null
+          }
+        ],
+        "audits": [
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "10c7ed7f-da1e-40f6-ab97-789d4ab4fed1"
+          },
+          {
+            "action": "OFFER_ACCEPTED",
+            "entity_id": "10c7ed7f-da1e-40f6-ab97-789d4ab4fed1"
+          },
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "4a075008-60b2-4911-af56-c4d1c55891fd"
+          },
+          {
+            "action": "OFFER_ACCEPTED",
+            "entity_id": "4a075008-60b2-4911-af56-c4d1c55891fd"
+          },
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "520df35e-8168-485a-b89c-764eaebb20b9"
+          },
+          {
+            "action": "OFFER_ACCEPTED",
+            "entity_id": "520df35e-8168-485a-b89c-764eaebb20b9"
+          },
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "fc961319-2e32-4fa2-9c78-0d898fa1c978"
+          },
+          {
+            "action": "OFFER_REJECTED",
+            "entity_id": "fc961319-2e32-4fa2-9c78-0d898fa1c978"
+          },
+          {
+            "action": "TERMINAL_IMPEDIMENT_REPORT",
+            "entity_id": "de24e9c0-81fc-44d6-90d7-ff1ef319e096"
+          },
+          {
+            "action": "TERMINAL_IMPEDIMENT_CONFIRM",
+            "entity_id": "de24e9c0-81fc-44d6-90d7-ff1ef319e096"
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "retorno",
+      "project": "mobile",
+      "rawSHA256": "9aecbc7b260c28bf5b94aad2d1fbcc70b2ba4dd3f8955b0f14f2628baaaac77a",
+      "source": {
+        "trip": {
+          "id": "9d9ca95f-6ee5-4139-93c6-0728a684643c",
+          "vehicle": "FICTICIO-OPERATIVO",
+          "status": "COMPLETED",
+          "current_stop": 3,
+          "capacity": 6,
+          "phase": "COMPLETED",
+          "native_onboard": 0,
+          "read_only": "on",
+          "postgres": "18.4"
+        },
+        "bookings": [
+          {
+            "id": "43bf5f12-9393-402c-a3a5-990cacdd113f",
+            "group_id": "42949475-8800-4d50-849f-2a95465b0265",
+            "source": "APP",
+            "seats": 4,
+            "from_stop": 0,
+            "to_stop": 3,
+            "status": "COMPLETED",
+            "price_bob": "140.00",
+            "fare_version": 1,
+            "members": 4,
+            "member_ids": [
+              "9a713429-4d8a-4f48-a827-d68bdde32e54",
+              "21350256-1b83-4dc1-9aef-1a1012e37a02",
+              "cd79dc8d-754a-4431-926d-c291f8df47ec",
+              "79de8f77-be16-489b-9362-d69246a6dc30"
+            ]
+          },
+          {
+            "id": "f1c5caa5-4801-49c0-a50c-615dd738711d",
+            "group_id": "dc9fa783-faaa-40f6-a03b-21b03afb81f2",
+            "source": "APP",
+            "seats": 2,
+            "from_stop": 1,
+            "to_stop": 3,
+            "status": "COMPLETED",
+            "price_bob": "50.00",
+            "fare_version": 1,
+            "members": 2,
+            "member_ids": [
+              "51736b98-35be-4826-beea-0e8082a593da",
+              "1b59a0af-294c-4da5-ab17-c0a51da0daf1"
+            ]
+          }
+        ],
+        "segments": [
+          {
+            "stop_index": 0,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 1,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 2,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "onboard": 0,
+        "movements": [
+          {
+            "booking_id": "43bf5f12-9393-402c-a3a5-990cacdd113f",
+            "member_id": null,
+            "kind": "BOARD",
+            "stop_index": 0,
+            "actor": "FICTICIO-WEB-admin"
+          },
+          {
+            "booking_id": "f1c5caa5-4801-49c0-a50c-615dd738711d",
+            "member_id": null,
+            "kind": "BOARD",
+            "stop_index": 1,
+            "actor": "FICTICIO-WEB-driver5"
+          },
+          {
+            "booking_id": "43bf5f12-9393-402c-a3a5-990cacdd113f",
+            "member_id": null,
+            "kind": "ALIGHT",
+            "stop_index": 3,
+            "actor": "FICTICIO-WEB-driver5"
+          },
+          {
+            "booking_id": "f1c5caa5-4801-49c0-a50c-615dd738711d",
+            "member_id": null,
+            "kind": "ALIGHT",
+            "stop_index": 3,
+            "actor": "FICTICIO-WEB-driver5"
+          }
+        ],
+        "fleet": [
+          {
+            "kind": "URBAN_STARTED"
+          },
+          {
+            "kind": "PROGRESS"
+          },
+          {
+            "kind": "MAIN_TRIP_STARTED"
+          },
+          {
+            "kind": "PROGRESS"
+          },
+          {
+            "kind": "PROGRESS"
+          }
+        ],
+        "incidents": [],
+        "audits": [
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "43bf5f12-9393-402c-a3a5-990cacdd113f"
+          },
+          {
+            "action": "OFFER_ACCEPTED",
+            "entity_id": "43bf5f12-9393-402c-a3a5-990cacdd113f"
+          },
+          {
+            "action": "OFFER_CREATED",
+            "entity_id": "f1c5caa5-4801-49c0-a50c-615dd738711d"
+          },
+          {
+            "action": "OFFER_ACCEPTED",
+            "entity_id": "f1c5caa5-4801-49c0-a50c-615dd738711d"
+          },
+          {
+            "action": "BOOKING_BOARDED",
+            "entity_id": "43bf5f12-9393-402c-a3a5-990cacdd113f"
+          },
+          {
+            "action": "DEPARTED",
+            "entity_id": "9d9ca95f-6ee5-4139-93c6-0728a684643c"
+          },
+          {
+            "action": "PROGRESS",
+            "entity_id": "9d9ca95f-6ee5-4139-93c6-0728a684643c"
+          },
+          {
+            "action": "BOOKING_BOARDED",
+            "entity_id": "f1c5caa5-4801-49c0-a50c-615dd738711d"
+          },
+          {
+            "action": "FLEET_MAIN_START",
+            "entity_id": "9d9ca95f-6ee5-4139-93c6-0728a684643c"
+          },
+          {
+            "action": "PROGRESS",
+            "entity_id": "9d9ca95f-6ee5-4139-93c6-0728a684643c"
+          },
+          {
+            "action": "PROGRESS",
+            "entity_id": "9d9ca95f-6ee5-4139-93c6-0728a684643c"
+          },
+          {
+            "action": "BOOKING_ALIGHTED",
+            "entity_id": "43bf5f12-9393-402c-a3a5-990cacdd113f"
+          },
+          {
+            "action": "BOOKING_ALIGHTED",
+            "entity_id": "f1c5caa5-4801-49c0-a50c-615dd738711d"
+          }
+        ]
+      },
+      "target": {
+        "trip": {
+          "id": "5a9807b5-3d8e-4920-b35c-20c1c3116bff",
+          "vehicle": "FICTICIO-OPERATIVO",
+          "status": "QUEUED",
+          "current_stop": 0,
+          "capacity": 6,
+          "phase": null,
+          "native_onboard": 0,
+          "read_only": "on",
+          "postgres": "18.4"
+        },
+        "bookings": [],
+        "segments": [
+          {
+            "stop_index": 0,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 1,
+            "confirmed": 0,
+            "reserved": 0
+          },
+          {
+            "stop_index": 2,
+            "confirmed": 0,
+            "reserved": 0
+          }
+        ],
+        "onboard": 0,
+        "movements": [],
+        "fleet": [],
+        "incidents": [],
+        "audits": [
+          {
+            "action": "QUEUE_REQUESTED",
+            "entity_id": "5a9807b5-3d8e-4920-b35c-20c1c3116bff"
+          }
+        ]
+      },
+      "concurrentStatuses": [
+        200,
+        409
+      ]
+    }
+  ],
+  "captures": [
+    {
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-5-directorio-desktop.png",
+      "sha256": "e24889cb55f3a08e4948b5df76e3bd08a79ea63039b9ea4ae66cf95e66174ca4"
+    },
+    {
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-5-directorio-mobile.png",
+      "sha256": "6bda52547c37f31ca88925f6e94c4f106d29f19acaba17e54dce76bdae192450"
+    },
+    {
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-5-presencial-desktop.png",
+      "sha256": "fe9c99060c68d99b84c171cf579b2227530d40798f26299b8e136fbffb44f4dc"
+    },
+    {
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-5-cancelacion-mobile.png",
+      "sha256": "7e9685fefb713e4b2388f04eae2d57e5ba8da00d3986e6e44a9f92c6bf000cea"
+    },
+    {
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-5-rehabilitacion-desktop.png",
+      "sha256": "09589dd295e1d2ff337c346e05177b9dace6b11f91ecdd13db7643163149a73a"
+    },
+    {
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-5-retorno-mobile.png",
+      "sha256": "2fe55954e25c621ada78001ea597849e5319f2f8b24156a321491ca6bd48a00f"
+    }
+  ],
+  "notes": [
+    "Estados SQL obtenidos en transacciones READ ONLY desde un testigo externo a la API.",
+    "La posición 2 del retorno se verifica en el test mediante recibo nativo y directorio administrativo; el testigo no proyecta position_no.",
+    "Las dos capturas de directorio se tomaron adicionalmente en un laboratorio nuevo con el mismo código; no se cuentan como nuevos casos.",
+    "Solo UUID técnicos y datos ficticios; no se publica configuración, credenciales o sesiones.",
+    "Los archivos originales privados permanecen en .local/e2e-incremento-5."
+  ]
+}
