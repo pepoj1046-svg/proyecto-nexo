@@ -48,3 +48,11 @@
 .safety-review .button,.handoff-panel .button{max-width:100%;min-height:44px;white-space:normal;margin:.4rem 0}
 .handoff-group{min-width:0;border-top:1px solid var(--line);margin-top:1rem;padding-top:.5rem}
 @media(max-width:600px){.safety-review fieldset,.handoff-panel fieldset{padding:.75rem}.safety-review .button,.handoff-panel .button{width:100%}}
+.care-panel,.care-accounts,.responsible-reservations,.discrepancy-review{min-width:0;max-width:100%;margin:1rem 0;overflow-wrap:anywhere}
+.care-panel fieldset,.care-accounts fieldset,.responsible-reservations fieldset,.discrepancy-review fieldset{min-width:0;max-width:100%;padding:1rem;border:1px solid var(--line);border-radius:10px;margin:1rem 0}
+.care-panel legend,.care-accounts legend,.responsible-reservations legend,.discrepancy-review legend{max-width:100%;white-space:normal}
+.care-panel label,.care-accounts label,.responsible-reservations label,.discrepancy-review label{display:block;line-height:1.5;margin:.75rem 0}
+.care-panel select,.care-panel input:not([type=checkbox]),.responsible-reservations input:not([type=checkbox]),.discrepancy-review select{display:block;width:100%;max-width:100%;min-width:0;min-height:44px;padding:.6rem;border:1px solid #8a9d91;border-radius:8px;background:#fff;color:#253d34}
+.care-panel .button,.care-accounts .button,.responsible-reservations .button,.discrepancy-review .button{max-width:100%;min-height:44px;white-space:normal;margin:.4rem 0}
+.care-member,.responsible-booking{min-width:0;border-top:1px solid var(--line);margin:1rem 0;padding-top:1rem;overflow-wrap:anywhere}
+@media(max-width:600px){.care-panel .button,.care-accounts .button,.responsible-reservations .button,.discrepancy-review .button{width:100%}.care-panel fieldset,.care-accounts fieldset,.responsible-reservations fieldset,.discrepancy-review fieldset{padding:.75rem}}

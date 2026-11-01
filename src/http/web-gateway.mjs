@@ -1,5 +1,6 @@
 import{createWebConditionService}from'../db/web-condition-service.mjs';
 import{createWebSafetyService}from'../db/web-safety-service.mjs';
+import{createWebCareService}from'../db/web-care-service.mjs';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -31,6 +32,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   const terminal=identityPool?createWebTerminalService(pool):null;
   const conditions=identityPool?createWebConditionService(pool):null;
   const safety=identityPool?createWebSafetyService(pool):null;
+  const care=identityPool?createWebCareService(pool):null;
   const management=identityPool?createWebManagementService(pool):null;
   const sessions=identityPool?createWebSessions({identity:createIdentity(identityPool),business}):null;
   // Fixed handler tables: every private POST is constructed with the CSRF gate.
@@ -50,6 +52,12 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
     ['/api/segment',(_context,_req,b)=>service.segment(b)]
   ]);
   const privateHandlers=sessions?new Map([
+    ['/api/care/context',authenticated((token,_key,b)=>care.context(token,b))],
+    ['/api/care/list',authenticated((token,_key,b)=>care.list(token,b))],
+    ['/api/care/code',authenticated((token,key,b)=>care.code(token,key,b))],
+    ['/api/care/review',authenticated((token,_key,b)=>care.review(token,b))],
+    ['/api/care/accounts',authenticated((token,_key,b)=>care.accounts(token,b))],
+    ['/api/care/command',authenticated((token,key,b)=>care.command(token,key,b))],
     ['/api/safety/handoffs',authenticated((token,_key,b)=>safety.handoffs(token,b))],
     ['/api/safety/context',authenticated((token,_key,b)=>safety.context(token,b))],
     ['/api/safety/command',authenticated((token,key,b)=>safety.command(token,key,b))],
@@ -131,7 +139,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
       const asset=/^\/(app-[A-Z0-9]+\.(js|css))$/.exec(req.url);
       if(asset){let data;try{data=await readFile(resolve(root,asset[1]));}catch{throw denial(404,'NOT_FOUND');}return send(200,data,asset[2]==='js'?'text/javascript; charset=utf-8':'text/css; charset=utf-8');}
       throw denial(404,'NOT_FOUND');
-    }catch(e){const known=/^(INVALID_[A-Z_]+|UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|NO_CAPACITY|CAPACITY_EXCEEDED|FARE_CHANGED|FARE_UNRESOLVED|ROUTE_NOT_ELIGIBLE|TRIP_NOT_QUEUED|TRIP_NOT_IN_TRANSIT|PICKUP_PASSED|PICKUP_PASSED_OR_INCOMPATIBLE|QUOTE_CHANGED|OPERATION_BLOCKED|IDEMPOTENCY_CONFLICT|OFFER_EXPIRED|NOT_DRIVER|FORBIDDEN_SCOPE|STALE_ASSIGNMENT|STALE_OPERATION|NOT_FULL|UNACCEPTED_OFFERS|PICKUPS_PENDING|QUEUE_ORDER|INCOMPATIBLE_TRIP|INDIVIDUAL_HISTORY_ONLY|AGGREGATE_HISTORY_ONLY|OBSERVED_CAPACITY_EXCEEDED|UNSUPPORTED_URBAN_MANIFEST|OUTSIDE_URBAN_SCOPE|OUTSIDE_ROAD_SCOPE|ROUTE_CONDITION_BLOCKED|CONDITION_ACCEPTANCE_REQUIRED|MINOR_REVIEW_REQUIRED|COMPANION_REQUIRED|NO_COMPATIBLE_TRANSFER|NO_FREE_REPLACEMENT|ADMIN_TERMINAL_CHOICE_REQUIRED|REPLACEMENT_AVAILABLE|ADMIN_REVIEW_REQUIRED|SAFE_TRANSFER_REQUIRED|STALE_CONSENT|CONSENT_USED|PRESENCE_REQUIRED|TERMINAL_RESERVATION_BINDING|TRANSFER_CONDITIONS_CHANGED|VEHICLE_OUT_OF_SERVICE|PASSENGERS_ONBOARD|TRIP_ALREADY_STARTED|NOT_AVAILABLE|ALREADY_ACTIVE|STALE_PREVIOUS_TRIP|PAGE_CHANGED|DECISION_CONFLICT|CONDITION_REJECTED|STALE_CONDITION|ASSIGNMENT_NOT_DECLINABLE|NO_DRIVER_DECISION_REQUIRED|HANDOFF_PENDING|RECEIVER_DRIVER_REQUIRED|STALE_HANDOFF|RECEPTION_INCOMPLETE|ALREADY_RECEIVED|HANDOFF_ALREADY_COMPLETED)$/;const message=known.test(e.message)?e.message:null;const status=e.status??(message==='INVALID_CREDENTIALS'||message==='UNAUTHENTICATED'?401:message==='FORBIDDEN'||message==='FORBIDDEN_SCOPE'||message==='NOT_DRIVER'||message==='RECEIVER_DRIVER_REQUIRED'?403:message==='NOT_FOUND'?404:message?.startsWith('INVALID_')?400:message?409:503);send(status,{error:e.status?e.code??'REQUEST_REJECTED':message??(req.url.startsWith('/api/local')||req.url==='/api/availability'?'CATALOG_UNAVAILABLE':'SERVICE_UNAVAILABLE')});req.resume();}
+    }catch(e){const known=/^(INVALID_[A-Z_]+|UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|NO_CAPACITY|CAPACITY_EXCEEDED|FARE_CHANGED|FARE_UNRESOLVED|ROUTE_NOT_ELIGIBLE|TRIP_NOT_QUEUED|TRIP_NOT_IN_TRANSIT|PICKUP_PASSED|PICKUP_PASSED_OR_INCOMPATIBLE|QUOTE_CHANGED|OPERATION_BLOCKED|IDEMPOTENCY_CONFLICT|OFFER_EXPIRED|NOT_DRIVER|FORBIDDEN_SCOPE|STALE_ASSIGNMENT|STALE_OPERATION|NOT_FULL|UNACCEPTED_OFFERS|PICKUPS_PENDING|QUEUE_ORDER|INCOMPATIBLE_TRIP|INDIVIDUAL_HISTORY_ONLY|AGGREGATE_HISTORY_ONLY|OBSERVED_CAPACITY_EXCEEDED|UNSUPPORTED_URBAN_MANIFEST|OUTSIDE_URBAN_SCOPE|OUTSIDE_ROAD_SCOPE|ROUTE_CONDITION_BLOCKED|CONDITION_ACCEPTANCE_REQUIRED|MINOR_REVIEW_REQUIRED|COMPANION_REQUIRED|NO_COMPATIBLE_TRANSFER|NO_FREE_REPLACEMENT|ADMIN_TERMINAL_CHOICE_REQUIRED|REPLACEMENT_AVAILABLE|ADMIN_REVIEW_REQUIRED|SAFE_TRANSFER_REQUIRED|STALE_CONSENT|CONSENT_USED|PRESENCE_REQUIRED|TERMINAL_RESERVATION_BINDING|TRANSFER_CONDITIONS_CHANGED|VEHICLE_OUT_OF_SERVICE|PASSENGERS_ONBOARD|TRIP_ALREADY_STARTED|NOT_AVAILABLE|ALREADY_ACTIVE|STALE_PREVIOUS_TRIP|PAGE_CHANGED|DECISION_CONFLICT|CONDITION_REJECTED|STALE_CONDITION|ASSIGNMENT_NOT_DECLINABLE|NO_DRIVER_DECISION_REQUIRED|HANDOFF_PENDING|RECEIVER_DRIVER_REQUIRED|STALE_HANDOFF|RECEPTION_INCOMPLETE|ALREADY_RECEIVED|HANDOFF_ALREADY_COMPLETED|MANAGED_RESPONSIBILITY_REQUIRED|STALE_RESPONSIBILITY|RESPONSIBLE_ALREADY_REGISTERED|RESPONSIBLE_REVIEW_REQUIRED|NO_LINKED_ACCOUNT|ACCOUNT_ALREADY_LINKED|BOARDING_HISTORY_REVIEW_REQUIRED|NO_ABSENCE_CANDIDATES|LEGAL_POLICY_REVIEW_REQUIRED|MINOR_LINK_REVIEW_REQUIRED|PHYSICAL_REVIEW_REQUIRED|STALE_REVIEW|CUSTODY_REVIEW_REQUIRED|RESPONSIBILITY_CONSENT_REVIEW_REQUIRED|FRESH_RESPONSIBLE_DECISION_REQUIRED)$/;const message=known.test(e.message)?e.message:null;const status=e.status??(message==='INVALID_CREDENTIALS'||message==='UNAUTHENTICATED'?401:message==='FORBIDDEN'||message==='FORBIDDEN_SCOPE'||message==='NOT_DRIVER'||message==='RECEIVER_DRIVER_REQUIRED'?403:message==='NOT_FOUND'?404:message?.startsWith('INVALID_')?400:message?409:503);send(status,{error:e.status?e.code??'REQUEST_REJECTED':message??(req.url.startsWith('/api/local')||req.url==='/api/availability'?'CATALOG_UNAVAILABLE':'SERVICE_UNAVAILABLE')});req.resume();}
     finally{if(entered)inflight--;}
   });
   server.maxConnections=32;server.maxHeadersCount=32;server.on('clientError',(_error,socket)=>{if(socket.writable)socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');});

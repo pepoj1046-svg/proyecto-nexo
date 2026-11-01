@@ -132,7 +132,7 @@ export async function seedWebDemo(db,pool) {
    for(const b of(await db.query("SELECT id FROM nexo.bookings WHERE route_id=$1 AND passenger_id=$2 AND status='CONFIRMED'",[runs[1].route,users.passenger.id])).rows)await core.cancel(users.passenger.token,randomUUID(),b.id);
   }
   const accounts={};
-  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1']){
+  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1',...(process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1'?['admin']:[])]){
     const password=randomBytes(24).toString('base64url'),login='lab-'+label.toLowerCase();
     const user=users[label]?.id??randomUUID();if(!users[label])await db.query('INSERT INTO nexo.users VALUES($1,$2)',[user,'FICTICIO-WEB-'+label]);
     await db.query('INSERT INTO nexo.identity_accounts(user_id,login_key,password_hash)VALUES($1,$2,$3)',[user,login,await hashPassword(password)]);

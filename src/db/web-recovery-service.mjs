@@ -37,7 +37,7 @@ export function createWebRecoveryService(pool){
  }
  async function consents(c,bookingIds){return(await c.query(`SELECT c.id AS "consentId",c.booking_id AS "bookingId",c.group_id AS "groupId",c.target_trip AS "targetTripId",v.label AS vehicle,c.created_at AS "createdAt"
   FROM nexo.group_consents c JOIN nexo.trips t ON t.id=c.target_trip JOIN nexo.vehicles v ON v.id=t.vehicle_id
-  WHERE c.group_id IN(SELECT group_id FROM nexo.bookings WHERE id=ANY($1::uuid[]))AND NOT EXISTS(SELECT FROM nexo.consent_uses u WHERE u.consent_id=c.id)
+  WHERE c.group_id IN(SELECT group_id FROM nexo.bookings WHERE id=ANY($1::uuid[]))AND nexo.care_consent_current(c.id) AND NOT EXISTS(SELECT FROM nexo.consent_uses u WHERE u.consent_id=c.id)
   ORDER BY c.created_at DESC,c.id LIMIT 50`,[bookingIds])).rows;}
  async function vehicle(c,trip){return(await c.query(`SELECT t.id AS "tripId",t.route_id AS "routeId",t.position_no AS position,v.label AS vehicle,r.name AS route
   FROM nexo.trips t JOIN nexo.vehicles v ON v.id=t.vehicle_id JOIN nexo.routes r ON r.id=t.route_id WHERE t.id=$1`,[trip])).rows[0];}

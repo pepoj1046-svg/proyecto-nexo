@@ -15,7 +15,10 @@ jobs:
         node: ['22', '24']
     name: tests (${{ matrix.os }}, Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    # 8B: 38 isolated browser/PG labs (8A: 32). The last Windows/22 job
+    # needed 18m59s; allow the added coverage. Existing per-test, HTTP, SQL and
+    # launcher deadlines remain unchanged; retries stay disabled.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

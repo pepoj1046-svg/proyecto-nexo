@@ -17,3 +17,7 @@ description: "Desarrollar, revisar o probar Proyecto Nexo (Trufis Bolivia): rese
 9. Entrega breve: resumen, archivos afectados, commits/PR, pruebas ejecutadas con resultados exactos, evidencia CI, riesgos y pasos mínimos para Windows. Distinguir validación automatizada de prueba manual y de aprobación para producción.
 
 Esta skill complementa `AGENTS.md` y los contratos; si hay conflicto, aplicar la instrucción vigente más restrictiva y señalar la discrepancia.
+
+Para 8B consultar `docs/ETAPA_3_CUIDADOS_Y_REVISIONES.md`: identidad offline no es
+cuenta ni autorización legal; corregir responsable invalida autoridad anterior,
+ausencia no libera plazas y una discrepancia no revierte custodia automáticamente.

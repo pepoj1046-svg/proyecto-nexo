@@ -4,6 +4,7 @@ import {randomUUID} from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
 import {login,operational,api,rejected} from './support/operation-browser.mjs';
 import {operationEvidence} from './support/operation-evidence.mjs';
+import {commandClick} from './support/recovery-browser.mjs';
 test('ciclo real de terminal, cuatro abordajes y dos recogidas urbanas hasta llegada y descenso',async({page,browser,baseURL},info)=>{
  test.setTimeout(90000);
  const contextOptions={baseURL,viewport:page.viewportSize(),isMobile:info.project.use.isMobile,hasTouch:info.project.use.hasTouch,userAgent:info.project.use.userAgent};
@@ -82,6 +83,9 @@ test('ciclo real de terminal, cuatro abordajes y dos recogidas urbanas hasta lle
   s=await checkpoint('09-llegada-palmar-faltan-dos',{status:'IN_TRANSIT',phase:'URBAN_COLLECTION',stop:1,onboard:4,boards:1});
   await rejected(d,'/api/operations/command',{kind:'MAIN_START',tripId,version:s.trip.version,confirmed:true},'PICKUPS_PENDING',409);
   const pickup=d.locator('.expected-booking').filter({hasText:'Parada Palmar (ficticia)'});
+  // 8B: an absence observed after departure preserves the two committed pickup
+  // seats. A later actual boarding is recorded separately; the observation stays.
+  const absence=pickup.locator('.care-panel');await absence.getByRole('button',{name:'Consultar responsables, menores y ausencias',exact:true}).click();await absence.getByLabel('Observé la ausencia de los integrantes pendientes').check();await commandClick(d,absence.getByRole('button',{name:'Registrar ausencia de integrante 1',exact:true}),'/api/care/command');await expect(absence).toContainText('Ausencia observada');const absentState=await evidence.read(tripId);expect(absentState.care.absences).toHaveLength(1);expect(absentState.segments.map(s=>s.reserved)).toEqual([4,6,6]);expect(absentState.onboard).toBe(4);await mkdir('.local/e2e-incremento-8b',{recursive:true});await absence.screenshot({path:`.local/e2e-incremento-8b/ausencia-tras-salida-${info.project.name}.png`,scale:'css'});
   await pickup.getByRole('button',{name:'Registrar abordaje del grupo'}).click();await expect(d.locator('.trip-facts')).toContainText('6 abordados observados');
   s=await checkpoint('10-palmar-seis-abordados',{status:'IN_TRANSIT',phase:'URBAN_COLLECTION',stop:1,onboard:6,boards:2});
   expect(s.movements.filter(m=>m.kind==='BOARD').map(m=>[m.stop_index,m.actor])).toEqual([[0,'FICTICIO-WEB-adminH'],[1,'FICTICIO-WEB-driver5']]);

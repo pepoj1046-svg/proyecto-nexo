@@ -1,10 +1,10 @@
 # Trufis Bolivia — Proyecto Nexo
 
 Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, asignación por turno, recogidas y despacho. Etapa 3, Incremento 8A,
+asociación, reservas por segmentos, asignación por turno, recogidas y despacho. Etapa 3, Incremento 8B,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Incremento 8B.
+permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 4.
 
 ## Etapa 3: interfaz web local
 
@@ -100,7 +100,7 @@ distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye i
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
 **57 unitarias y 239 integraciones PostgreSQL real**. La batería web ampliada
-ejecuta 74 casos de escritorio/móvil (resultados y CI en los informes 7A y 7B),
+ejecuta 82 casos de escritorio/móvil (resultados y CI en el informe 8B),
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar
@@ -204,3 +204,12 @@ de encabezados HTTP vacíos. El PR permanece abierto hasta autorización del pro
 Expresos y división voluntaria, declaración de condiciones y decisiones del responsable:
 [7A](docs/REPORTES/ETAPA_3_INCREMENTO_7A.md) · [7B](docs/REPORTES/ETAPA_3_INCREMENTO_7B.md).
 Solo laboratorio; revisar las limitaciones de aceptación conjunta y resolución administrativa.
+
+## Incremento 8B: responsables y revisión humana
+
+Reservas presenciales con responsable ficticio separado de su cuenta; vínculo y
+corrección auditados, menores/acompañantes, ausencias observadas sin liberar plazas
+y revisión de discrepancias con rectificación nativa limitada. No establece
+requisitos legales ni consecuencias automáticas. 001–030 intactas; nuevas 031–032.
+[Contrato](docs/ETAPA_3_CUIDADOS_Y_REVISIONES.md) ·
+[Informe y Windows](docs/REPORTES/ETAPA_3_INCREMENTO_8B.md).

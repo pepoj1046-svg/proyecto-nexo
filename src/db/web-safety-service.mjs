@@ -1,6 +1,6 @@
 import{object,id,actionKey}from'../domain/business.mjs';
 import{assertRuntime}from'./runtime.mjs';
-export const discrepancyKinds=Object.freeze(['NOT_BOARDED','ALIGHT_INCORRECT','WRONG_REPLACEMENT','OTHER_OPERATIONAL']);
+export const discrepancyKinds=Object.freeze(['NOT_BOARDED','ALIGHT_INCORRECT','WRONG_REPLACEMENT','OTHER_OPERATIONAL','SAFE_TRANSFER_INCORRECT']);
 export function safetyCommand(b){
  object(b,['incidentId','version','command','bookingId','memberId','confirmed']);id(b.incidentId);
  if(b.confirmed!==true||!Number.isInteger(b.version)||b.version<0||b.version>7||!['RECEIVE_MEMBER','RECEIVE_GROUP','CONFIRM_SAFE'].includes(b.command))throw new Error('INVALID_HANDOFF_COMMAND');

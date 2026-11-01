@@ -42,7 +42,16 @@ export async function operationEvidence(project){
    const onboard=fromMovements+custody.filter(m=>!m.received).reduce((n,m)=>n+(m.source_trip===tripId?1:-1),0);
    expect(trip.read_only).toBe('on');expect(trip.capacity).toBe(6);expect(onboard).toBe(trip.native_onboard);expect(onboard).toBeGreaterThanOrEqual(0);expect(onboard).toBeLessThanOrEqual(6);
    for(const s of segments){expect(s.reserved).toBeGreaterThanOrEqual(0);expect(s.reserved).toBeLessThanOrEqual(6);expect(s.confirmed).toBeLessThanOrEqual(s.reserved);}
-   return{trip,bookings,movements,segments,events,audits,fleet,incidents,journey,custody,onboard};
+   const care={};
+   for(const [name,query]of Object.entries({
+    absences:'SELECT a.booking_id,a.member_id,a.episode,a.reason,a.observed_stop FROM nexo.care_absences a JOIN nexo.bookings b ON b.id=a.booking_id WHERE b.trip_id=$1 ORDER BY a.created_at,a.id',
+    responsibilities:'SELECT a.booking_id,a.revision,a.kind,a.account_id IS NOT NULL AS linked FROM nexo.care_responsibilities a JOIN nexo.bookings b ON b.id=a.booking_id WHERE b.trip_id=$1 ORDER BY a.group_id,a.revision',
+    reviews:'SELECT r.report_id,r.version,r.result,r.reason,r.corrected_fact FROM nexo.care_discrepancy_reviews r JOIN nexo.bookings b ON b.id=r.booking_id WHERE b.trip_id=$1 ORDER BY r.report_id,r.version',
+    minors:'SELECT c.booking_id,c.member_id,c.kind,c.companion_id,(SELECT result FROM nexo.minor_reviews r WHERE r.member_id=c.member_id ORDER BY id DESC LIMIT 1)AS result FROM nexo.minor_cases c JOIN nexo.bookings b ON b.id=c.booking_id WHERE b.trip_id=$1 ORDER BY c.member_id',
+    access:'SELECT m.role,m.active FROM nexo.memberships m JOIN nexo.trips t ON t.association_id=m.association_id AND t.driver_id=m.user_id WHERE t.id=$1 ORDER BY m.role',
+    accessEvents:'SELECT e.action FROM nexo.audit_events e JOIN nexo.trips t ON t.association_id=e.association_id AND t.driver_id=e.entity_id WHERE t.id=$1 ORDER BY e.created_at,e.id'
+   }))care[name]=(await db.query(query,[tripId])).rows;
+   return{trip,bookings,movements,segments,events,audits,fleet,incidents,journey,custody,onboard,care};
   }finally{await db.query('ROLLBACK');}
  },async record(label,state){steps.push({label,...state});await mkdir('.local/e2e-incremento-3',{recursive:true});await writeFile(`.local/e2e-incremento-3/estados-${project}.json`,JSON.stringify(steps,null,2));}};
 }
