@@ -178,5 +178,20 @@ export async function seedWebDemo(db,pool) {
     }await db.query('COMMIT');}catch(e){await db.query('ROLLBACK');throw e;}
    }
   }
+  if(process.env.NEXO_WEB_FLEET_FIXTURE==='1'){
+   // Installer-only fixtures, native audited requests, before any listener exists.
+   const association=runs[0].association,hash=await hashPassword(randomBytes(32).toString('base64url'));
+   await db.query('BEGIN');try{
+    await db.query("SELECT set_config('nexo.session_token',$1,true)",[users.admin.token]);
+    for(let i=0;i<52;i++){
+     const code='LAB-SEED-'+String(i).padStart(3,'0'),id=(await db.query('SELECT nexo.register_identity($1,$2)AS id',['lab-fleet-seed-'+i,hash])).rows[0].id;
+     await db.query("SELECT nexo.platform_verify_identity($1,$2,'Atestación de fixture ficticio',true)",[id,code]);
+     for(const kind of ['REQUEST_DRIVER','REQUEST_VEHICLE']){
+      const revision=(await db.query('SELECT nexo.fleet_revision($1)AS r',[association])).rows[0].r;
+      await db.query('SELECT nexo.web_fleet_command($1,$2)',[randomUUID(),{kind,associationId:association,revision,reason:'Solicitud histórica ficticia '+i,confirmed:true,...(kind==='REQUEST_DRIVER'?{identityCode:code}:{vehicleCode:code,vehicleType:'VAGONETA_6',capacity:6})}]);
+     }
+    }await db.query('COMMIT');
+   }catch(e){await db.query('ROLLBACK');throw e;}
+  }
   return {catalogToken:users.catalog.token,accounts};
 }
