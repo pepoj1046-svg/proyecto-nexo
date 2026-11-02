@@ -1,8 +1,8 @@
 # Trufis Bolivia — plan propuesto de Etapa 4
 
-> Vigencia posterior: autorizado únicamente el incremento de programación 4A.1.
+> Vigencia posterior: autorizado únicamente el incremento de programación 4A.2.
 > El resto conserva el estado histórico de la propuesta; resultados actuales en
-> [el informe de 4A.1](REPORTES/ETAPA_4_INCREMENTO_4A1.md).
+> [el informe de 4A.2](REPORTES/ETAPA_4_INCREMENTO_4A2.md).
 
 Fecha: 01/11/2026. Referencia: `1f07fd9cb69676258bf277a561d9e8aa711bacb2`.
 **Diagnóstico de 4A; programación pendiente de autorización.**
@@ -166,3 +166,14 @@ El propietario autorizó posteriormente solo la programación de 4A.1, desde
 original. [Contrato de lectura](ETAPA_4_DIRECTORIO_ADMINISTRATIVO.md) y
 [informe de implementación](REPORTES/ETAPA_4_INCREMENTO_4A1.md) distinguen resultados
 ejecutados y pendientes. No se autoriza 4A.2 ni se declara cerrada Etapa 4.
+
+## Actualización de ejecución: 4A.2
+
+El propietario autorizó posteriormente 4A.2 desde `dacb017`, en la misma rama
+`desarrollo/etapa-4` y PR #5. Se limita a DRIVER existentes, contacto LAB e
+historia autorizada, sin depender de viajes. [Contrato](ETAPA_4_ADMINISTRACION_CHOFERES.md)
+y [resultados de implementación](REPORTES/ETAPA_4_INCREMENTO_4A2.md) prevalecen
+sobre las prohibiciones históricas de iniciar este corte que figuran arriba.
+001–034 inmutables; nueva035. Bajas en servicio/fila o custodia ambigua quedan
+bloqueadas y bajo revisión humana, sin inventar continuidad operativa. No altas,
+identidad global, GENERAL_ADMIN ni 4A.3; las demás etapas siguen pendientes.

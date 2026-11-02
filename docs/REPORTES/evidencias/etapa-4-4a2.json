@@ -1,0 +1,350 @@
+{
+  "date": "2026-11-02",
+  "timezone": "America/La_Paz",
+  "scope": "Only4A.2, laboratory fictional data",
+  "baseCommit": "dacb017ae6ffca3a38f94cc6931b2927a332ca19",
+  "branch": "desarrollo/etapa-4",
+  "pullRequest": 5,
+  "finalShaAndCI": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/5#issuecomment-6576286717",
+  "localCounts": {
+    "unique": 473,
+    "unit": 66,
+    "postgresReal": 311,
+    "e2e": 96,
+    "desktop": 48,
+    "mobile": 48,
+    "labsStopped": 44,
+    "allExit": 0,
+    "webExit": 0,
+    "skipped": 0
+  },
+  "baselinePreserved": 443,
+  "newCases": {
+    "unit": 2,
+    "postgres": 20,
+    "e2e": 8
+  },
+  "environment": {
+    "os": "Debian13",
+    "node": "24.19.0",
+    "postgres": "18.4",
+    "playwright": "1.64.1",
+    "chromium": "154.0.8037.57",
+    "typescript": "5.9.3",
+    "pg": "8.23.1"
+  },
+  "migrations001to034": {
+    "database/migrations/001_core.sql": "9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059",
+    "database/migrations/002_operations.sql": "787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4",
+    "database/migrations/003_queue.sql": "4fe53741452e3008a82690838d3f86e8308d3ddda322896ba723e94a7f4dd620",
+    "database/migrations/004_isolation_guard.sql": "2ecd12ef4230f29a94a6bc915f8be31f2f3d5e2e1b395cc3c15555442951d401",
+    "database/migrations/005_geography_authorizations.sql": "42e93efbfc8a70cbff8cadc0620216830b6b7e05e354335db4ddd752773e8fd5",
+    "database/migrations/006_search_authorization_functions.sql": "e156c33c62f08e6c9bb2a9c0605fc6a841ca888fca0476f5424b99fa62d4d4de",
+    "database/migrations/007_eligibility_rls.sql": "3fef73dc7ec20fce98505206bdc61426ba2cba321aaf83ea2fecd0b789105b03",
+    "database/migrations/008_locality_lookup.sql": "ab3e82713198f078fbda5e424239900c41ecfa73a400aa923ead457e64e884b5",
+    "database/migrations/009_identity_and_provisioning.sql": "e0401515ae8f564cb2d17561e960a56e6472e67085ab82fec34e41ffae41a4b6",
+    "database/migrations/010_security_and_abuse.sql": "dace616e2de098a700035e4b61beb6d45ce722678729cb3255c92ca8c0268067",
+    "database/migrations/011_identity_maintenance.sql": "d1c11a95fd5fec0dbb2136c13a2d6b915473ec0ea02013f2698ece0df2e4187d",
+    "database/migrations/012_business_operations.sql": "080065cf039ddb2971f68a787a96abb4d6382f538d3ead829181ebd3d3280649",
+    "database/migrations/013_individual_operations.sql": "e111f11211fb8153d08cc96ebe45fbc7b628efed9bf5ac5d8a48ce1ca94d92b5",
+    "database/migrations/014_terminal_operations.sql": "e3b1ef1322638547e97c89ec709bbdcd0bbd1110947266c330c95c916103796b",
+    "database/migrations/015_assignment_recovery.sql": "a897f5b2e7d47dbab7e701acf16db294e097d9b20483c378f1c383a17bd53dbe",
+    "database/migrations/016_terminal_boarding.sql": "be49599eb2c11ceb5cd0c7f6dda633082eba328053611987c4a067bb2c988f35",
+    "database/migrations/017_urban_replacement.sql": "25854b173b0154a11c013e94de2dae64f9083d4870b4f64e46cd34243fa4a3ee",
+    "database/migrations/018_operating_contracts.sql": "77757bf35956270f6c4ba52a7140383e8cc623ec9a5bf10a6a70370d276f870e",
+    "database/migrations/019_journey_recovery.sql": "96a311c568ed2471c354c06a3176f066cecbebedb0cecfb2abf3deb7e58f1164",
+    "database/migrations/020_scoped_administration.sql": "643e0ba2417be17189d957e9f9562bd901c478dff0fcb0fd2fdfd24b00fcb4c6",
+    "database/migrations/021_scope_read_boundaries.sql": "7bc4551a6283bf71f029ac0b99d2dc211af11b127ad60a1c1db889ab2b55e26f",
+    "database/migrations/022_rescue_manifest_privacy.sql": "de2572bf53ee04116ba1e4da54aa3feed22385e31af024ea69fdfab44b3ed52b",
+    "database/migrations/023_web_journeys.sql": "f446f0b0946056c6100b56f43c6ec71855dca636d37788fa69d17e3e9fddb212",
+    "database/migrations/024_web_operations.sql": "08d0b3e0b18f6fbbe47b39c5233d29414419b276694bb02241f72d7f5916e2c3",
+    "database/migrations/025_web_recovery_reads.sql": "dd132b36adb74f8fd371f5193c221637837bb30ce083c097c0123e1b35e79467",
+    "database/migrations/026_web_queue_return.sql": "6b74d31a1bad7dd0e0dadb86d6e588d8d666a1e68aa2026670ab0aee6736ae73",
+    "database/migrations/027_web_administration.sql": "0a2a1df1196aa63160e29c2a470677f058c6ba5a9f3b97af2f03c8be25f1d128",
+    "database/migrations/028_web_route_decisions.sql": "d7ab3695bda2d148c4d5ec2f6b5d3e6637c411623ebe11370d3b8d80287727ec",
+    "database/migrations/029_queue_assignment.sql": "46ac307f6ffe6a39452eb99204e092ed5bfd2b2d2c7925780d069e707c8ccd27",
+    "database/migrations/030_safe_handoffs_and_reviews.sql": "7f9a139fd31a477b9fbde874d2ae6a5d57bed80e59a19b999ccce22b298b2e9a",
+    "database/migrations/031_care_responsibilities.sql": "b91b4d43082ca13577eee9bd8cd695baf666f2de8acee57237208c0beb60ce58",
+    "database/migrations/032_care_reviews_and_attendance.sql": "3750a0e69d8bff73237fe4df5c221aab29e0a64f74ab06e24bcebfe5b365ac3a",
+    "database/migrations/033_responsible_list_scope.sql": "44a36b53470906d187c4e24d5e2cbb284f33b01754fe3294b5e64fa57713bf23",
+    "database/migrations/034_admin_directory.sql": "63d9bebd6f3de2218d861aea7fc02e042b2b0ace62e48fea1fcca4c3ba8e8ef7"
+  },
+  "migration035Sha256": "ee5e1a05d71f9b761daf6a69a3082ed4f663b082eefa2f3d26bc16231ea048b5",
+  "testedSourceSha256": {
+    "apps/web/src/Directory.tsx": "8d39753b94e37982b6e945f9cab9ab495812ada03dce3086eb663135a5df15f5",
+    "apps/web/src/DriverAdministration.tsx": "4b729613c82d7194bba356e93b2f1a9edbe3b0ff4e74a57568e0416fd6e54712",
+    "apps/web/src/private-api.ts": "a65faf4da9d150c9c23c052d2a78af7798c12d6e0adb87bbac9b8c304ed62515",
+    "apps/web/src/use-command.ts": "6c387f850bcbbf849ed76dc86baa992f3b736b684428d6e4272517371c8d0351",
+    "database/migrations/035_existing_driver_administration.sql": "ee5e1a05d71f9b761daf6a69a3082ed4f663b082eefa2f3d26bc16231ea048b5",
+    "scripts/seed-web-demo.mjs": "53dc17949d4cb47b0bec2b4859a553af97232f4507629fd550ba97574a187319",
+    "scripts/test-web.mjs": "2a446ff88d241c7a9e8fbbf9465ab8f4325947ac176a63ff9f63fa66af59ab9a",
+    "src/db/web-driver-admin-service.mjs": "724dc56c958de6c3f40006f7854270ec87d0a167aa82e9d04dba337b110faaba",
+    "src/http/web-gateway.mjs": "336c6932413d6a451b5671585cc8f6044cccfffd5ac34b5fe21b7abef36ffd34",
+    "tests/driver-admin.test.mjs": "8baf171776807b11927b66e56b094a85dac01fb7eeefb42f3e83460406689413",
+    "tests/integration/postgres.test.mjs": "179099b133de534ec9af9bfc72a01f2780740ca35912283b6f720738ca6c88e3",
+    "tests/web/care-accounts.spec.mjs": "ad29744897386aca14c082b206680c27cba0ae5a55d566ea817472296bfad419",
+    "tests/web/driver-admin-races.spec.mjs": "8509111ff6f75314f50e32c810a782d283bbd2a65ff1f7ee9f29903995b7a2a0",
+    "tests/web/driver-administration.spec.mjs": "d2e84c55f4274d12a6392963f4d01ad92c55bb20205e7e1277eb731b33357fe4",
+    "tests/web/support/directory-evidence.mjs": "f1c6fa0d9a9496e39fba4fba54b8ad68b6fdc6a28cc584447723ecc1fde5d19d"
+  },
+  "screenshots": [
+    {
+      "path": "docs/REPORTES/evidencias/etapa-4-4a2/membresia-desktop.png",
+      "size": 161224,
+      "sha": "7543a5c3d7a95738c582a19bea21fcdd02971338",
+      "sha256": "3f35a0fece655cf7bf4aae1fdd2458d367a2ec668b19cf58662baf058b58f659",
+      "source": "full E2E desktop 48/48"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-4-4a2/revision-desktop.png",
+      "size": 83923,
+      "sha": "556a6ac169140cdfd6f049346b93f960a5062563",
+      "sha256": "785df92b6f4415cea90f0f9500edd85c9ce6f595da18994785db6ef8fd53722a",
+      "source": "full E2E desktop 48/48"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-4-4a2/historial-desktop.png",
+      "size": 269552,
+      "sha": "802f291b7a702abc531860bc05461b7f271e91b5",
+      "sha256": "395252393fa60852a3eef5f51adf399b9c49cb2d11ffa023222cc0c97ab0526f",
+      "source": "full E2E desktop 48/48"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-4-4a2/membresia-mobile.png",
+      "size": 176042,
+      "sha": "a42eaaa99038a48a34b3ec7646ce16105fa6074f",
+      "sha256": "f01205f7965e9cd21843cf1871910ec3337a66b30855dc8ba263b7003985c0c0",
+      "source": "full E2E mobile 48/48"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-4-4a2/revision-mobile.png",
+      "size": 95684,
+      "sha": "64e34d6b0b64bf247d02abb806c36cce9e938674",
+      "sha256": "b4efe31a3498ae224577edc8fc335cf4a75f94259418abf6d9168db8fc24dc78",
+      "source": "full E2E mobile 48/48"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-4-4a2/historial-mobile.png",
+      "size": 294953,
+      "sha": "bae68dd69a0f95f1895d781e6a1f83fa25ed2f8f",
+      "sha256": "0e99c266833b5740d38ec358d6dd5af54df156c16b5a37531109b49f35d823c1",
+      "source": "full E2E mobile 48/48"
+    }
+  ],
+  "readOnlyWitness": "tests/web/support/directory-evidence.mjs",
+  "e2eProtectedBusinessSnapshotExcludes": [
+    "sessions",
+    "identity_accounts",
+    "identity_attempts",
+    "identity_recovery",
+    "identity_events",
+    "security_events",
+    "memberships",
+    "actions",
+    "audit_events",
+    "association_contacts"
+  ],
+  "allowedChangesSeparatelyAsserted": [
+    "membership state and events per expected intention",
+    "single committed action after lost response",
+    "contacts LAB and isolated history",
+    "blocked service keeps membership and all operational tables"
+  ],
+  "privateLogFingerprints": [
+    {
+      "privatePath": ".local/4a2-pg-directed.log",
+      "sha256": "c17e1a95475c0ae7543cd7a09361962666324d08967cc975e82b5c131222cd97",
+      "nodeTests": [
+        15
+      ],
+      "nodePassed": [
+        15
+      ],
+      "nodeFailed": [
+        0
+      ],
+      "playwrightPassed": 0,
+      "playwrightFailed": 0,
+      "labsStopped": 0,
+      "restartVerified": false
+    },
+    {
+      "privatePath": ".local/4a2-pg-complete-directed.log",
+      "sha256": "826b33e36e00013ed2b98ccac947e08460829aa5c1f337bb4dc0032a1fc41111",
+      "nodeTests": [
+        23
+      ],
+      "nodePassed": [
+        22
+      ],
+      "nodeFailed": [
+        1
+      ],
+      "playwrightPassed": 0,
+      "playwrightFailed": 0,
+      "labsStopped": 0,
+      "restartVerified": false
+    },
+    {
+      "privatePath": ".local/4a2-http-after.log",
+      "sha256": "6c15bcb495cdde149d494de1ea6ab92afe593f4818a9db7d67dd8cd0f55c97bd",
+      "nodeTests": [
+        1
+      ],
+      "nodePassed": [
+        1
+      ],
+      "nodeFailed": [
+        0
+      ],
+      "playwrightPassed": 0,
+      "playwrightFailed": 0,
+      "labsStopped": 0,
+      "restartVerified": false
+    },
+    {
+      "privatePath": ".local/4a2-web-desktop-directed.log",
+      "sha256": "757a18454efc1bebbd1174cc2a1f51bcb9e83cc0e191d59d6c141807957a017e",
+      "nodeTests": [],
+      "nodePassed": [],
+      "nodeFailed": [],
+      "playwrightPassed": 3,
+      "playwrightFailed": 3,
+      "labsStopped": 1,
+      "restartVerified": false
+    },
+    {
+      "privatePath": ".local/4a2-web-desktop-after.log",
+      "sha256": "059f2da108c7a0706efc903616fc05c676304ab22bab9f667987d39c3fdb7bef",
+      "nodeTests": [],
+      "nodePassed": [],
+      "nodeFailed": [],
+      "playwrightPassed": 3,
+      "playwrightFailed": 3,
+      "labsStopped": 1,
+      "restartVerified": false
+    },
+    {
+      "privatePath": ".local/4a2-web-isolated-desktop.log",
+      "sha256": "131811edfb6c28d2c5d778ad1eaa8ae22f571847bcd53dbb8d7f14ac4137d1da",
+      "nodeTests": [],
+      "nodePassed": [],
+      "nodeFailed": [],
+      "playwrightPassed": 4,
+      "playwrightFailed": 0,
+      "labsStopped": 2,
+      "restartVerified": true
+    },
+    {
+      "privatePath": ".local/4a2-web-mobile-directed.log",
+      "sha256": "a02bdbab49a38af2b5b2404e7666e8880e7fde6a04a2a01b55b1d92a08f54511",
+      "nodeTests": [],
+      "nodePassed": [],
+      "nodeFailed": [],
+      "playwrightPassed": 7,
+      "playwrightFailed": 0,
+      "labsStopped": 3,
+      "restartVerified": true
+    },
+    {
+      "privatePath": ".local/4a2-races-directed.log",
+      "sha256": "38f2b66592274e5951a9b3d139f42ad2923806c4a049b10e12971d8f3f7b32fd",
+      "nodeTests": [],
+      "nodePassed": [],
+      "nodeFailed": [],
+      "playwrightPassed": 2,
+      "playwrightFailed": 0,
+      "labsStopped": 2,
+      "restartVerified": true
+    },
+    {
+      "privatePath": ".local/4a2-races-403-after.log",
+      "sha256": "ddd33e1ab7d9c65b2d206329873ea9dd8983f7c0d168971807815ad3b88b3ff4",
+      "nodeTests": [],
+      "nodePassed": [],
+      "nodeFailed": [],
+      "playwrightPassed": 2,
+      "playwrightFailed": 0,
+      "labsStopped": 2,
+      "restartVerified": true
+    },
+    {
+      "privatePath": ".local/4a2-migration-count-after.log",
+      "sha256": "00666b6acff48e055685c2fbe29c383e54a9e1e1c636af4dea4f4628707e4ef9",
+      "nodeTests": [
+        1
+      ],
+      "nodePassed": [
+        1
+      ],
+      "nodeFailed": [
+        0
+      ],
+      "playwrightPassed": 0,
+      "playwrightFailed": 0,
+      "labsStopped": 0,
+      "restartVerified": false
+    },
+    {
+      "privatePath": ".local/4a2-final-all.log",
+      "sha256": "44b69034fee1fd3bc60cfce68967ee9d79ffa76a9c61801feee96d98dfca1ed6",
+      "nodeTests": [
+        66,
+        311
+      ],
+      "nodePassed": [
+        66,
+        310
+      ],
+      "nodeFailed": [
+        0,
+        1
+      ],
+      "playwrightPassed": 0,
+      "playwrightFailed": 0,
+      "labsStopped": 0,
+      "restartVerified": false
+    },
+    {
+      "privatePath": ".local/4a2-final-all-after.log",
+      "sha256": "e3a818067327f0cdc232651be70ac7c6d8b8eba71c49ea305296befb9cdad825",
+      "nodeTests": [
+        66,
+        311
+      ],
+      "nodePassed": [
+        66,
+        311
+      ],
+      "nodeFailed": [
+        0,
+        0
+      ],
+      "playwrightPassed": 0,
+      "playwrightFailed": 0,
+      "labsStopped": 0,
+      "restartVerified": false
+    },
+    {
+      "privatePath": ".local/4a2-final-web.log",
+      "sha256": "9610d2e747c08aa911715f0a35b49c19dd35724257c8c568f33b02178e282527",
+      "nodeTests": [],
+      "nodePassed": [],
+      "nodeFailed": [],
+      "playwrightPassed": 96,
+      "playwrightFailed": 0,
+      "labsStopped": 44,
+      "restartVerified": true
+    }
+  ],
+  "auditors": {
+    "e4a2_seguridad": "read-only; lock order, real expiry, legacy CARE barrier, custody ambiguity; final targeted review no new demonstrated defect",
+    "e4a2_pruebas": "read-only; stale intent UI finding corrected, POST-vs-refresh403 regression, history>50, preserved legacy case with safe fixture"
+  },
+  "limitations": [
+    "Pending custody ambiguity blocks association driver access changes conservatively",
+    "Legacy native UPSERT preserved; new web endpoint existing-only",
+    "No claim of production readiness, manual Windows test or closed historical CodeQL alerts",
+    "CI results apply only after final same-SHA verification comment is ratified"
+  ]
+}

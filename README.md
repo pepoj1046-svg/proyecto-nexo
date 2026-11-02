@@ -4,7 +4,7 @@ Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
 asociación, reservas por segmentos, asignación por turno, recogidas y despacho. Etapa 3, auditoría y cierre técnico de laboratorio,
 en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
 `desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos ni GPS real. Solo 4A.1 autorizado actualmente.
+permanece abierto y sin fusionar. Sin producción, pagos ni GPS real. Autorizado actualmente solo el Incremento 4A.2.
 
 ## Etapa 4A.1: directorio administrativo de lectura
 
@@ -34,7 +34,19 @@ crea registros de respuesta. No compartir contraseñas ni archivos de `.local`.
 
 [Contrato](docs/ETAPA_4_DIRECTORIO_ADMINISTRATIVO.md) y
 [informe y resultados exactos](docs/REPORTES/ETAPA_4_INCREMENTO_4A1.md).
-No se inicia 4A.2 ni se declara completada toda la Etapa 4.
+El corte 4A.1 no incluyó escrituras. La autorización posterior 4A.2 se limita a los controles descritos a continuación; no declara completada toda la Etapa 4.
+
+## Etapa 4A.2: DRIVER existentes y contacto LAB
+
+Desde el directorio, sin elegir vehículo: «Choferes y membresías» → «Gestionar
+permiso» → «Consultar estado e historial administrativo». Exige motivo y
+confirmación. Bloquea servicio/fila y custodia pendiente; restaurar no rehabilita
+vehículos, sesiones revocadas o turnos. El contacto acepta solo códigos LAB.
+Historia privada paginada y reintento de respuesta incierta con la misma clave.
+
+[Contrato](docs/ETAPA_4_ADMINISTRACION_CHOFERES.md) ·
+[Informe, evidencias y Windows](docs/REPORTES/ETAPA_4_INCREMENTO_4A2.md).
+001–034 intactas; nueva035. Sin altas, identidad global, producción o 4A.3.
 
 ## Etapa 3: interfaz web local
 
@@ -131,9 +143,9 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**64 unitarias y 291 integraciones PostgreSQL real**. La batería web ampliada
-comprende 88 casos de escritorio/móvil (pasadas locales e incidentes documentados
-en el informe 4A.1; ratificación de CI en el registro del PR #5),
+**66 unitarias y 311 integraciones PostgreSQL real**. La batería web ampliada
+comprende 96 casos de escritorio/móvil. Resultados efectivamente ejecutados e
+incidentes en el informe 4A.2; ratificación de CI en su registro del PR #5,
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar

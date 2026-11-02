@@ -133,8 +133,13 @@ export async function seedWebDemo(db,pool) {
    for(const b of(await db.query("SELECT id FROM nexo.bookings WHERE route_id=$1 AND passenger_id=$2 AND status='CONFIRMED'",[runs[1].route,users.passenger.id])).rows)await core.cancel(users.passenger.token,randomUUID(),b.id);
   }
   if(process.env.NEXO_WEB_ADMIN_DIRECTORY_FIXTURE==='1'){
-   await seedDirectoryFixture(db,a.association,a.route);const empty=randomUUID();await db.query("INSERT INTO nexo.associations(id,name)VALUES($1,'FICTICIO-DIRECTORIO-SIN-REGISTROS')",[empty]);await db.query("INSERT INTO nexo.memberships VALUES($1,$2,'ASSOCIATION_ADMIN',true)",[empty,users.admin.id]);
+   const ids=await seedDirectoryFixture(db,a.association,a.route);
+   for(let i=0;i<52;i++)await core.setDriverMembership(users.admin.token,a.association,ids.drivers[2],i%2===1,'Historial ficticio previo del laboratorio');
+   const empty=randomUUID();await db.query("INSERT INTO nexo.associations(id,name)VALUES($1,'FICTICIO-DIRECTORIO-SIN-REGISTROS')",[empty]);await db.query("INSERT INTO nexo.memberships VALUES($1,$2,'ASSOCIATION_ADMIN',true)",[empty,users.admin.id]);
   }
+  // The legacy access-control E2E now uses a historical, empty-custody service.
+  // Revocation during an active service is forbidden by 035 and tested separately.
+  if(process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1')await db.query("UPDATE nexo.trips SET status='COMPLETED',current_stop=3 WHERE id=$1",[operationalTrip.id]);
   const accounts={};
   for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1',...(process.env.NEXO_WEB_ADMIN_DIRECTORY_FIXTURE==='1'?['admin','reviewer']:process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1'?['admin']:[])]){
     const password=randomBytes(24).toString('base64url'),login='lab-'+label.toLowerCase();
