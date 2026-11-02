@@ -153,11 +153,30 @@ export async function seedWebDemo(db,pool) {
   // Revocation during an active service is forbidden by 035 and tested separately.
   if(process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1')await db.query("UPDATE nexo.trips SET status='COMPLETED',current_stop=3 WHERE id=$1",[operationalTrip.id]);
   const accounts={};
-  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1',...(process.env.NEXO_WEB_ADMIN_DIRECTORY_FIXTURE==='1'?['admin','reviewer']:process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1'?['admin']:[])]){
+  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1',...(process.env.NEXO_WEB_PLATFORM_FIXTURE==='1'?['platform','candidate1','candidate2','admin','reviewer']:process.env.NEXO_WEB_ADMIN_DIRECTORY_FIXTURE==='1'?['admin','reviewer']:process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1'?['admin']:[])]){
     const password=randomBytes(24).toString('base64url'),login='lab-'+label.toLowerCase();
     const user=users[label]?.id??randomUUID();if(!users[label])await db.query('INSERT INTO nexo.users VALUES($1,$2)',[user,'FICTICIO-WEB-'+label]);
     await db.query('INSERT INTO nexo.identity_accounts(user_id,login_key,password_hash)VALUES($1,$2,$3)',[user,login,await hashPassword(password)]);
     accounts[label]={login,password};
+  }
+  if(process.env.NEXO_WEB_PLATFORM_FIXTURE==='1'){
+   // Installer-only synthetic authority. No owner/provisioner survives setup.
+   const row=(await db.query('SELECT user_id,password_hash FROM nexo.identity_accounts WHERE login_key=$1',[accounts.platform.login])).rows[0];
+   // Bootstrap creates a separate unique identity, never elevates public signup.
+   const platformId=(await db.query('SELECT nexo.bootstrap_platform($1,$2,$3,true)AS id',['lab-platform-owner',row.password_hash,'Inicialización explícita del laboratorio E2E'])).rows[0].id;
+   accounts.platform.login='lab-platform-owner';
+   for(const[label,code]of[['candidate1','LAB-ADMIN-UNO'],['candidate2','LAB-ADMIN-DOS']]){
+    const id=(await db.query('SELECT user_id FROM nexo.identity_accounts WHERE login_key=$1',[accounts[label].login])).rows[0].user_id;
+    await db.query('SELECT nexo.platform_verify_identity($1,$2,$3,true)',[id,code,'Atestación ficticia del laboratorio']);
+   }
+   const token=randomBytes(32).toString('hex');await db.query("INSERT INTO nexo.sessions VALUES($1,$2,clock_timestamp()+interval '1 hour',NULL)",[createHash('sha256').update(token).digest('hex'),platformId]);
+   // Real native review acts, in one pre-listener setup transaction. No fake audit.
+   if(process.env.NEXO_WEB_PLATFORM_HISTORY_FIXTURE==='1'){
+    await db.query('BEGIN');try{await db.query("SELECT set_config('nexo.session_token',$1,true)",[token]);for(let i=0;i<52;i++){
+     const rev=(await db.query('SELECT nexo.platform_revision($1)AS r',[runs[0].association])).rows[0].r;
+     await db.query('SELECT nexo.web_platform_command($1,$2)',[randomUUID(),{kind:'STATE_REVIEW',associationId:runs[0].association,revision:rev,reason:'Revisión histórica ficticia '+i,confirmed:true}]);
+    }await db.query('COMMIT');}catch(e){await db.query('ROLLBACK');throw e;}
+   }
   }
   return {catalogToken:users.catalog.token,accounts};
 }

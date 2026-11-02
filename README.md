@@ -266,3 +266,9 @@ La validez del cierre de laboratorio depende del commit y checks aprobados del
 [registro final](https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6561718192).
 001–032 conservadas; 033 corrige el listado de responsables. No se autoriza producción,
 merge ni Etapa 4. Los contratos comerciales/jurídicos pendientes siguen explícitos.
+
+### Incremento4A.3 — administración general de laboratorio
+
+Consola `/plataforma`, bootstrap local único, atestaciones LAB, asociaciones inertes,
+delegaciones ADMIN y último administrador protegido. [Contrato e instrucciones Windows](docs/ETAPA_4_ADMINISTRACION_ASOCIACIONES.md)
+y [resultados](docs/REPORTES/ETAPA_4_INCREMENTO_4A3.md). Sin producción o4A.4.

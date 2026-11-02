@@ -1,3 +1,4 @@
+import {createWebPlatformAdminService} from '../db/web-platform-admin-service.mjs';
 import {createWebDriverAdminService} from '../db/web-driver-admin-service.mjs';
 import {createWebDirectoryService} from '../db/web-directory-service.mjs';
 import{createWebConditionService}from'../db/web-condition-service.mjs';
@@ -17,7 +18,7 @@ import {createWebTerminalService}from'../db/web-terminal-service.mjs';
 import {createWebSessions}from'./web-sessions.mjs';
 import { assertRuntime } from '../db/runtime.mjs';
 
-const pages=new Set(['/','/reservar','/pasajero','/administracion','/chofer','/operador']);
+const pages=new Set(['/plataforma','/','/reservar','/pasajero','/administracion','/chofer','/operador']);
 const denial=(status,code)=>Object.assign(new Error(code),{status,code});
 async function jsonBody(req) {
   let size=0,parts=[];
@@ -35,6 +36,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   const conditions=identityPool?createWebConditionService(pool):null;
   const safety=identityPool?createWebSafetyService(pool):null;
   const care=identityPool?createWebCareService(pool):null;
+  const platformAdmin=identityPool?createWebPlatformAdminService(pool):null;
   const driverAdmin=identityPool?createWebDriverAdminService(pool):null;
   const directory=identityPool?createWebDirectoryService(pool):null;
   const management=identityPool?createWebManagementService(pool):null;
@@ -56,6 +58,9 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
     ['/api/segment',(_context,_req,b)=>service.segment(b)]
   ]);
   const privateHandlers=sessions?new Map([
+    ['/api/platform/context',authenticated((token,_key,b)=>platformAdmin.context(token,b))],
+    ['/api/platform/page',authenticated((token,_key,b)=>platformAdmin.page(token,b))],
+    ['/api/platform/command',authenticated((token,key,b)=>platformAdmin.command(token,key,b))],
     ['/api/driver-admin/context',authenticated((token,_key,b)=>driverAdmin.context(token,b))],
     ['/api/driver-admin/history',authenticated((token,_key,b)=>driverAdmin.history(token,b))],
     ['/api/driver-admin/command',authenticated((token,key,b)=>driverAdmin.command(token,key,b))],
@@ -148,7 +153,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
       const asset=/^\/(app-[A-Z0-9]+\.(js|css))$/.exec(req.url);
       if(asset){let data;try{data=await readFile(resolve(root,asset[1]));}catch{throw denial(404,'NOT_FOUND');}return send(200,data,asset[2]==='js'?'text/javascript; charset=utf-8':'text/css; charset=utf-8');}
       throw denial(404,'NOT_FOUND');
-    }catch(e){const known=/^(INVALID_[A-Z_]+|UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|NO_CAPACITY|CAPACITY_EXCEEDED|FARE_CHANGED|FARE_UNRESOLVED|ROUTE_NOT_ELIGIBLE|TRIP_NOT_QUEUED|TRIP_NOT_IN_TRANSIT|PICKUP_PASSED|PICKUP_PASSED_OR_INCOMPATIBLE|QUOTE_CHANGED|OPERATION_BLOCKED|IDEMPOTENCY_CONFLICT|OFFER_EXPIRED|NOT_DRIVER|FORBIDDEN_SCOPE|STALE_ASSIGNMENT|STALE_OPERATION|NOT_FULL|UNACCEPTED_OFFERS|PICKUPS_PENDING|QUEUE_ORDER|INCOMPATIBLE_TRIP|INDIVIDUAL_HISTORY_ONLY|AGGREGATE_HISTORY_ONLY|OBSERVED_CAPACITY_EXCEEDED|UNSUPPORTED_URBAN_MANIFEST|OUTSIDE_URBAN_SCOPE|OUTSIDE_ROAD_SCOPE|ROUTE_CONDITION_BLOCKED|CONDITION_ACCEPTANCE_REQUIRED|MINOR_REVIEW_REQUIRED|COMPANION_REQUIRED|NO_COMPATIBLE_TRANSFER|NO_FREE_REPLACEMENT|ADMIN_TERMINAL_CHOICE_REQUIRED|REPLACEMENT_AVAILABLE|ADMIN_REVIEW_REQUIRED|SAFE_TRANSFER_REQUIRED|STALE_CONSENT|CONSENT_USED|PRESENCE_REQUIRED|TERMINAL_RESERVATION_BINDING|TRANSFER_CONDITIONS_CHANGED|VEHICLE_OUT_OF_SERVICE|PASSENGERS_ONBOARD|TRIP_ALREADY_STARTED|NOT_AVAILABLE|ALREADY_ACTIVE|STALE_PREVIOUS_TRIP|PAGE_CHANGED|DECISION_CONFLICT|CONDITION_REJECTED|STALE_CONDITION|ASSIGNMENT_NOT_DECLINABLE|NO_DRIVER_DECISION_REQUIRED|HANDOFF_PENDING|RECEIVER_DRIVER_REQUIRED|STALE_HANDOFF|RECEPTION_INCOMPLETE|ALREADY_RECEIVED|HANDOFF_ALREADY_COMPLETED|MANAGED_RESPONSIBILITY_REQUIRED|STALE_RESPONSIBILITY|RESPONSIBLE_ALREADY_REGISTERED|RESPONSIBLE_REVIEW_REQUIRED|NO_LINKED_ACCOUNT|ACCOUNT_ALREADY_LINKED|BOARDING_HISTORY_REVIEW_REQUIRED|NO_ABSENCE_CANDIDATES|LEGAL_POLICY_REVIEW_REQUIRED|MINOR_LINK_REVIEW_REQUIRED|PHYSICAL_REVIEW_REQUIRED|STALE_REVIEW|CUSTODY_REVIEW_REQUIRED|RESPONSIBILITY_CONSENT_REVIEW_REQUIRED|FRESH_RESPONSIBLE_DECISION_REQUIRED|STALE_DRIVER_ACCESS|DRIVER_SERVICE_REVIEW_REQUIRED)$/;const message=known.test(e.message)?e.message:null;const status=e.status??(message==='INVALID_CREDENTIALS'||message==='UNAUTHENTICATED'?401:message==='FORBIDDEN'||message==='FORBIDDEN_SCOPE'||message==='NOT_DRIVER'||message==='RECEIVER_DRIVER_REQUIRED'?403:message==='NOT_FOUND'?404:message?.startsWith('INVALID_')?400:message?409:503);send(status,{error:e.status?e.code??'REQUEST_REJECTED':message??(req.url.startsWith('/api/local')||req.url==='/api/availability'?'CATALOG_UNAVAILABLE':'SERVICE_UNAVAILABLE')});req.resume();}
+    }catch(e){const known=/^(INVALID_[A-Z_]+|UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|NO_CAPACITY|CAPACITY_EXCEEDED|FARE_CHANGED|FARE_UNRESOLVED|ROUTE_NOT_ELIGIBLE|TRIP_NOT_QUEUED|TRIP_NOT_IN_TRANSIT|PICKUP_PASSED|PICKUP_PASSED_OR_INCOMPATIBLE|QUOTE_CHANGED|OPERATION_BLOCKED|IDEMPOTENCY_CONFLICT|OFFER_EXPIRED|NOT_DRIVER|FORBIDDEN_SCOPE|STALE_ASSIGNMENT|STALE_OPERATION|NOT_FULL|UNACCEPTED_OFFERS|PICKUPS_PENDING|QUEUE_ORDER|INCOMPATIBLE_TRIP|INDIVIDUAL_HISTORY_ONLY|AGGREGATE_HISTORY_ONLY|OBSERVED_CAPACITY_EXCEEDED|UNSUPPORTED_URBAN_MANIFEST|OUTSIDE_URBAN_SCOPE|OUTSIDE_ROAD_SCOPE|ROUTE_CONDITION_BLOCKED|CONDITION_ACCEPTANCE_REQUIRED|MINOR_REVIEW_REQUIRED|COMPANION_REQUIRED|NO_COMPATIBLE_TRANSFER|NO_FREE_REPLACEMENT|ADMIN_TERMINAL_CHOICE_REQUIRED|REPLACEMENT_AVAILABLE|ADMIN_REVIEW_REQUIRED|SAFE_TRANSFER_REQUIRED|STALE_CONSENT|CONSENT_USED|PRESENCE_REQUIRED|TERMINAL_RESERVATION_BINDING|TRANSFER_CONDITIONS_CHANGED|VEHICLE_OUT_OF_SERVICE|PASSENGERS_ONBOARD|TRIP_ALREADY_STARTED|NOT_AVAILABLE|ALREADY_ACTIVE|STALE_PREVIOUS_TRIP|PAGE_CHANGED|DECISION_CONFLICT|CONDITION_REJECTED|STALE_CONDITION|ASSIGNMENT_NOT_DECLINABLE|NO_DRIVER_DECISION_REQUIRED|HANDOFF_PENDING|RECEIVER_DRIVER_REQUIRED|STALE_HANDOFF|RECEPTION_INCOMPLETE|ALREADY_RECEIVED|HANDOFF_ALREADY_COMPLETED|MANAGED_RESPONSIBILITY_REQUIRED|STALE_RESPONSIBILITY|RESPONSIBLE_ALREADY_REGISTERED|RESPONSIBLE_REVIEW_REQUIRED|NO_LINKED_ACCOUNT|ACCOUNT_ALREADY_LINKED|BOARDING_HISTORY_REVIEW_REQUIRED|NO_ABSENCE_CANDIDATES|LEGAL_POLICY_REVIEW_REQUIRED|MINOR_LINK_REVIEW_REQUIRED|PHYSICAL_REVIEW_REQUIRED|STALE_REVIEW|CUSTODY_REVIEW_REQUIRED|RESPONSIBILITY_CONSENT_REVIEW_REQUIRED|FRESH_RESPONSIBLE_DECISION_REQUIRED|STALE_DRIVER_ACCESS|DRIVER_SERVICE_REVIEW_REQUIRED|LAST_ADMIN_PROTECTED|LAST_PLATFORM_ADMIN_PROTECTED|STALE_PLATFORM_STATE|ADMIN_SCOPE_REVIEW_REQUIRED|ADMIN_DECISION_CONFLICT|ASSOCIATION_CODE_CONFLICT)$/;const message=known.test(e.message)?e.message:null;const status=e.status??(message==='INVALID_CREDENTIALS'||message==='UNAUTHENTICATED'?401:message==='FORBIDDEN'||message==='FORBIDDEN_SCOPE'||message==='NOT_DRIVER'||message==='RECEIVER_DRIVER_REQUIRED'?403:message==='NOT_FOUND'?404:message?.startsWith('INVALID_')?400:message?409:503);send(status,{error:e.status?e.code??'REQUEST_REJECTED':message??(req.url.startsWith('/api/local')||req.url==='/api/availability'?'CATALOG_UNAVAILABLE':'SERVICE_UNAVAILABLE')});req.resume();}
     finally{if(entered)inflight--;}
   });
   server.maxConnections=32;server.maxHeadersCount=32;server.on('clientError',(_error,socket)=>{if(socket.writable)socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');});

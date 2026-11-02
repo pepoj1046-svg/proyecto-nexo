@@ -1,3 +1,4 @@
+import{PlatformAdministration}from'./PlatformAdministration';
 import {StrictMode,useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Icon} from './icons';
@@ -9,7 +10,7 @@ import './styles.css';
 import{OperationalPanel}from'./Operations';
 import{Checkout,PointPicker,PrivateReservations}from'./Functional';
 
-const navItems=[['/','Buscar viaje'],['/pasajero','Mis reservas'],['/administracion','Administración'],['/chofer','Chofer']] as const;
+const navItems=[['/','Buscar viaje'],['/pasajero','Mis reservas'],['/administracion','Administración'],['/chofer','Chofer'],['/plataforma','Plataforma']] as const;
 function App(){
  const [path,setPath]=useState(location.pathname),[menu,setMenu]=useState(false),[selection,setSelection]=useState<Selection|null>(null);
  const heading=useRef<HTMLElement>(null),first=useRef(true);
@@ -26,10 +27,11 @@ function App(){
   </div></header>
   <main id="contenido" ref={heading} tabIndex={-1}>
    <div hidden={path!=='/'}><Search onChoose={value=>{setSelection(value);go('/reservar');}}/></div>
+   {path==='/plataforma'&&<PlatformAdministration/>}
    {path==='/reservar'&&<Reservation selection={selection} back={()=>go('/')} />}
    {path==='/operador'&&<section className="container panel-page"><h1>Ofertas del chofer de laboratorio</h1><PrivateReservations operator/></section>}
    {['/pasajero','/administracion','/chofer'].includes(path)&&<Panel path={path} link={link}/>}
-   {!['/','/reservar','/pasajero','/administracion','/chofer','/operador'].includes(path)&&<section className="container panel-page"><h1>Página no encontrada</h1>{link('/','Volver a buscar viajes','button primary')}</section>}
+   {!['/plataforma','/','/reservar','/pasajero','/administracion','/chofer','/operador'].includes(path)&&<section className="container panel-page"><h1>Página no encontrada</h1>{link('/','Volver a buscar viajes','button primary')}</section>}
   </main>
   <footer className="site-footer"><div className="container"><span><Icon name="route" size={18}/><strong>Trufis Bolivia</strong><span>Localidades conectadas. Grupos juntos.</span></span><small>Prototipo local · Sin pagos, GPS ni notificaciones externas</small></div></footer>
  </>;

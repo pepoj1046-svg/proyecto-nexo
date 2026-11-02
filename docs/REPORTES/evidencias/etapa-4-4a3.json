@@ -1,0 +1,105 @@
+{
+  "scope": "4A.3, laboratorio ficticio",
+  "base": "3a49f432b544686995c1e03e21dfe02dce9f68fc",
+  "finalCommitAndCI": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/5 (Verificación4A.3)",
+  "preservedMigrations001to035": {
+    "database/migrations/001_core.sql": "9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059",
+    "database/migrations/002_operations.sql": "787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4",
+    "database/migrations/003_queue.sql": "4fe53741452e3008a82690838d3f86e8308d3ddda322896ba723e94a7f4dd620",
+    "database/migrations/004_isolation_guard.sql": "2ecd12ef4230f29a94a6bc915f8be31f2f3d5e2e1b395cc3c15555442951d401",
+    "database/migrations/005_geography_authorizations.sql": "42e93efbfc8a70cbff8cadc0620216830b6b7e05e354335db4ddd752773e8fd5",
+    "database/migrations/006_search_authorization_functions.sql": "e156c33c62f08e6c9bb2a9c0605fc6a841ca888fca0476f5424b99fa62d4d4de",
+    "database/migrations/007_eligibility_rls.sql": "3fef73dc7ec20fce98505206bdc61426ba2cba321aaf83ea2fecd0b789105b03",
+    "database/migrations/008_locality_lookup.sql": "ab3e82713198f078fbda5e424239900c41ecfa73a400aa923ead457e64e884b5",
+    "database/migrations/009_identity_and_provisioning.sql": "e0401515ae8f564cb2d17561e960a56e6472e67085ab82fec34e41ffae41a4b6",
+    "database/migrations/010_security_and_abuse.sql": "dace616e2de098a700035e4b61beb6d45ce722678729cb3255c92ca8c0268067",
+    "database/migrations/011_identity_maintenance.sql": "d1c11a95fd5fec0dbb2136c13a2d6b915473ec0ea02013f2698ece0df2e4187d",
+    "database/migrations/012_business_operations.sql": "080065cf039ddb2971f68a787a96abb4d6382f538d3ead829181ebd3d3280649",
+    "database/migrations/013_individual_operations.sql": "e111f11211fb8153d08cc96ebe45fbc7b628efed9bf5ac5d8a48ce1ca94d92b5",
+    "database/migrations/014_terminal_operations.sql": "e3b1ef1322638547e97c89ec709bbdcd0bbd1110947266c330c95c916103796b",
+    "database/migrations/015_assignment_recovery.sql": "a897f5b2e7d47dbab7e701acf16db294e097d9b20483c378f1c383a17bd53dbe",
+    "database/migrations/016_terminal_boarding.sql": "be49599eb2c11ceb5cd0c7f6dda633082eba328053611987c4a067bb2c988f35",
+    "database/migrations/017_urban_replacement.sql": "25854b173b0154a11c013e94de2dae64f9083d4870b4f64e46cd34243fa4a3ee",
+    "database/migrations/018_operating_contracts.sql": "77757bf35956270f6c4ba52a7140383e8cc623ec9a5bf10a6a70370d276f870e",
+    "database/migrations/019_journey_recovery.sql": "96a311c568ed2471c354c06a3176f066cecbebedb0cecfb2abf3deb7e58f1164",
+    "database/migrations/020_scoped_administration.sql": "643e0ba2417be17189d957e9f9562bd901c478dff0fcb0fd2fdfd24b00fcb4c6",
+    "database/migrations/021_scope_read_boundaries.sql": "7bc4551a6283bf71f029ac0b99d2dc211af11b127ad60a1c1db889ab2b55e26f",
+    "database/migrations/022_rescue_manifest_privacy.sql": "de2572bf53ee04116ba1e4da54aa3feed22385e31af024ea69fdfab44b3ed52b",
+    "database/migrations/023_web_journeys.sql": "f446f0b0946056c6100b56f43c6ec71855dca636d37788fa69d17e3e9fddb212",
+    "database/migrations/024_web_operations.sql": "08d0b3e0b18f6fbbe47b39c5233d29414419b276694bb02241f72d7f5916e2c3",
+    "database/migrations/025_web_recovery_reads.sql": "dd132b36adb74f8fd371f5193c221637837bb30ce083c097c0123e1b35e79467",
+    "database/migrations/026_web_queue_return.sql": "6b74d31a1bad7dd0e0dadb86d6e588d8d666a1e68aa2026670ab0aee6736ae73",
+    "database/migrations/027_web_administration.sql": "0a2a1df1196aa63160e29c2a470677f058c6ba5a9f3b97af2f03c8be25f1d128",
+    "database/migrations/028_web_route_decisions.sql": "d7ab3695bda2d148c4d5ec2f6b5d3e6637c411623ebe11370d3b8d80287727ec",
+    "database/migrations/029_queue_assignment.sql": "46ac307f6ffe6a39452eb99204e092ed5bfd2b2d2c7925780d069e707c8ccd27",
+    "database/migrations/030_safe_handoffs_and_reviews.sql": "7f9a139fd31a477b9fbde874d2ae6a5d57bed80e59a19b999ccce22b298b2e9a",
+    "database/migrations/031_care_responsibilities.sql": "b91b4d43082ca13577eee9bd8cd695baf666f2de8acee57237208c0beb60ce58",
+    "database/migrations/032_care_reviews_and_attendance.sql": "3750a0e69d8bff73237fe4df5c221aab29e0a64f74ab06e24bcebfe5b365ac3a",
+    "database/migrations/033_responsible_list_scope.sql": "44a36b53470906d187c4e24d5e2cbb284f33b01754fe3294b5e64fa57713bf23",
+    "database/migrations/034_admin_directory.sql": "63d9bebd6f3de2218d861aea7fc02e042b2b0ace62e48fea1fcca4c3ba8e8ef7",
+    "database/migrations/035_existing_driver_administration.sql": "ee5e1a05d71f9b761daf6a69a3082ed4f663b082eefa2f3d26bc16231ea048b5"
+  },
+  "sources": {
+    "database/migrations/036_platform_administration.sql": "8eb34201e24aed8e8acd85f4806899273e8d30d234f37026a364546d2a602fae",
+    "scripts/platform-access.mjs": "d6e921c273269fd61902f13c80d52a97acaf5e156e4ba5913007ec772ddfab31",
+    "src/db/web-platform-admin-service.mjs": "fc0a51a63be89ef325136b19218842db18961a3e5d5afe4b5dccd9a673b9389d",
+    "src/http/web-gateway.mjs": "e94f373d7fd575c1cc66d5e4c3328823f7d25b04208bac36ef6740fa558a46d4",
+    "apps/web/src/PlatformAdministration.tsx": "7f8cb41f7cb01bd99db07445860e5a96a08685dd947b381a885f6aa256663d4c",
+    "apps/web/src/main.tsx": "dc662d4b5ba5507b840357e3505f446ab062631162a60aad817139108d5cce02",
+    "apps/web/src/private-api.ts": "6dbd96786628e0600bb4bd187b7a6d5241dcb280f12a134af10b4247d8d94141",
+    "scripts/seed-web-demo.mjs": "edae27161dc25a7f497d9884ed373f7ac3d12024072e786c266161ed4de00934",
+    "scripts/test-web.mjs": "69265b1ab9780e21791b9f3866a50ef0ef9eceb26c60a51cc57db8561a5ebdf9",
+    "tests/platform-admin.test.mjs": "5ddb6d8c0f36d361a222cf51fcc75fbda4f732a1bc4dc6661692cbe45991d468",
+    "tests/integration/postgres.test.mjs": "4a01e76f8e4c20a62c7345c5a5fea6b3e82f5d66559f7d31ecdbb77cb28d464b",
+    "tests/web/platform-administration.spec.mjs": "fa3f25c34cfd12d8296981c8e0cb3085704dce9335a9a5cd7b911f18c2b90922",
+    "tests/web/platform-admin-races.spec.mjs": "f02f46f78ae0cb350d9c23d7e8388812dd910bf2da2b55020d15299832c2bc8c",
+    "tests/web/support/platform-evidence.mjs": "568a63aa34bb6e33bf6b61be1cd4d89322b2b15b0a334088f8a147e8ed446cf3"
+  },
+  "screenshots": {
+    "desktop-delegacion.png": "bb78fff591eea21b6a5c45907857368dd64348211709bbeca1a5784cda25283b",
+    "mobile-historial.png": "61c2a899e17bc7ac543a923a74b69791bf861fc8093a18a1e15c2b19cd5af22b",
+    "desktop-ultimo-admin.png": "bdb9f26e7b6f2a17d7e10cc7f858dfe36880afcfe4cf61e4a095f1003ad494ae",
+    "desktop-historial.png": "28ffb13a7810331c8acda30993ffd595bef05db5722cfd1f22b4b51e4e18b917",
+    "mobile-delegacion.png": "bc5988dd3d6eab7f7ebbbe19f6bae1d762881f9594c970c0fbcb19a469727318",
+    "mobile-ultimo-admin.png": "51b7acbb197c2a9f75d265a8761a33e86cfa6f8ca57e5a99f2e0c0dc4740f221"
+  },
+  "screenshotProvenance": "E2E dirigidos escritorio y móvil del mismo código, sin credenciales ni datos reales; batería completa vuelve a validarlo",
+  "directed": {
+    "unit": {
+      "pass": 3,
+      "fail": 0
+    },
+    "postgres": {
+      "pass": 22,
+      "fail": 0
+    },
+    "isolationAndCompatibility": {
+      "pass": 5,
+      "fail": 0
+    },
+    "desktop": {
+      "pass": 5,
+      "fail": 0
+    },
+    "mobile": {
+      "pass": 5,
+      "fail": 0
+    }
+  },
+  "finalLocalAndCI": "pendiente de ratificación en descripción PR#5; objetivo510 únicos (69+335+106)",
+  "limitations": [
+    "STATE_REVIEW no activa transporte",
+    "Delegación global y sustitución de autoridad no implementadas por política pendiente",
+    "CodeQL no certifica SQL ni cierre de alertas históricas",
+    "No prueba manual Windows, se verifica CI",
+    "Fallos intermedios se conservan en informe/PR"
+  ],
+  "screenshotDelivery": "Archivos locales en .local/4a3-delivery-evidence; publicación remota bloqueada por revisión automática pese a inspección visual y SHA256. No se suben por otro canal. Requiere aprobación específica del propietario antes de reintentar publicación.",
+  "automaticReview": {
+    "action": "github_create_blob PNG de evidencia de laboratorio",
+    "rejections": 2,
+    "reason": "Contenido exacto no considerado verificablemente autorizado/libre de datos sensibles para repositorio público",
+    "evidence": "Seis imágenes inspeccionadas, idénticas a capturas Playwright por SHA256; solo datos ficticios",
+    "remainingBlock": "Publicación de imágenes; código y resultados no afectados"
+  }
+}
