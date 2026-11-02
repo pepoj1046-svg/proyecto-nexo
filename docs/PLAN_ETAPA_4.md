@@ -184,6 +184,7 @@ El propietario autorizó exclusivamente autoridad general, primer acceso local y
 asociaciones desde3a49f43. [ADR](ADR_ADMINISTRACION_GENERAL_ETAPA_4.md),
 [contrato](ETAPA_4_ADMINISTRACION_ASOCIACIONES.md) e
 [informe](REPORTES/ETAPA_4_INCREMENTO_4A3.md) distinguen entrega y decisiones bloqueadas.
-001–035 intactas, nueva036. Sin habilitación comercial/legal automática ni cambios
+001–036 conservadas;036 añade el módulo y037 corrige identidad de intención.
+Sin habilitación comercial/legal automática ni cambios
 operativos. Prohibiciones históricas de iniciar4A.3 arriba quedan superadas solo
 por este encargo. No se inicia4A.4 ni se declara cerrada Etapa4.

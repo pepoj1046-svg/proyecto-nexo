@@ -71,3 +71,15 @@ ADMIN que se eleva, REVIEWER confundido, permisos cruzados, revocación durante
 espera, recibo tras revocación, última autoridad perdida, doble concesión, intención
 obsoleta, respuesta perdida, fallo de auditoría e historia filtrada. Pruebas reales
 y limitaciones se ratificarán en el informe 4A.3; este ADR no las declara ejecutadas.
+
+## Corrección037 — identidad de la intención administrativa
+
+Una revisión de asociación no basta para delegar sobre un candidato externo. Se
+reprodujo que renombrar/reasignar un código LAB desde el proceso confiable podía
+redirigir una intención anterior hacia otra identidad.037 conserva036, el OID de
+platform_revision y sus componentes, y añade snapshot global de atestaciones e
+IDs inmutables de PLATFORM_LAB_ATTESTED. Cualquier atestación invalida de manera
+conservadora las intenciones pendientes en todas las asociaciones, incluso vacías.
+El formulario debe volver a consultar y confirmar; no se prohíben correcciones
+técnicas legítimas ni se repiten recibos ya confirmados. El mutex existente
+serializa verificación y consumo. No hay nuevos grants, tablas o DML de migración.

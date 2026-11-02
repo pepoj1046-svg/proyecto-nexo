@@ -66,7 +66,9 @@ Esto distingue la infraestructura implementada de decisiones no aprobadas.
 
 ## Migraciones y archivos
 
-001–035 intactas; nueva036_platform_administration.sql, cuatro tablas privadas:
+001–036 intactas tras la primera publicación.036_platform_administration.sql
+añade cuatro tablas privadas;037_platform_identity_intents.sql corrige la
+revisión de identidad conservando OID, sin tablas nuevas o DML:
 platform_bootstrap, platform_verifications, platform_associations y platform_events.
 RLS activada sin SELECT/DML de runtime; eventos/marcador inmutables. Helpers
 privados, search_path pg_catalog,nexo,pg_temp; solo tres RPC nuevas para nexo_app.
@@ -75,7 +77,7 @@ has_role, RLS operativa, inventario, custodias o configuración de rutas/precios
 
 | Archivos | Responsabilidad |
 |---|---|
-| database/migrations/036_platform_administration.sql | Autoridad, bootstrap, atestaciones, guardas offline, comandos/proyecciones e historial. |
+| database/migrations/036_platform_administration.sql,037_platform_identity_intents.sql | Autoridad, bootstrap, atestaciones, guardas offline, comandos/proyecciones e historial; revisión ligada también a identidad.036 publicada se conserva. |
 | scripts/platform-access.mjs | Instalación/atestación local, archivo privado y preservación ante COMMIT incierto. |
 | src/db/web-platform-admin-service.mjs | Validación cerrada, parámetros SQL, runtime nexo_app y transacciones con límites existentes. |
 | src/http/web-gateway.mjs | Tres handlers fijos privados, página y códigos de error seguros. |
@@ -87,8 +89,8 @@ has_role, RLS operativa, inventario, custodias o configuración de rutas/precios
 
 ## Pruebas y evidencias
 
-Objetivo de batería estabilizada: **510 casos únicos**:69 unitarios +335 PostgreSQL
-reales +106 E2E (53 escritorio/53 móvil). Conserva473 previos y añade37:3+24+10.
+Objetivo de batería estabilizada: **512 casos únicos**:69 unitarios +337 PostgreSQL
+reales +106 E2E (53 escritorio/53 móvil). Conserva473 previos y añade39:3+26+10.
 No se cuentan repeticiones, jobs o plataformas como casos nuevos. Los resultados
 finales exactos se ratifican en el PR citado; no basta este objetivo para afirmar éxito.
 
@@ -97,8 +99,8 @@ Pruebas dirigidas ejecutadas:
 - Unitarias nuevas3/3.
 - PostgreSQL inicial17/18; tras corregir conexión del test de upgrade,1/1. Segunda
   batería nueva22/22; guardas de aislamiento offline1/1; grupo de compatibilidad/
-  aislamiento/paginación5/5 después de actualizar expectativas. Los24 casos nuevos
-  se verifican de nuevo en batería final.
+  aislamiento/paginación5/5 después de actualizar expectativas. Los26 casos nuevos
+  se verifican de nuevo en batería final, incluida corrección037.
 - Escritorio inicial1/3: faltaba nivel h2 antes del primer h3 (axe) y el selector del
   test usaba «Siguiente» frente al nombre accesible real de PageControls. Corrección
   semántica de encabezado y selector exacto, sin cambiar tiempos/retries.
@@ -148,7 +150,7 @@ TOML automáticos ni ediciones/pruebas/red. Principal único editor/ejecutor.
 
 Seguridad/autoridad: distinguió REVIEWER de plataforma; defaults de alta; atestación
 inexistente; tres caminos de pérdida del último ADMIN; scope conservador de toda la
-cuenta; esperas y recibos. Revisión del código detectó y motivó cinco correcciones:
+cuenta; esperas y recibos. Revisión del código detectó y motivó seis correcciones:
 
 1. Archivo secreto eliminado si COMMIT confirmó pero respuesta se perdió: preservado.
 2. Requisitos de alta impedían revocar identidad bloqueada/restringida: contratos separados.
@@ -156,8 +158,10 @@ cuenta; esperas y recibos. Revisión del código detectó y motivó cinco correc
 4. Membresía legacy no recuperable contada como respaldo: exige identidad gestionada activa.
 5. Mutex con REPEATABLE READ retenía snapshot obsoleto y podía perder último ADMIN:
    READ COMMITTED obligatorio centralmente, incluidos todos los caminos offline.
+6. Código LAB reasignado podía dirigir una intención antigua a otra identidad:
+  037 liga revisión a atestaciones globales y su historia; impide rebind/ABA.
 
-Regresiones4A3-19–23 comprueban esos puntos. Pruebas/funcionalidad auditó integración
+Regresiones4A3-19–26 comprueban esos puntos. Pruebas/funcionalidad auditó integración
 mínima, fixtures, TRUNCATE/FKs, allowlists, scopes, testigos separados, controles de
 historia, errores, respuesta incierta y compatibilidad. No certifican producción.
 
@@ -183,3 +187,43 @@ No se declara cerrada Etapa4 ni software listo para producción.
 contratos aprobados; no está implementado ni autorizado por esta entrega. La venta
 integral de diez etapas requiere aceptación y derechos transferibles acordados;
 no se sustituye por la aprobación técnica de un laboratorio.
+
+## Corrección posterior a primera publicación:037
+
+El primer commit5f7cdcf aprobó510 casos localmente. Los cuatro jobs de push y
+los otros tres del PR aprobaron510; Windows24 PR falló tras85 E2E/35 cierres:
+/api/recovery/detail net::ERR_NO_BUFFER_SPACE en rescate heredado móvil, sin
+respuesta HTTP. Causa del sistema no establecida. Se solicitó una única repetición
+diagnóstica sin cambios; su resultado histórico se conserva en el PR. No se
+presenta aquella CI como aprobación de la corrección037.
+
+Antes del cierre se reprodujo un defecto alto distinto: el operador offline podía
+renombrar un código LAB y asignarlo a otra identidad; DELEGATE/REVOKE con revisión
+anterior resolvía el nuevo dueño sin detectar intención obsoleta.4A3-25 falló
+realmente en5f7cdcf con «Missing expected rejection». El auditor confirmó el
+problema y la solución mínima. Se conservó036 y se añadió037: mismo OID/cuerpo de
+revisión, más snapshot global de atestaciones e historial inmutable ordenado.
+
+El mutex ya existente impide rebind entre revisión y consumo. Toda nueva
+atestación invalida conservadoramente las intenciones anteriores, incluso de
+otras asociaciones; se requiere consultar y confirmar de nuevo. No se restringe
+la corrección legítima de atestaciones ni se modifica historia o recibos previos.
+
+Tras el arreglo, las ocho pruebas dirigidas pasaron:25 incluye delegación,
+revocación y ABA;26 instala036, puebla identidad/asociación/atestación/recibo,
+aplica037 y prueba datos/checksums/OID intactos, intención vieja rechazada y replay
+autorizado sin duplicación. También pasaron H08/S08 y upgrades anteriores.
+El auditor revisó037 implementada y no identificó otras ventanas concretas.
+Se repiten backend y E2E completos, y CI/CodeQL en el nuevo commit final del PR.
+
+Las seis capturas locales proceden de5f7cdcf; la UI, handlers y formatos RPC
+permanecen idénticos en037. Cambia únicamente la guarda SQL de revisión; los
+estados de las capturas se vuelven a validar con los E2E finales. No se declara
+que las imágenes prueben por sí solas la regresión de identidad: la cubren25/26.
+
+La batería final de backend de la corrección terminó exit0 con69/69 unitarios y
+337/337 PostgreSQL, cero fallos/omisiones; TypeScript/web, runner y smokes
+aprobados. Diez E2E dirigidos de plataforma aprobaron en escritorio/móvil, cuatro
+laboratorios cerrados y reinicio. El E2E completo y CI del SHA corregido se
+ratifican en el PR. El objetivo512 no se interpreta como resultado de una
+batería pendiente. No hubo cambios de aserciones/timeouts/retries para ocultar fallos.

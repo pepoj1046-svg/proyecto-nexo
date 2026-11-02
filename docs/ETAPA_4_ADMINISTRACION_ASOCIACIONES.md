@@ -1,7 +1,8 @@
 # Administración de asociaciones y autoridad — 4A.3
 
 Solo laboratorio, base 3a49f43. [ADR y amenazas](ADR_ADMINISTRACION_GENERAL_ETAPA_4.md).
-001–035 inmutables; 036 es aditiva y no migra datos operativos.
+001–036 inmutables tras la primera publicación;036 añade el módulo y037
+refuerza la revisión de identidad sin migrar datos operativos.
 
 ## Facultades
 
@@ -133,3 +134,13 @@ Automatización: `node --test tests/platform-admin.test.mjs`,
 `node scripts/test-web.mjs --suite=platform-administration.spec.mjs,platform-admin-races.spec.mjs`,
 y finalmente `npm run test:all` / `npm run test:web`. Los tests crean y cierran su
 propio laboratorio. No se afirma ejecutar manualmente Windows; se distingue CI.
+
+##037: identidad atestada y formularios anteriores
+
+La intención también se liga a todas las atestaciones LAB y su historia inmutable.
+Reasignar/restaurar un código invalida una delegación o revocación anterior: no se
+aplica a un destinatario distinto del revisado. El efecto es conservador y global:
+incluso una atestación de otro candidato obliga a consultar y confirmar de nuevo.
+Los recibos anteriores conservan su resultado después de reautorizar al actor; no
+se reejecutan contra la identidad actual del código. Actualizar036→037 conserva
+filas, recibos, checksums y OID. Ninguna política comercial nueva.

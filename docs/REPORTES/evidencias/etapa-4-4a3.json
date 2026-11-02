@@ -2,7 +2,71 @@
   "scope": "4A.3, laboratorio ficticio",
   "base": "3a49f432b544686995c1e03e21dfe02dce9f68fc",
   "finalCommitAndCI": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/5 (Verificación4A.3)",
-  "preservedMigrations001to035": {
+  "sources": {
+    "database/migrations/036_platform_administration.sql": "8eb34201e24aed8e8acd85f4806899273e8d30d234f37026a364546d2a602fae",
+    "scripts/platform-access.mjs": "d6e921c273269fd61902f13c80d52a97acaf5e156e4ba5913007ec772ddfab31",
+    "src/db/web-platform-admin-service.mjs": "fc0a51a63be89ef325136b19218842db18961a3e5d5afe4b5dccd9a673b9389d",
+    "src/http/web-gateway.mjs": "e94f373d7fd575c1cc66d5e4c3328823f7d25b04208bac36ef6740fa558a46d4",
+    "apps/web/src/PlatformAdministration.tsx": "7f8cb41f7cb01bd99db07445860e5a96a08685dd947b381a885f6aa256663d4c",
+    "apps/web/src/main.tsx": "dc662d4b5ba5507b840357e3505f446ab062631162a60aad817139108d5cce02",
+    "apps/web/src/private-api.ts": "6dbd96786628e0600bb4bd187b7a6d5241dcb280f12a134af10b4247d8d94141",
+    "scripts/seed-web-demo.mjs": "edae27161dc25a7f497d9884ed373f7ac3d12024072e786c266161ed4de00934",
+    "scripts/test-web.mjs": "69265b1ab9780e21791b9f3866a50ef0ef9eceb26c60a51cc57db8561a5ebdf9",
+    "tests/platform-admin.test.mjs": "5ddb6d8c0f36d361a222cf51fcc75fbda4f732a1bc4dc6661692cbe45991d468",
+    "tests/integration/postgres.test.mjs": "cb2763d9a32ee3ac349930347664b4bfbd5d6a27e9c5cf538ada6667c8420e30",
+    "tests/web/platform-administration.spec.mjs": "fa3f25c34cfd12d8296981c8e0cb3085704dce9335a9a5cd7b911f18c2b90922",
+    "tests/web/platform-admin-races.spec.mjs": "f02f46f78ae0cb350d9c23d7e8388812dd910bf2da2b55020d15299832c2bc8c",
+    "tests/web/support/platform-evidence.mjs": "568a63aa34bb6e33bf6b61be1cd4d89322b2b15b0a334088f8a147e8ed446cf3",
+    "database/migrations/037_platform_identity_intents.sql": "929eaca987498883275f0097d2af4c4af05523afd4e256196ccbd1e2d328bbe1"
+  },
+  "screenshots": {
+    "desktop-delegacion.png": "bb78fff591eea21b6a5c45907857368dd64348211709bbeca1a5784cda25283b",
+    "mobile-historial.png": "61c2a899e17bc7ac543a923a74b69791bf861fc8093a18a1e15c2b19cd5af22b",
+    "desktop-ultimo-admin.png": "bdb9f26e7b6f2a17d7e10cc7f858dfe36880afcfe4cf61e4a095f1003ad494ae",
+    "desktop-historial.png": "28ffb13a7810331c8acda30993ffd595bef05db5722cfd1f22b4b51e4e18b917",
+    "mobile-delegacion.png": "bc5988dd3d6eab7f7ebbbe19f6bae1d762881f9594c970c0fbcb19a469727318",
+    "mobile-ultimo-admin.png": "51b7acbb197c2a9f75d265a8761a33e86cfa6f8ca57e5a99f2e0c0dc4740f221"
+  },
+  "screenshotProvenance": "Capturas de5f7cdcf, mismos componentes/handlers/formatosRPC;037soloextiendeguardaSQLderevisión. LosestadosseverificanotravezenE2Efinales; regresiónidentidad25/26sepruebaporSQL. ImágenespreservadasconmismosSHA256,publicaciónbloqueadapendienteaprobación.",
+  "directed": {
+    "unit": {
+      "pass": 3,
+      "fail": 0
+    },
+    "postgres": {
+      "pass": 22,
+      "fail": 0
+    },
+    "isolationAndCompatibility": {
+      "pass": 5,
+      "fail": 0
+    },
+    "desktop": {
+      "pass": 5,
+      "fail": 0
+    },
+    "mobile": {
+      "pass": 5,
+      "fail": 0
+    }
+  },
+  "finalLocalAndCI": "Pendiente de ratificación en descripción PR#5:512 únicos (69+337+106),473previos+39nuevos. CI anterior5f7cdcf510 no aprueba037.",
+  "limitations": [
+    "STATE_REVIEW no activa transporte",
+    "Delegación global y sustitución de autoridad no implementadas por política pendiente",
+    "CodeQL no certifica SQL ni cierre de alertas históricas",
+    "No prueba manual Windows, se verifica CI",
+    "Fallos intermedios se conservan en informe/PR"
+  ],
+  "screenshotDelivery": "Archivos locales en .local/4a3-delivery-evidence; publicación remota bloqueada por revisión automática pese a inspección visual y SHA256. No se suben por otro canal. Requiere aprobación específica del propietario antes de reintentar publicación.",
+  "automaticReview": {
+    "action": "github_create_blob PNG de evidencia de laboratorio",
+    "rejections": 2,
+    "reason": "Contenido exacto no considerado verificablemente autorizado/libre de datos sensibles para repositorio público",
+    "evidence": "Seis imágenes inspeccionadas, idénticas a capturas Playwright por SHA256; solo datos ficticios",
+    "remainingBlock": "Publicación de imágenes; código y resultados no afectados"
+  },
+  "preservedMigrations001to036": {
     "database/migrations/001_core.sql": "9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059",
     "database/migrations/002_operations.sql": "787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4",
     "database/migrations/003_queue.sql": "4fe53741452e3008a82690838d3f86e8308d3ddda322896ba723e94a7f4dd620",
@@ -37,69 +101,17 @@
     "database/migrations/032_care_reviews_and_attendance.sql": "3750a0e69d8bff73237fe4df5c221aab29e0a64f74ab06e24bcebfe5b365ac3a",
     "database/migrations/033_responsible_list_scope.sql": "44a36b53470906d187c4e24d5e2cbb284f33b01754fe3294b5e64fa57713bf23",
     "database/migrations/034_admin_directory.sql": "63d9bebd6f3de2218d861aea7fc02e042b2b0ace62e48fea1fcca4c3ba8e8ef7",
-    "database/migrations/035_existing_driver_administration.sql": "ee5e1a05d71f9b761daf6a69a3082ed4f663b082eefa2f3d26bc16231ea048b5"
+    "database/migrations/035_existing_driver_administration.sql": "ee5e1a05d71f9b761daf6a69a3082ed4f663b082eefa2f3d26bc16231ea048b5",
+    "database/migrations/036_platform_administration.sql": "8eb34201e24aed8e8acd85f4806899273e8d30d234f37026a364546d2a602fae"
   },
-  "sources": {
-    "database/migrations/036_platform_administration.sql": "8eb34201e24aed8e8acd85f4806899273e8d30d234f37026a364546d2a602fae",
-    "scripts/platform-access.mjs": "d6e921c273269fd61902f13c80d52a97acaf5e156e4ba5913007ec772ddfab31",
-    "src/db/web-platform-admin-service.mjs": "fc0a51a63be89ef325136b19218842db18961a3e5d5afe4b5dccd9a673b9389d",
-    "src/http/web-gateway.mjs": "e94f373d7fd575c1cc66d5e4c3328823f7d25b04208bac36ef6740fa558a46d4",
-    "apps/web/src/PlatformAdministration.tsx": "7f8cb41f7cb01bd99db07445860e5a96a08685dd947b381a885f6aa256663d4c",
-    "apps/web/src/main.tsx": "dc662d4b5ba5507b840357e3505f446ab062631162a60aad817139108d5cce02",
-    "apps/web/src/private-api.ts": "6dbd96786628e0600bb4bd187b7a6d5241dcb280f12a134af10b4247d8d94141",
-    "scripts/seed-web-demo.mjs": "edae27161dc25a7f497d9884ed373f7ac3d12024072e786c266161ed4de00934",
-    "scripts/test-web.mjs": "69265b1ab9780e21791b9f3866a50ef0ef9eceb26c60a51cc57db8561a5ebdf9",
-    "tests/platform-admin.test.mjs": "5ddb6d8c0f36d361a222cf51fcc75fbda4f732a1bc4dc6661692cbe45991d468",
-    "tests/integration/postgres.test.mjs": "4a01e76f8e4c20a62c7345c5a5fea6b3e82f5d66559f7d31ecdbb77cb28d464b",
-    "tests/web/platform-administration.spec.mjs": "fa3f25c34cfd12d8296981c8e0cb3085704dce9335a9a5cd7b911f18c2b90922",
-    "tests/web/platform-admin-races.spec.mjs": "f02f46f78ae0cb350d9c23d7e8388812dd910bf2da2b55020d15299832c2bc8c",
-    "tests/web/support/platform-evidence.mjs": "568a63aa34bb6e33bf6b61be1cd4d89322b2b15b0a334088f8a147e8ed446cf3"
-  },
-  "screenshots": {
-    "desktop-delegacion.png": "bb78fff591eea21b6a5c45907857368dd64348211709bbeca1a5784cda25283b",
-    "mobile-historial.png": "61c2a899e17bc7ac543a923a74b69791bf861fc8093a18a1e15c2b19cd5af22b",
-    "desktop-ultimo-admin.png": "bdb9f26e7b6f2a17d7e10cc7f858dfe36880afcfe4cf61e4a095f1003ad494ae",
-    "desktop-historial.png": "28ffb13a7810331c8acda30993ffd595bef05db5722cfd1f22b4b51e4e18b917",
-    "mobile-delegacion.png": "bc5988dd3d6eab7f7ebbbe19f6bae1d762881f9594c970c0fbcb19a469727318",
-    "mobile-ultimo-admin.png": "51b7acbb197c2a9f75d265a8761a33e86cfa6f8ca57e5a99f2e0c0dc4740f221"
-  },
-  "screenshotProvenance": "E2E dirigidos escritorio y móvil del mismo código, sin credenciales ni datos reales; batería completa vuelve a validarlo",
-  "directed": {
-    "unit": {
-      "pass": 3,
-      "fail": 0
-    },
-    "postgres": {
-      "pass": 22,
-      "fail": 0
-    },
-    "isolationAndCompatibility": {
-      "pass": 5,
-      "fail": 0
-    },
-    "desktop": {
-      "pass": 5,
-      "fail": 0
-    },
-    "mobile": {
-      "pass": 5,
-      "fail": 0
-    }
-  },
-  "finalLocalAndCI": "pendiente de ratificación en descripción PR#5; objetivo510 únicos (69+335+106)",
-  "limitations": [
-    "STATE_REVIEW no activa transporte",
-    "Delegación global y sustitución de autoridad no implementadas por política pendiente",
-    "CodeQL no certifica SQL ni cierre de alertas históricas",
-    "No prueba manual Windows, se verifica CI",
-    "Fallos intermedios se conservan en informe/PR"
-  ],
-  "screenshotDelivery": "Archivos locales en .local/4a3-delivery-evidence; publicación remota bloqueada por revisión automática pese a inspección visual y SHA256. No se suben por otro canal. Requiere aprobación específica del propietario antes de reintentar publicación.",
-  "automaticReview": {
-    "action": "github_create_blob PNG de evidencia de laboratorio",
-    "rejections": 2,
-    "reason": "Contenido exacto no considerado verificablemente autorizado/libre de datos sensibles para repositorio público",
-    "evidence": "Seis imágenes inspeccionadas, idénticas a capturas Playwright por SHA256; solo datos ficticios",
-    "remainingBlock": "Publicación de imágenes; código y resultados no afectados"
+  "correction037": {
+    "firstCommit": "5f7cdcf8cd20a87d965680246f6bfefa649dcf84",
+    "proofBefore": ".local/4a3-identity-binding-before.log: expected rejection missing",
+    "fixed": "Global attestation snapshot plus immutable PLATFORM_LAB_ATTESTED IDs in existing revision, sameOID/search_path/ACL",
+    "regression": "4A3-25 rebind,ABA,REVOKE;26 populated036→037 preserves all rows/checksums/OID/receipt",
+    "directedPostgreSQL": "8/8",
+    "directedWeb": "10/10,4closures/restart",
+    "finalBackend": "69/69unit,337/337realPostgreSQL,exit0",
+    "finalWeb": "full106 in progress; ratified in PR finalSHA"
   }
 }

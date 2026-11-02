@@ -13,8 +13,9 @@ Trabaja **solo** en este repositorio, `pepoj1046-svg/proyecto-nexo`. Nunca uses,
   ni ramas de etapas anteriores. No iniciar 4A.4 ni etapas 5–10.
 - Solo web adaptable, PostgreSQL local y datos ficticios; sin aplicaciones nativas,
   bancos, GPS real, comunicaciones externas ni despliegues.
-- Conservar 001–035 intactas; 036 añade administración específica y bootstrap local
-  cerrado, sin privilegios operativos globales ni otro inventario. Reutilizar el núcleo transaccional y documentar decisiones pendientes.
+- Conservar 001–036 intactas; 036 añade administración específica y bootstrap local
+  cerrado;037 liga intenciones a atestaciones. Sin privilegios operativos globales
+  ni otro inventario. Reutilizar el núcleo transaccional y documentar decisiones pendientes.
 - Antes de editar, leer `docs/REQUISITOS_INICIALES.md`, `docs/ARQUITECTURA.md`, `docs/MODELO_DE_DATOS.md`, `docs/SEGURIDAD_PENDIENTE.md` y `docs/PRUEBAS_ETAPA_1.md`.
 - Implementar incrementos pequeños con pruebas automatizadas reproducibles. Documentar cómo ejecutar cada prueba y su salida.
 - Si detectas una inconsistencia en los requisitos, deja propuesta/nota y detén solo esa parte; no cambies decisiones comerciales por tu cuenta.
