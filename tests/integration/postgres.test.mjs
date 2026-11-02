@@ -3685,9 +3685,24 @@ test('4A2-15: returning to a queue and revocation serialize without an active qu
  await admin.query("INSERT INTO nexo.trips(id,association_id,route_id,vehicle_id,driver_id,position_no,status,current_stop,completed_at)VALUES($1,$2,$3,$4,$5,100,'COMPLETED',3,clock_timestamp())",[trip,fixture.A,fixture.ra,vehicle,d.id]);
  await admin.query("INSERT INTO nexo.routes(id,association_id,name,direction,version,stop_count,origin_code,destination_code)VALUES($1,$2,'Regreso ficticio 4A2','IN',1,4,'V-FICTICIO','Y-FICTICIO')",[route,fixture.A]);
  await mapRoute(admin,route,fixture.A,fixture.geo,fixture.geo.localities[1],fixture.geo.localities[0]);await permit(admin,route,fixture.A,fixture.adminA,fixture.reviewer);
- const body=await accessBody(d.id),r=await Promise.allSettled([driverAdmin().command(fixture.tokens.adminA,key(),body),api.requestQueue(d.token,key(),trip,route)]);
- assert.equal(r[0].status,'fulfilled');const active=(await admin.query("SELECT active FROM nexo.memberships WHERE user_id=$1 AND role='DRIVER'",[d.id])).rows[0].active,queued=(await admin.query("SELECT * FROM nexo.trips WHERE driver_id=$1 AND status IN('QUEUED','IN_TRANSIT')",[d.id])).rowCount;
- assert.ok(active||queued===0);if(!active){assert.equal(r[1].status,'rejected');assert.match(r[1].reason.message,/FORBIDDEN|NOT_DRIVER/);}else{assert.equal(r[0].value.reviewRequired,true);assert.equal(queued,1);assert.equal(r[1].status,'fulfilled');}
+ const blocker=new pg.Client({connectionString:url.href});await blocker.connect();let pending;
+ try{
+  // The queue passed its initial permission check before waiting. A committed
+  // revocation must still be enforced by the native insert guard afterward.
+  const body=await accessBody(d.id);await blocker.query('BEGIN');await blocker.query('SELECT id FROM nexo.routes WHERE association_id=$1 ORDER BY id FOR UPDATE',[fixture.A]);
+  pending=api.requestQueue(d.token,key(),trip,route).then(value=>({value}),error=>({error}));await waitForQueryLock('%nexo.request_queue(%');
+  await blocker.query("SELECT set_config('nexo.session_token',$1,true)",[fixture.tokens.adminA]);
+  const revoked=(await blocker.query('SELECT nexo.web_driver_admin_command($1,$2,$3,$4,$5,$6,$7)AS r',[key(),body.associationId,body.userRef,body.enabled,body.revision,body.reason,body.confirmed])).rows[0].r;assert.equal(revoked.applied,true);await blocker.query('COMMIT');assert.equal((await pending).error.message,'INACTIVE_DRIVER');pending=null;
+  assert.equal((await admin.query("SELECT active FROM nexo.memberships WHERE user_id=$1 AND role='DRIVER'",[d.id])).rows[0].active,false);assert.equal((await admin.query("SELECT * FROM nexo.trips WHERE driver_id=$1 AND status IN('QUEUED','IN_TRANSIT')",[d.id])).rowCount,0);
+  await assert.rejects(api.requestQueue(d.token,key(),trip,route),{message:'FORBIDDEN'});
+  await driverAdmin().command(fixture.tokens.adminA,key(),await accessBody(d.id,true));
+  // In the opposite order, an already committed return must prevent revocation.
+  const next=await accessBody(d.id);await blocker.query('BEGIN');await blocker.query('SELECT id FROM nexo.routes WHERE association_id=$1 ORDER BY id FOR UPDATE',[fixture.A]);
+  pending=driverAdmin().command(fixture.tokens.adminA,key(),next).then(value=>({value}),error=>({error}));await waitForQueryLock('%nexo.web_driver_admin_command(%');
+  await blocker.query("SELECT set_config('nexo.session_token',$1,true)",[d.token]);await blocker.query('SELECT nexo.request_queue($1,$2,$3)',[key(),trip,route]);await blocker.query('COMMIT');
+  const blocked=await pending;assert.equal(blocked.error,undefined);assert.equal(blocked.value.reviewRequired,true);assert.equal(blocked.value.applied,false);pending=null;
+  assert.equal((await admin.query("SELECT active FROM nexo.memberships WHERE user_id=$1 AND role='DRIVER'",[d.id])).rows[0].active,true);assert.equal((await admin.query("SELECT * FROM nexo.trips WHERE driver_id=$1 AND status IN('QUEUED','IN_TRANSIT')",[d.id])).rowCount,1);
+ }finally{await blocker.query('ROLLBACK');await blocker.end();if(pending)await pending;}
 });
 test('4A2-16: populated 034 upgrade preserves all business rows, receipts and immutable migration checksums',async()=>{
  await pendingHandoff();const d=await freeAccessDriver();const name='nexo_test_upgrade_'+randomBytes(6).toString('hex');await admin.query('CREATE DATABASE '+admin.escapeIdentifier(name));const target=new URL(url);target.pathname='/'+name;const db=new pg.Client({connectionString:target.href});await db.connect();

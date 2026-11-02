@@ -6,18 +6,6 @@
   "branch": "desarrollo/etapa-4",
   "pullRequest": 5,
   "finalShaAndCI": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/5#issuecomment-6576286717",
-  "localCounts": {
-    "unique": 473,
-    "unit": 66,
-    "postgresReal": 311,
-    "e2e": 96,
-    "desktop": 48,
-    "mobile": 48,
-    "labsStopped": 44,
-    "allExit": 0,
-    "webExit": 0,
-    "skipped": 0
-  },
   "baselinePreserved": 443,
   "newCases": {
     "unit": 2,
@@ -76,16 +64,17 @@
     "apps/web/src/private-api.ts": "a65faf4da9d150c9c23c052d2a78af7798c12d6e0adb87bbac9b8c304ed62515",
     "apps/web/src/use-command.ts": "6c387f850bcbbf849ed76dc86baa992f3b736b684428d6e4272517371c8d0351",
     "database/migrations/035_existing_driver_administration.sql": "ee5e1a05d71f9b761daf6a69a3082ed4f663b082eefa2f3d26bc16231ea048b5",
-    "scripts/seed-web-demo.mjs": "53dc17949d4cb47b0bec2b4859a553af97232f4507629fd550ba97574a187319",
-    "scripts/test-web.mjs": "2a446ff88d241c7a9e8fbbf9465ab8f4325947ac176a63ff9f63fa66af59ab9a",
+    "scripts/seed-web-demo.mjs": "875f837aa56fad040af86eb4dedbb8fce3752fdcbfe86e0510863633e19266e3",
+    "scripts/test-web.mjs": "11ccca1e496b6e4bfc6b4db5d8f7d2e8dc4b3812bf649bad3c46390cf35878d3",
     "src/db/web-driver-admin-service.mjs": "724dc56c958de6c3f40006f7854270ec87d0a167aa82e9d04dba337b110faaba",
     "src/http/web-gateway.mjs": "336c6932413d6a451b5671585cc8f6044cccfffd5ac34b5fe21b7abef36ffd34",
     "tests/driver-admin.test.mjs": "8baf171776807b11927b66e56b094a85dac01fb7eeefb42f3e83460406689413",
-    "tests/integration/postgres.test.mjs": "179099b133de534ec9af9bfc72a01f2780740ca35912283b6f720738ca6c88e3",
+    "tests/integration/postgres.test.mjs": "79d0a84de5df25eaf43a32e19eec5e7e04bdebab2a6e35cdec689564e19d3f99",
     "tests/web/care-accounts.spec.mjs": "ad29744897386aca14c082b206680c27cba0ae5a55d566ea817472296bfad419",
     "tests/web/driver-admin-races.spec.mjs": "8509111ff6f75314f50e32c810a782d283bbd2a65ff1f7ee9f29903995b7a2a0",
     "tests/web/driver-administration.spec.mjs": "d2e84c55f4274d12a6392963f4d01ad92c55bb20205e7e1277eb731b33357fe4",
-    "tests/web/support/directory-evidence.mjs": "f1c6fa0d9a9496e39fba4fba54b8ad68b6fdc6a28cc584447723ecc1fde5d19d"
+    "tests/web/support/directory-evidence.mjs": "f1c6fa0d9a9496e39fba4fba54b8ad68b6fdc6a28cc584447723ecc1fde5d19d",
+    ".github/workflows/etapa-1-tests.yml": "bc6174a692a4c96b04b8fd46bb559e6b8546639e199e425f69b406f1653399ac"
   },
   "screenshots": [
     {
@@ -93,42 +82,54 @@
       "size": 161224,
       "sha": "7543a5c3d7a95738c582a19bea21fcdd02971338",
       "sha256": "3f35a0fece655cf7bf4aae1fdd2458d367a2ec668b19cf58662baf058b58f659",
-      "source": "full E2E desktop 48/48"
+      "source": "full E2E desktop 48/48",
+      "commit": "25a14a3c28efba400ff4afc3578b8d85ed36116c",
+      "uiUnchangedAfterCorrection": true
     },
     {
       "path": "docs/REPORTES/evidencias/etapa-4-4a2/revision-desktop.png",
       "size": 83923,
       "sha": "556a6ac169140cdfd6f049346b93f960a5062563",
       "sha256": "785df92b6f4415cea90f0f9500edd85c9ce6f595da18994785db6ef8fd53722a",
-      "source": "full E2E desktop 48/48"
+      "source": "full E2E desktop 48/48",
+      "commit": "25a14a3c28efba400ff4afc3578b8d85ed36116c",
+      "uiUnchangedAfterCorrection": true
     },
     {
       "path": "docs/REPORTES/evidencias/etapa-4-4a2/historial-desktop.png",
       "size": 269552,
       "sha": "802f291b7a702abc531860bc05461b7f271e91b5",
       "sha256": "395252393fa60852a3eef5f51adf399b9c49cb2d11ffa023222cc0c97ab0526f",
-      "source": "full E2E desktop 48/48"
+      "source": "full E2E desktop 48/48",
+      "commit": "25a14a3c28efba400ff4afc3578b8d85ed36116c",
+      "uiUnchangedAfterCorrection": true
     },
     {
       "path": "docs/REPORTES/evidencias/etapa-4-4a2/membresia-mobile.png",
       "size": 176042,
       "sha": "a42eaaa99038a48a34b3ec7646ce16105fa6074f",
       "sha256": "f01205f7965e9cd21843cf1871910ec3337a66b30855dc8ba263b7003985c0c0",
-      "source": "full E2E mobile 48/48"
+      "source": "full E2E mobile 48/48",
+      "commit": "25a14a3c28efba400ff4afc3578b8d85ed36116c",
+      "uiUnchangedAfterCorrection": true
     },
     {
       "path": "docs/REPORTES/evidencias/etapa-4-4a2/revision-mobile.png",
       "size": 95684,
       "sha": "64e34d6b0b64bf247d02abb806c36cce9e938674",
       "sha256": "b4efe31a3498ae224577edc8fc335cf4a75f94259418abf6d9168db8fc24dc78",
-      "source": "full E2E mobile 48/48"
+      "source": "full E2E mobile 48/48",
+      "commit": "25a14a3c28efba400ff4afc3578b8d85ed36116c",
+      "uiUnchangedAfterCorrection": true
     },
     {
       "path": "docs/REPORTES/evidencias/etapa-4-4a2/historial-mobile.png",
       "size": 294953,
       "sha": "bae68dd69a0f95f1895d781e6a1f83fa25ed2f8f",
       "sha256": "0e99c266833b5740d38ec358d6dd5af54df156c16b5a37531109b49f35d823c1",
-      "source": "full E2E mobile 48/48"
+      "source": "full E2E mobile 48/48",
+      "commit": "25a14a3c28efba400ff4afc3578b8d85ed36116c",
+      "uiUnchangedAfterCorrection": true
     }
   ],
   "readOnlyWitness": "tests/web/support/directory-evidence.mjs",
@@ -335,6 +336,26 @@
       "playwrightFailed": 0,
       "labsStopped": 44,
       "restartVerified": true
+    },
+    {
+      "privatePath": ".local/4a2-fixture-optimization-directed.log",
+      "sha256": "6bce7c36a0c0c43f8d4fe64ae2bbd313e71ca81c2613f542056f5e1e9b2e0963",
+      "completedAtManifestCreation": true
+    },
+    {
+      "privatePath": ".local/4a2-final-all-optimized.log",
+      "sha256": "fc68e13be3dc5a051ad1880aaf41e4cddb9397663176ce0e535f3b0028e5c24b",
+      "completedAtManifestCreation": true
+    },
+    {
+      "privatePath": ".local/4a2-queue-interleavings-after.log",
+      "sha256": "74da793dd000f42d5480f12102dd347ec5d016f4cdb61bbecf048ccab04b89be",
+      "completedAtManifestCreation": true
+    },
+    {
+      "privatePath": ".local/4a2-queue-interleavings-final.log",
+      "sha256": "25f222f97f074673d013dd6931ebd9020023aa88376294964ff7f95f0def98f6",
+      "completedAtManifestCreation": true
     }
   ],
   "auditors": {
@@ -346,5 +367,69 @@
     "Legacy native UPSERT preserved; new web endpoint existing-only",
     "No claim of production readiness, manual Windows test or closed historical CodeQL alerts",
     "CI results apply only after final same-SHA verification comment is ratified"
-  ]
+  ],
+  "firstImplementationCommit": "25a14a3c28efba400ff4afc3578b8d85ed36116c",
+  "firstImplementationLocalCounts": {
+    "unique": 473,
+    "unit": 66,
+    "postgresReal": 311,
+    "e2e": 96,
+    "desktop": 48,
+    "mobile": 48,
+    "labsStopped": 44,
+    "allExit": 0,
+    "webExit": 0,
+    "skipped": 0
+  },
+  "latestVerification": "Local and CI verification of the correction is consolidated only in finalShaAndCI; no success claimed while pending",
+  "runtimeCodeUnchangedFrom": "25a14a3c28efba400ff4afc3578b8d85ed36116c",
+  "correction": {
+    "scope": [
+      "test fixture setup",
+      "two deterministic queue/revocation interleavings",
+      "CI global envelope"
+    ],
+    "historyFixture": "52 native acts in one trusted pre-listener transaction, only the two labs which need that history",
+    "jobBudgetMinutes": {
+      "before": 25,
+      "after": 30
+    },
+    "unchanged": [
+      "SQL035",
+      "API",
+      "React",
+      "473 unique cases",
+      "per-test/HTTP/SQL/launcher deadlines",
+      "automatic retries disabled"
+    ],
+    "firstCI": {
+      "sixJobsPassed": true,
+      "pushWindows22": {
+        "run": 41443391854,
+        "job": 125270499689,
+        "result": "failure",
+        "passed": [
+          66,
+          311,
+          84
+        ],
+        "closed": 37,
+        "network": "/api/session ERR_NO_BUFFER_SPACE, cause not determined"
+      },
+      "prWindows22": {
+        "run": 41443398679,
+        "job": 125270522218,
+        "result": "cancelled",
+        "passed": [
+          66,
+          311,
+          96
+        ],
+        "closed": 44,
+        "restart": true,
+        "allSteps": "success",
+        "durationSeconds": 1505
+      }
+    }
+  }
 }

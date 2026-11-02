@@ -101,7 +101,7 @@ para demostrar que no se retira indebidamente una clave ya comprometida.
 
 ## Resultados de pruebas
 
-Batería final local **473 casos únicos aprobados**: **66 unitarias**,
+La primera publicación `25a14a3` completó localmente **473 casos únicos aprobados**: **66 unitarias**,
 **311 PostgreSQL reales** y **96 E2E** (48 escritorio y48 móvil).
 Cero fallos u omisiones en las baterías finales. Los443 anteriores se verificaron
 de nuevo, con el caso de acceso heredado ajustado al contrato seguro; se añaden
@@ -111,7 +111,9 @@ de nuevo, con el caso de acceso heredado ajustado al contrato seguro; se añaden
 del runner, smoke de identidad HTTP y listener de negocio aprobados.
 `npm run test:web` terminó con96 aprobados en44 laboratorios aislados; cierre de
 listener/PostgreSQL en todos, SIGINT real y reinicio sin accesos o datos anteriores.
-Fuentes congeladas verificadas por hash entre las dos baterías.
+Código de producto congelado y fuentes de cada batería verificadas por hash.
+Las baterías de la corrección posterior se consolidan en el registro ratificado;
+no se declaran aprobadas mientras dicho registro las indique pendientes.
 
 Entorno local observado: Debian13, Node24.19.0, PostgreSQL18.4,
 Playwright1.64.1, Chromium154.0.8037.57, pg8.23.1 y TypeScript5.9.3.
@@ -157,6 +159,46 @@ Las ejecuciones fallidas no se presentan como verdes ni se ocultan con el result
 posterior. No se atribuye a 4A.2 una corrección de los fallos de transporte históricos
 de 4A.1; su causa no fue demostrada y permanece documentada en su registro.
 
+### CI de la primera publicación y optimización posterior de fixture
+
+La primera implementación, `25a14a3`, aprobó473 casos localmente. En su CI:
+seis jobs completos aprobados; Windows/Node22 push (job125270499689,
+run41443391854) pasó66 unitarias/311 PostgreSQL y84 E2E antes de fallar en
+mobile/conditions con `/api/session ERR_NO_BUFFER_SPACE`, sin respuesta HTTP.
+La causa de transporte no está determinada. Windows/Node22 PR (job125270522218,
+run41443398679) completó66/311/96,44 cierres y reinicio; todos sus pasos figuran
+success, pero su conclusión global fue cancelled tras25min05s, alrededor del
+límite25min. No se presenta como workflow aprobado ni se atribuye una causa exacta
+que los mensajes de GitHub no confirman.
+
+Se identificó trabajo innecesario del setup nuevo:52 actuaciones históricas en
+seis laboratorios, cuando solo dos necesitan paginar esa historia. El ajuste afecta
+únicamente seed-web-demo/test-web: la suite de historia activa su fixture y las52
+actuaciones nativas se preparan en una transacción de setup previa al listener,
+evitan conexiones/bootstrap/commits repetidos y conservan actor y eventos reales.
+No se fabrican respuestas o se rebajan aserciones. Los14 E2E dirigidos de las tres
+suites afectadas aprobaron; luego se ejecuta nuevamente la batería completa.
+No cambia SQL035, API, React, permisos, los473 casos o deadlines por prueba,
+HTTP, SQL y launcher; siguen sin retries automáticos. El presupuesto global del
+job pasa25→30min por la duración completa25:05 observada y su limpieza final;
+no se amplía una espera de aserción ni se encubre el fallo de transporte.
+No se afirma que ese ajuste corrija la causa del error de transporte.
+
+En la repetición local se observó otra rama de4A2-15: cuando la revocación gana
+mientras el retorno espera, el trigger nativo rechaza con INACTIVE_DRIVER. La
+expectativa del test solo contemplaba otro punto de rechazo. Se hicieron
+deterministas ambos órdenes: revocar primero exige INACTIVE_DRIVER tras la espera
+y FORBIDDEN al iniciar ya revocado; retornar primero exige revisión sin revocar.
+Se conservan y refuerzan las aserciones de estado/inventario, sin cambiar el núcleo.
+Una aserción auxiliar con regex anclado se sustituyó por comparación exacta de
+Error.message, porque Node incluye el prefijo del tipo al comparar una regex.
+El caso dirigido corregido aprobó antes de repetir las baterías completas.
+
+Las capturas adjuntas proceden de la batería completa de `25a14a3`: la interfaz,
+RPC y aserciones permanecen idénticos tras esta corrección del setup. La procedencia
+y las baterías posteriores se distinguen en la evidencia; la CI final se verifica
+en el nuevo commit, sin reutilizar como aprobación estos resultados intermedios.
+
 ## Evidencias, CI y CodeQL
 
 [Capturas, procedencia y huellas](evidencias/etapa-4-4a2.json). Seis capturas de
@@ -165,7 +207,8 @@ y etiquetas ficticios, sin credenciales, cookies o trazas privadas. Testigo SQL
 independiente READ ONLY y comparación de tablas operativas, con excepciones explícitas.
 
 CI conserva Ubuntu/Windows × Node22/24. Los filtros de 4A.1 ya cubren esta rama/PR;
-no se modifican workflows, límites o retries para 4A.2. Resultados de push/PR y
+se ajusta solo el presupuesto global del job25→30min por la medición indicada;
+filtros, matriz, deadlines de casos/HTTP/SQL/launcher y retries no cambian. Resultados de push/PR y
 CodeQL **del commit final** en el [registro ratificado](https://github.com/pepoj1046-svg/proyecto-nexo/pull/5#issuecomment-6576286717).
 CodeQL JS/TS no certifica SQL/RLS ni prueba que se cerraron alertas históricas.
 
@@ -183,9 +226,11 @@ Con Node22/24, checkout actualizado de desarrollo/etapa-4 y solo laboratorio:
 npm ci --no-fund
 npx --no-install playwright install chromium
 $env:NEXO_WEB_ADMIN_DIRECTORY_FIXTURE='1'
+$env:NEXO_WEB_DRIVER_HISTORY_FIXTURE='1' # opcional: historial ficticio de más de50 actos
 npm run dev:web
 # Ctrl+C al terminar
 Remove-Item Env:NEXO_WEB_ADMIN_DIRECTORY_FIXTURE
+Remove-Item Env:NEXO_WEB_DRIVER_HISTORY_FIXTURE
 ```
 
 Abrir exclusivamente la URL127.0.0.1 indicada; leer accesos del archivo privado de

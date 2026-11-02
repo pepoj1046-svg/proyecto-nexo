@@ -134,7 +134,19 @@ export async function seedWebDemo(db,pool) {
   }
   if(process.env.NEXO_WEB_ADMIN_DIRECTORY_FIXTURE==='1'){
    const ids=await seedDirectoryFixture(db,a.association,a.route);
-   for(let i=0;i<52;i++)await core.setDriverMembership(users.admin.token,a.association,ids.drivers[2],i%2===1,'Historial ficticio previo del laboratorio');
+   // Trusted, pre-listener fixture only. The history traversal suite alone
+   // needs these acts. One setup transaction avoids 52 runtime connection,
+   // authority-bootstrap and commit round trips; each native act still checks
+   // actor/safety and appends its real immutable event.
+   if(process.env.NEXO_WEB_DRIVER_HISTORY_FIXTURE==='1'){
+    await db.query('BEGIN ISOLATION LEVEL READ COMMITTED');
+    try{
+     await db.query("SELECT set_config('nexo.session_token',$1,true)",[users.admin.token]);
+     await db.query("SET LOCAL lock_timeout='10s';SET LOCAL statement_timeout='15s'");
+     for(let i=0;i<52;i++)await db.query('SELECT nexo.set_driver_membership($1,$2,$3,$4)',[a.association,ids.drivers[2],i%2===1,'Historial ficticio previo del laboratorio']);
+     await db.query('COMMIT');
+    }catch(e){await db.query('ROLLBACK');throw e;}
+   }
    const empty=randomUUID();await db.query("INSERT INTO nexo.associations(id,name)VALUES($1,'FICTICIO-DIRECTORIO-SIN-REGISTROS')",[empty]);await db.query("INSERT INTO nexo.memberships VALUES($1,$2,'ASSOCIATION_ADMIN',true)",[empty,users.admin.id]);
   }
   // The legacy access-control E2E now uses a historical, empty-custody service.
