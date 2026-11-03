@@ -11,7 +11,8 @@ Base funcional `6b74f40e0cbe60355968ae9828560a2fa6b43d62`; se conservan
 - `POST /api/reservations/quote`: revisión previa de condiciones existentes.
 - `POST /api/reservations`: reserva QUEUE/ENROUTE existente, cookie, Origin,
   CSRF y clave de idempotencia. Cada reenvío vuelve a pasar por autorización SQL.
-- `GET /api/passenger/bookings`: primera página autorizada de reservas propias.
+- `POST /api/reservations/page`: primera página autorizada de reservas propias,
+  con CSRF de la sesión original y cuerpo cerrado `{limit:50,cursor:null}`.
   La consulta completa y paginada sigue disponible en Mis reservas.
 
 Los recibos nativos actor+clave permiten reenviar manualmente la misma intención.
@@ -47,7 +48,12 @@ y respuesta recibida. No guarda credenciales dentro del intento. Clona y congela
 también partes del grupo, cotización y consentimientos: reintentar no los recalcula.
 El servidor conserva toda autoridad sobre tarifa, grupos, turnos y capacidad.
 
-Se revalida sesión antes del POST, antes de consultar y después de recibir la
+La consulta usa el POST de lectura existente ligado al CSRF original: evita que
+un cambio de cookie A → B → A sustituya datos de B mientras las comprobaciones
+de sesión anterior y posterior ven A. El GET sin esa vinculación no se usa como
+consulta de recuperación. No es una escritura ni un endpoint nuevo.
+
+Se revalida sesión antes del POST de reserva, antes de consultar y después de recibir la
 consulta. Un cambio de cuenta o revocación oculta resultados privados y solicita
 la cuenta original. El CSRF de una nueva sesión se obtiene de nuevo; nunca se
 reutiliza un token antiguo para el reenvío. Sin permisos actuales no se fuerza acceso.
@@ -79,7 +85,7 @@ como fuente de contratos. No se declara cerrado 5A.2: requiere auditoría y revi
 ```text
 node --test tests/reservation-attempt.test.mjs tests/web-auth-order.test.mjs
 node scripts/test-postgres.mjs --test-name-pattern=5A2-PG
-node scripts/test-web.mjs --suite=reservation-recovery.spec.mjs,reservation-receipt.spec.mjs,reservation-session.spec.mjs
+node scripts/test-web.mjs --suite=reservation-identity-read.spec.mjs,reservation-recovery.spec.mjs,reservation-receipt.spec.mjs,reservation-session.spec.mjs
 npm run test:all
 npm run test:web
 ```
@@ -87,7 +93,7 @@ npm run test:web
 Los mismos comandos funcionan desde PowerShell en Windows con Node 22/24 y las
 dependencias fijadas. El runner inicia PostgreSQL efímero, entrega accesos ficticios
 por archivo privado y cierra listener/base. No utilizar DATABASE_URL reales.
-Las tres suites nuevas usan clústeres independientes para respetar el límite real
+Las cuatro suites nuevas usan clústeres independientes para respetar el límite real
 de 120 solicitudes/minuto sin aumentarlo ni añadir esperas artificiales.
 
 Los testigos SQL de pruebas son independientes y de solo lectura; comprueban

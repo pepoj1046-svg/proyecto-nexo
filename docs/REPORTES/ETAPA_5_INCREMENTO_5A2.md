@@ -40,7 +40,7 @@ endpoint nuevo de recibos; no se abre `nexo.actions` a clientes.
   para reservas sin cambiar el flujo de comandos administrativos existente.
 - `tests/reservation-attempt.test.mjs`: nueve casos de regresión del cliente.
 - `tests/integration/postgres.test.mjs`: dos casos adicionales sobre PostgreSQL real.
-- Tres suites `tests/web/reservation-{recovery,receipt,session}.spec.mjs` y dos
+- Cuatro suites `tests/web/reservation-{identity-read,recovery,receipt,session}.spec.mjs` y dos
   helpers de navegador/testigo SQL, conectados mediante `scripts/test-web.mjs`.
 - Documentación: este informe, contrato, evidencia agregada y dos antecedentes 5A.1.
 
@@ -74,14 +74,16 @@ las tablas de negocio antes/después de recuperar recibos y grupos concurrentes.
 Resultados locales ya ejecutados: `npm run test:all` terminó con código 0:
 **86/86 unitarias y 408/408 PostgreSQL**, TypeScript/build, detección del runner
 fallido (exit 9 esperado) y cierre de ambas APIs locales. Las pruebas dirigidas
-nuevas aprobaron 9 unitarias, 2 PG y 12 ejecuciones E2E (6 casos, escritorio/móvil).
+iniciales aprobaron 9 unitarias, 2 PG y 12 ejecuciones E2E (6 casos, escritorio/móvil).
+La regresión A-B-A posterior falló sobre el GET original y aprobó en ambos
+dispositivos tras usar el POST existente ligado a CSRF.
 Los 8 E2E anteriores de reservas/cotizaciones también aprobaron en móvil.
 
 La batería web completa se ejecuta sobre las fuentes funcionales estabilizadas;
 su resultado exacto y el de CI/CodeQL se ratifican en el comentario final del PR,
 con el SHA correspondiente. No confundir las ejecuciones dirigidas anteriores con
 esa batería final ni anticipar aprobación de trabajos aún en curso. La batería
-completa contiene 75 casos E2E por dispositivo (150 ejecuciones, 68 laboratorios).
+completa contiene 76 casos E2E por dispositivo (152 ejecuciones, 70 laboratorios).
 
 Evidencia pública agregada sin credenciales, IDs de pasajeros ni cuerpos privados:
 [EVIDENCIAS_5A2.json](EVIDENCIAS_5A2.json). Logs, capturas de estados incierto,
@@ -103,6 +105,16 @@ recuperado y lectura fallida de ambos dispositivos permanecen privados bajo
    esperas artificiales. Este ajuste respeta el aislamiento del runner existente.
 4. Se reforzó la validación de respuestas incompletas y la comprobación de identidad
    posterior a las lecturas; un JSON insuficiente no se presenta como consulta válida.
+
+5. La revisión posterior a una batería inicial de 150 E2E descubrió un hueco de
+   cobertura: cambiar la cookie A → B → A alrededor de un GET propio podía mostrar
+   la lista de B bajo la intención de A. Una regresión nueva reprodujo HTTP 200
+   donde debía impedirse esa sustitución. Se cambió únicamente la consulta del
+   piloto al POST paginado existente con el CSRF original: cookie B + CSRF A produce
+   403, se conserva el recibo de A y el siguiente paso manual consulta con CSRF fresco.
+   No se añadió API ni se cambió el backend. La prueba controla además que no se
+   rendericen referencias ajenas y que no se repita la reserva. La validación final
+   corresponde al commit corregido; la batería inicial no cubría este caso.
 
 Los fallos iniciales constan en logs locales; no se contabilizan como aprobados.
 Los resultados finales corresponden al código estable, con huellas de fuentes
@@ -148,7 +160,7 @@ en las validaciones finales se registra en el comentario de resultados del PR.
 2. Abrir únicamente la URL `http://127.0.0.1:puerto` que indique la consola.
 3. Usar Probar Yacuiba, elegir viaje, Reservar con sesión y una cuenta ficticia del
    archivo de accesos local; revisar cotización y confirmar explícitamente el importe.
-4. Para comprobar cortes reproducibles después del COMMIT utilizar las tres suites
+4. Para comprobar cortes reproducibles después del COMMIT utilizar las cuatro suites
    E2E del contrato; desactivar red manualmente no prueba en qué fase ocurrió el corte.
 5. En incertidumbre, Consultar mis reservas sin reenviar mantiene la clave pendiente;
    Reintentar la misma solicitud conserva cuenta/cuerpo/clave. Con recibo recibido y
