@@ -32,7 +32,7 @@ export function DriverAdministration({associationId,userRef,onBusy,onMember}:{as
  useEffect(()=>{if(command.rejected){setPending(null);setData(null);setHistory(null);setAgreed(false);}},[command.rejected]);
  useEffect(()=>{if(contactCommand.rejected){setPendingContact(null);setData(null);setHistory(null);setContactAgreed(false);}},[contactCommand.rejected]);
  const busy=loading||command.busy||contactCommand.busy;
- useEffect(()=>{onBusy(busy);},[busy,onBusy]);
+ useEffect(()=>{onBusy(busy||!!pending||!!pendingContact);},[busy,pending,pendingContact,onBusy]);
  const send=async(body:Record<string,unknown>,isContact=false)=>{
   setMessage('');if(isContact)setPendingContact(body);else setPending(body);
   const r=await(isContact?contactCommand:command).send(body)as Result|undefined;
@@ -60,7 +60,7 @@ export function DriverAdministration({associationId,userRef,onBusy,onMember}:{as
     <label className="consent-check"><input type="checkbox" checked={contactAgreed} onChange={e=>setContactAgreed(e.target.checked)}/>Confirmo registrar únicamente un código LAB ficticio.</label>
     <button className="button quiet" disabled={!contactAgreed||!/^LAB-[A-Z0-9_-]{1,40}$/.test(contact)} onClick={()=>void send({associationId,contactCode:contact},true)}>Guardar contacto ficticio</button>
    </fieldset>}
-   {history&&<section aria-label="Historial administrativo autorizado"><h4>Historial administrativo autorizado</h4>{history.items.length===0?<p>Sin actuaciones registradas para esta consulta.</p>:<ul>{history.items.map(e=><li key={e.id} data-admin-event={e.id}><strong>{events[e.event]??'Actuación administrativa'}</strong> · {when(e.createdAt)}<p>Motivo: {e.reason}</p><p>Actor técnico: {e.actorRef??'No registrado'} · Sujeto técnico: {e.subjectRef??'Asociación'}</p></li>)}</ul>}<PageControls name="historial de permisos" index={index} count={history.items.length} total={history.total} next={history.nextCursor} busy={busy} change={n=>void load(n).catch(()=>{})}/></section>}
+   {history&&<section aria-label="Historial administrativo autorizado"><h4>Historial administrativo autorizado</h4>{history.items.length===0?<p>Sin actuaciones registradas para esta consulta.</p>:<ul>{history.items.map(e=><li key={e.id} data-admin-event={e.id}><strong>{events[e.event]??'Actuación administrativa'}</strong> · {when(e.createdAt)}<p>Motivo: {e.reason}</p><p>Actor técnico: {e.actorRef??'No registrado'} · Sujeto técnico: {e.subjectRef??'Asociación'}</p></li>)}</ul>}<PageControls name="historial de permisos" index={index} count={history.items.length} total={history.total} next={history.nextCursor} busy={busy||!!pending||!!pendingContact} change={n=>void load(n).catch(()=>{})}/></section>}
   </>}
  </section>;
 }

@@ -1,3 +1,5 @@
+import {Login} from './Login';
+import {adminIntentPending,useAdminIntent,useAdminRecovery,completeAdminAuthentication} from './admin-intent';
 import{PlatformAdministration}from'./PlatformAdministration';
 import {StrictMode,useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -13,25 +15,32 @@ import{Checkout,PointPicker,PrivateReservations}from'./Functional';
 const navItems=[['/','Buscar viaje'],['/pasajero','Mis reservas'],['/administracion','Administración'],['/chofer','Chofer'],['/plataforma','Plataforma']] as const;
 function App(){
  const [path,setPath]=useState(location.pathname),[menu,setMenu]=useState(false),[selection,setSelection]=useState<Selection|null>(null);
- const heading=useRef<HTMLElement>(null),first=useRef(true);
- const go=(href:string)=>{if(location.pathname!==href)history.pushState({},'',href);setPath(href);setMenu(false);};
- useEffect(()=>{const pop=()=>{setPath(location.pathname);setMenu(false);};window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop);},[]);
+ const heading=useRef<HTMLElement>(null),first=useRef(true),currentPath=useRef(path);
+ const recoveryAccount=useAdminRecovery(),protectedIntent=useAdminIntent(),[navigationError,setNavigationError]=useState('');
+ const blockNavigation=()=>{if(!adminIntentPending())return false;setNavigationError('Resuelve el intento administrativo pendiente: consulta su estado y reintenta la misma actuación antes de salir.');return true;};
+ const go=(href:string)=>{if(blockNavigation()){setMenu(false);return;}currentPath.current=href;setNavigationError('');if(location.pathname!==href)history.pushState({},'',href);setPath(href);setMenu(false);};
+ useEffect(()=>{const pop=()=>{if(blockNavigation()){history.pushState({},'',currentPath.current);return;}currentPath.current=location.pathname;setPath(location.pathname);setMenu(false);};window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop);},[]);
  useEffect(()=>{document.title=`${path==='/'?'Busca tu próximo viaje':path==='/reservar'?'Solicitud de reserva':navItems.find(x=>x[0]===path)?.[1]??'Página no encontrada'} · Trufis Bolivia`;if(first.current)first.current=false;else{heading.current?.focus();window.scrollTo({top:0,behavior:'instant'});}},[path]);
+ useEffect(()=>{if(!protectedIntent){setNavigationError('');return;}const leave=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue='';};window.addEventListener('beforeunload',leave);return()=>window.removeEventListener('beforeunload',leave);},[protectedIntent]);
  const link=(href:string,text:string,className='')=><a href={href} className={className} onClick={e=>{if(!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!e.altKey&&e.button===0){e.preventDefault();go(href);}}}>{text}</a>;
  return <>
   <a className="skip-link" href="#contenido">Saltar al contenido</a>
-  <div className="lab-bar"><div className="container"><span><Icon name="lab" size={15}/><strong>Laboratorio local</strong><span className="lab-divider">·</span> Datos ficticios, sin servicios reales</span><span className="lab-desktop">Vista previa · Etapa 3</span></div></div>
+  <div className="lab-bar"><div className="container"><span><Icon name="lab" size={15}/><strong>Laboratorio local</strong><span className="lab-divider">·</span> Datos ficticios, sin servicios reales</span><span className="lab-desktop">Administración · Etapa 4</span></div></div>
   <header className="site-header"><div className="container header-inner"><a href="/" className="brand" aria-label="Trufis Bolivia, inicio" onClick={e=>{e.preventDefault();go('/');}}><span className="brand-mark"><Icon name="route" size={28}/></span><span>Trufis <strong>Bolivia</strong><small>Más cerca de tu destino</small></span></a>
    <button type="button" className="menu-button" aria-label={menu?'Cerrar navegación':'Abrir navegación'} aria-expanded={menu} aria-controls="main-navigation" onClick={()=>setMenu(!menu)}><Icon name={menu?'close':'menu'} size={24}/></button>
    <nav id="main-navigation" aria-label="Navegación principal" className={menu?'open':''}>{navItems.map(([href,text])=><a key={href} href={href} aria-current={path===href?'page':undefined} onClick={e=>{e.preventDefault();go(href);}}>{text}</a>)}<span className="nav-local"><span/>Solo pruebas</span></nav>
   </div></header>
   <main id="contenido" ref={heading} tabIndex={-1}>
+   {navigationError&&<p className="container message error" role="alert">{navigationError}</p>}
+   {recoveryAccount&&<section className="container panel-page" aria-label="Recuperar intento administrativo"><h2>Volver a autenticar la cuenta original</h2><p>El intento y su clave siguen en memoria. Inicia sesión con la misma cuenta; otra cuenta no puede recuperar esta actuación.</p><Login onSession={session=>{if(session.accountRef===recoveryAccount){completeAdminAuthentication(recoveryAccount);setNavigationError('');}else setNavigationError('Esta cuenta no corresponde al intento pendiente. Inicia sesión con la cuenta original.');}}/></section>}
+   <div hidden={!!recoveryAccount}>
    <div hidden={path!=='/'}><Search onChoose={value=>{setSelection(value);go('/reservar');}}/></div>
    {path==='/plataforma'&&<PlatformAdministration/>}
    {path==='/reservar'&&<Reservation selection={selection} back={()=>go('/')} />}
    {path==='/operador'&&<section className="container panel-page"><h1>Ofertas del chofer de laboratorio</h1><PrivateReservations operator/></section>}
    {['/pasajero','/administracion','/chofer'].includes(path)&&<Panel path={path} link={link}/>}
    {!['/plataforma','/','/reservar','/pasajero','/administracion','/chofer','/operador'].includes(path)&&<section className="container panel-page"><h1>Página no encontrada</h1>{link('/','Volver a buscar viajes','button primary')}</section>}
+   </div>
   </main>
   <footer className="site-footer"><div className="container"><span><Icon name="route" size={18}/><strong>Trufis Bolivia</strong><span>Localidades conectadas. Grupos juntos.</span></span><small>Prototipo local · Sin pagos, GPS ni notificaciones externas</small></div></footer>
  </>;

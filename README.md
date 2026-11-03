@@ -1,17 +1,24 @@
 # Trufis Bolivia — Proyecto Nexo
 
-Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, asignación por turno, recogidas y despacho. Etapa 3, auditoría y cierre técnico de laboratorio,
-en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
-`desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos ni GPS real. Autorizado actualmente solo el Incremento 4A.2.
+Laboratorio local de Trufis Bolivia: PostgreSQL, aislamiento por asociación,
+reservas por segmentos, turnos, recogidas, despacho y administración web adaptable.
+Etapas1–3 conservan sus cierres;4A.1–4A.5 están implementados y4A.6 audita su
+integración. Rama `desarrollo/etapa-4`, [PR #5](https://github.com/pepoj1046-svg/proyecto-nexo/pull/5)
+hacia `planificacion/etapa-4a`, sin fusionar. Solo datos ficticios: sin producción,
+pagos, GPS ni comunicaciones reales. Etapa5 no autorizada.
+
+Consultar [auditoría/cierre de Etapa4](docs/REPORTES/ETAPA_4_AUDITORIA_Y_CIERRE.md)
+y [guía administrativa](docs/ETAPA_4_GUIA_ADMINISTRACION.md), incluidas las
+**dependencias offline** de activación inicial y los reintentos con sesión caducada.
+No se afirma autonomía comercial completa. Versiones soportadas: Node22/24;
+matriz Ubuntu/Windows, núcleo y escritorio/móvil separados.
 
 ## Etapa 4A.1: directorio administrativo de lectura
 
 Rama `desarrollo/etapa-4` desde planificación `4223675`. [PR #5](https://github.com/pepoj1046-svg/proyecto-nexo/pull/5)
 hacia `planificacion/etapa-4a`; PR #3 y etapas anteriores se conservan.
 En Administración, usar «Ir al directorio administrativo» y consultar asociación,
-choferes, vehículos, rutas/puntos y tarifas sin elegir un viaje. No hay altas ni edición.
+choferes, vehículos, rutas/puntos y tarifas sin elegir un viaje. El módulo4A.1 es de lectura; altas y configuración se gestionan por los módulos4A.3–5.
 
 001–033 intactas; 034 añade solo proyecciones autorizadas. ADMIN limitado consulta
 rutas/puntos/tarifas de su ámbito; padrones completos DRIVER/vehículos requieren

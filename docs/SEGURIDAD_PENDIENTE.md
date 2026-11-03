@@ -1,5 +1,11 @@
 # Seguridad y límites del prototipo
 
+> Estado vigente4A.6: consultar [auditoría de Etapa4](REPORTES/ETAPA_4_AUDITORIA_Y_CIERRE.md)
+> y [guía administrativa](ETAPA_4_GUIA_ADMINISTRACION.md). Los pendientes de etapas
+> anteriores que siguen abajo son históricos; provisión limitada de cuentas,
+> DRIVER existentes y configuración ya tienen contratos4A.2–5. Esto no resuelve
+> identidad legal, retención, recuperación total de GENERAL_ADMIN ni producción.
+
 ## Implementado y probado localmente
 
 - RLS de lectura en tablas operativas; sin token válido no se obtienen datos privados.

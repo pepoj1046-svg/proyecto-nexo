@@ -144,3 +144,12 @@ incluso una atestación de otro candidato obliga a consultar y confirmar de nuev
 Los recibos anteriores conservan su resultado después de reautorizar al actor; no
 se reejecutan contra la identidad actual del código. Actualizar036→037 conserva
 filas, recibos, checksums y OID. Ninguna política comercial nueva.
+
+## Recuperación de interfaz auditada en4A.6
+
+La navegación SPA y el cambio de sesión no desmontan un intento administrativo
+incierto. Si la sesión caducó, se ofrece reautenticación de la cuenta original,
+conservando cuerpo/clave en memoria y ocultando el formulario hasta recuperarla.
+Otra cuenta no puede desbloquearlo. Un rechazo definitivo sigue exigiendo contexto
+y confirmación nuevos. Recargar/cerrar forzosamente puede perder el intento;
+no hay almacenamiento de secretos en navegador. Ver [guía](ETAPA_4_GUIA_ADMINISTRACION.md).

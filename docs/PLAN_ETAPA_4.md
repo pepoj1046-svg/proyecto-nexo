@@ -1,5 +1,33 @@
 # Trufis Bolivia — plan propuesto de Etapa 4
 
+> **Estado vigente — auditoría4A.6 (03/11/2026).** 4A.1–4A.5 están implementados
+> en `desarrollo/etapa-4`;4A.6 integra auditoría, correcciones y cierre de laboratorio.
+> Dictamen, pruebas y ratificación CI del SHA publicado en
+> [auditoría de Etapa4](REPORTES/ETAPA_4_AUDITORIA_Y_CIERRE.md) y PR #5.
+> [Guía transferible](ETAPA_4_GUIA_ADMINISTRACION.md). No se autoriza Etapa5.
+
+| Incremento | Estado técnico y frontera |
+|---|---|
+| 4A.1 | Directorio por asociación/ruta, sin requerir viaje; paginación real. |
+| 4A.2 | DRIVER existentes y contacto LAB; motivo, confirmación y protección de operaciones pendientes. |
+| 4A.3 | GENERAL_ADMIN explícito, bootstrap/atestación offline y primer ADMIN; asociación nueva inerte. |
+| 4A.4 | Solicitud/revisión de DRIVER, VAGONETA_6 y asignación base; no inicia viajes. |
+| 4A.5 | Borradores y publicaciones nativas de ruta/perfiles/tarifas; conserva contratos anteriores. |
+| 4A.6 | Auditoría integrada, reautorización de revisiones tras esperas y recuperación de intentos web. |
+
+**Autonomía parcial:** la activación comercial, catálogo, provisión de REVIEWER,
+revisión de permisos y primera fila conservan dependencias LAB/offline. GENERAL_ADMIN
+no es owner ni autoridad operativa global. No se acredita producción, habilitación
+legal ni venta inmediata.001–039 se conservan;040–041 corrigen funciones nativas sin
+reescribir tablas ni inventario. Etapas1–3 conservan sus cierres históricos.
+
+## Antecedente de planificación (01/11/2026)
+
+El texto siguiente conserva la propuesta y autorizaciones de aquella fecha. Sus
+frases «pendiente de programación» o «no existe GENERAL_ADMIN» son históricas;
+para el estado ejecutable prevalecen la tabla anterior, los contratos4A.1–5 y la
+auditoría4A.6. No se renumeran ni declaran implementadas las etapas5–10.
+
 > Vigencia posterior: autorizado únicamente el incremento de programación 4A.2.
 > El resto conserva el estado histórico de la propuesta; resultados actuales en
 > [el informe de 4A.2](REPORTES/ETAPA_4_INCREMENTO_4A2.md).
