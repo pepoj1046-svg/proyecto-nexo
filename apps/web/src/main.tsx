@@ -15,7 +15,7 @@ import{Checkout,PointPicker,PrivateReservations}from'./Functional';
 const navItems=[['/','Buscar viaje'],['/pasajero','Mis reservas'],['/administracion','Administración'],['/chofer','Chofer'],['/plataforma','Plataforma']] as const;
 function App(){
  const [path,setPath]=useState(location.pathname),[menu,setMenu]=useState(false),[selection,setSelection]=useState<Selection|null>(null);
- const heading=useRef<HTMLElement>(null),first=useRef(true),currentPath=useRef(path);
+ const heading=useRef<HTMLElement>(null),menuButton=useRef<HTMLButtonElement>(null),first=useRef(true),currentPath=useRef(path);
  const recoveryAccount=useAdminRecovery(),protectedIntent=useAdminIntent(),[navigationError,setNavigationError]=useState('');
  const blockNavigation=()=>{if(!adminIntentPending())return false;setNavigationError(reservationIntentPending()?'Resuelve la solicitud de reserva pendiente: consulta el servidor o reintenta la misma solicitud antes de salir.':'Resuelve el intento administrativo pendiente: consulta su estado y reintenta la misma actuación antes de salir.');return true;};
  const go=(href:string)=>{if(blockNavigation()){setMenu(false);return;}currentPath.current=href;setNavigationError('');if(location.pathname!==href)history.pushState({},'',href);setPath(href);setMenu(false);};
@@ -26,8 +26,8 @@ function App(){
  return <>
   <a className="skip-link" href="#contenido">Saltar al contenido</a>
   <div className="lab-bar"><div className="container"><span><Icon name="lab" size={15}/><strong>Laboratorio local</strong><span className="lab-divider">·</span> Datos ficticios, sin servicios reales</span><span className="lab-desktop">Administración · Etapa 4</span></div></div>
-  <header className="site-header"><div className="container header-inner"><a href="/" className="brand" aria-label="Trufis Bolivia, inicio" onClick={e=>{e.preventDefault();go('/');}}><span className="brand-mark"><Icon name="route" size={28}/></span><span>Trufis <strong>Bolivia</strong><small>Más cerca de tu destino</small></span></a>
-   <button type="button" className="menu-button" aria-label={menu?'Cerrar navegación':'Abrir navegación'} aria-expanded={menu} aria-controls="main-navigation" onClick={()=>setMenu(!menu)}><Icon name={menu?'close':'menu'} size={24}/></button>
+  <header className="site-header"><div className="container header-inner" onKeyDown={e=>{if(e.key==='Escape'&&menu){e.preventDefault();setMenu(false);menuButton.current?.focus();}}}><a href="/" className="brand" aria-label="Trufis Bolivia, inicio" onClick={e=>{e.preventDefault();go('/');}}><span className="brand-mark"><Icon name="route" size={28}/></span><span>Trufis <strong>Bolivia</strong><small>Más cerca de tu destino</small></span></a>
+   <button ref={menuButton} type="button" className="menu-button" aria-label={menu?'Cerrar navegación':'Abrir navegación'} aria-expanded={menu} aria-controls="main-navigation" onClick={()=>setMenu(!menu)}><Icon name={menu?'close':'menu'} size={24}/></button>
    <nav id="main-navigation" aria-label="Navegación principal" className={menu?'open':''}>{navItems.map(([href,text])=><a key={href} href={href} aria-current={path===href?'page':undefined} onClick={e=>{e.preventDefault();go(href);}}>{text}</a>)}<span className="nav-local"><span/>Solo pruebas</span></nav>
   </div></header>
   <main id="contenido" ref={heading} tabIndex={-1}>

@@ -52,7 +52,7 @@ ETAPA_4_ADMINISTRACION_CHOFERES.md; ETAPA_4_CHOFERES_Y_VEHICULOS.md;
 ETAPA_4_ADMINISTRACION_ASOCIACIONES.md; ETAPA_4_RUTAS_Y_TARIFAS.md;
 ETAPA_5_RECUPERACION_RESERVAS.md; servicios web-*-service existentes.
 
-## Cambios mínimos previstos para 5A.3-B
+## 5A.3-B: implementación y decisiones de compatibilidad
 
 1. Corregir Escape y retorno de foco sin convertir navegación en diálogo modal.
 2. Congelar el cuerpo de comandos antes de esperar red; retener cuenta, clave y
@@ -66,6 +66,71 @@ ETAPA_5_RECUPERACION_RESERVAS.md; servicios web-*-service existentes.
    pueda desmontar el formulario o capturar una cuenta distinta.
 5. Añadir regresiones de red/sesiones/recibos, teclado, foco y layout. Mantener
    módulos que ya superan 320 px/200 % sin cambios meramente estéticos.
+
+Los cinco cambios anteriores están implementados. `useCommands` congela el cuerpo
+antes de esperar sesión y conserva cuenta/clave/recibo en su mapa RAM. Un recibo
+recibido no ocasiona otro POST aunque falle refresh. Se valida la cuenta antes de
+entregar resultados; errores de sesión conservan el intento original. No se
+confunde una respuesta tardía con un permiso para una cuenta nueva.
+
+La protección adicional del formulario y el botón explícito de recuperación se
+activan en `BookingJourney`, `TripOperations`, `CarePanel` y generación de códigos
+de responsables. Rechazan otro cuerpo mientras el original está pendiente. El
+callback siempre recupera la intención conservada, aunque su botón original haya
+desaparecido del estado consultado. Los formularios administrativos 4A.6 mantienen
+sus controles de reintento y su retiro explícito de rechazos definitivos; se
+refuerza la prueba de recibo conocido para exigir cero POST adicionales.
+
+Solo los refresh de operaciones y CarePanel activan `scopedRefresh`: envían todas
+sus lecturas POST con el CSRF original y comprueban la cuenta antes de publicar.
+Los demás callbacks conservan verificaciones de identidad antes y después. No
+habilitar ese indicador en un callback nuevo sin auditar sus lecturas y efectos.
+`readForAccount` liga consulta a CSRF y valida identidad posterior; overview y
+manifiesto se consultan como un lote con una sola comprobación final. La cookie B
+con CSRF A se rechaza incluso si las comprobaciones exteriores observan A → B → A.
+
+El refresh del manifiesto conserva montado TripOperations durante una recuperación
+confirmada; publica el snapshot nuevo después de validar su cuenta. Un error
+conserva recibo/clave y ofrece lectura manual. Selección de vehículo, navegación y
+cierre de sesión normales siguen bloqueados mientras exista esa intención. El
+login de recuperación acepta únicamente la cuenta original; renueva la sesión,
+sin renovar permisos o validez de un código de vinculación antiguo.
+
+No se cambia el significado de BOARD/ALIGHT, versiones, episodios, presencia,
+custodia o permisos. La confirmación del usuario mantiene el contrato de cada
+botón. Los paneles de rescates, condiciones, cancelación y revisión conservan sus
+procedimientos nativos y no reciben automáticamente otro flujo físico genérico.
+La mejora compartida de cuerpo/recibo no autoriza repetir una actuación distinta.
+
+### Correcciones durante las pruebas dirigidas
+
+- Se observó un 429 real en el recorrido completo por comprobaciones redundantes
+  de sesión. Se agruparon las lecturas ligadas al CSRF original y se mantuvo la
+  validación antes de publicar. El recorrido completo volvió a aprobar sin cambiar
+  el límite de 120/minuto, timeouts, retries ni añadir esperas.
+- El test previo de administración esperaba otro POST idempotente después de un
+  recibo conocido. Se fortaleció: ahora exige solo lectura, misma auditoría y clave
+  nueva únicamente para una actuación posterior explícita. La respuesta perdida
+  sin recibo sigue exigiendo el mismo POST/clave/cuerpo originales.
+- Se corrigieron fallos de los escenarios nuevos: esperar el resultado observable
+  del login equivocado antes de la siguiente autenticación; no verificar por segunda
+  vez una llegada ya verificada en el mismo fixture; usar adminU (cuenta disponible
+  de otra asociación) como control real de CSRF en vez de una cuenta opcional no
+  creada por ese laboratorio. No se debilitaron aserciones ni se añadieron retries.
+
+Pruebas dirigidas aprobadas: 19 unitarias (incluye las 8 nuevas del manejador),
+8 E2E nuevos y 4 E2E anteriores relevantes en móvil, con PostgreSQL real. Los
+resultados completos de C se publican en el informe, sin confundir ejecuciones
+dirigidas o históricas con una batería final nueva.
+
+### Evidencias y CI
+
+Los filtros de Actions/CodeQL ahora incluyen PRs hacia `desarrollo/etapa-5a2`;
+antes no contemplaban esta base. Solo se amplía el filtro, sin cambiar matrices,
+límites, versiones, permisos o condiciones de pruebas. Las capturas y métricas
+ficticias de `.local/5a3-evidence/` se adjuntan por trabajo web con retención técnica
+de artefactos de siete días (no es una política de retención de datos comerciales).
+No se publican trazas, contraseñas, cookies, CSRF o configuraciones de conexión.
 
 ## Validación y límites
 

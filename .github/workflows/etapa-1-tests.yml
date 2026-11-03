@@ -3,7 +3,7 @@ on:
   push:
     branches: [desarrollo/etapa-1, desarrollo/etapa-2, desarrollo/etapa-3, desarrollo/etapa-4]
   pull_request:
-    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2, planificacion/etapa-4a, desarrollo/etapa-4]
+    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2, planificacion/etapa-4a, desarrollo/etapa-4, desarrollo/etapa-5a2]
 permissions:
   contents: read
 jobs:
@@ -51,3 +51,12 @@ jobs:
         run: npx --no-install playwright install chromium
       - name: Interfaz web local - proyecto completo
         run: node scripts/test-web.mjs --project=${{ matrix.project }}
+      - name: Evidencias ficticias de accesibilidad y recuperación 5A.3
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 5a3-${{ matrix.os }}-node${{ matrix.node }}-${{ matrix.project }}
+          path: .local/5a3-evidence/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
