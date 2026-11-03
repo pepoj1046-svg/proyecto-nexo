@@ -1,5 +1,5 @@
 import {Login} from './Login';
-import {adminIntentPending,useAdminIntent,useAdminRecovery,completeAdminAuthentication} from './admin-intent';
+import {adminIntentPending,reservationIntentPending,useAdminIntent,useAdminRecovery,completeAdminAuthentication} from './admin-intent';
 import{PlatformAdministration}from'./PlatformAdministration';
 import {StrictMode,useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -17,7 +17,7 @@ function App(){
  const [path,setPath]=useState(location.pathname),[menu,setMenu]=useState(false),[selection,setSelection]=useState<Selection|null>(null);
  const heading=useRef<HTMLElement>(null),first=useRef(true),currentPath=useRef(path);
  const recoveryAccount=useAdminRecovery(),protectedIntent=useAdminIntent(),[navigationError,setNavigationError]=useState('');
- const blockNavigation=()=>{if(!adminIntentPending())return false;setNavigationError('Resuelve el intento administrativo pendiente: consulta su estado y reintenta la misma actuación antes de salir.');return true;};
+ const blockNavigation=()=>{if(!adminIntentPending())return false;setNavigationError(reservationIntentPending()?'Resuelve la solicitud de reserva pendiente: consulta el servidor o reintenta la misma solicitud antes de salir.':'Resuelve el intento administrativo pendiente: consulta su estado y reintenta la misma actuación antes de salir.');return true;};
  const go=(href:string)=>{if(blockNavigation()){setMenu(false);return;}currentPath.current=href;setNavigationError('');if(location.pathname!==href)history.pushState({},'',href);setPath(href);setMenu(false);};
  useEffect(()=>{const pop=()=>{if(blockNavigation()){history.pushState({},'',currentPath.current);return;}currentPath.current=location.pathname;setPath(location.pathname);setMenu(false);};window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop);},[]);
  useEffect(()=>{document.title=`${path==='/'?'Busca tu próximo viaje':path==='/reservar'?'Solicitud de reserva':navItems.find(x=>x[0]===path)?.[1]??'Página no encontrada'} · Trufis Bolivia`;if(first.current)first.current=false;else{heading.current?.focus();window.scrollTo({top:0,behavior:'instant'});}},[path]);
@@ -32,7 +32,7 @@ function App(){
   </div></header>
   <main id="contenido" ref={heading} tabIndex={-1}>
    {navigationError&&<p className="container message error" role="alert">{navigationError}</p>}
-   {recoveryAccount&&<section className="container panel-page" aria-label="Recuperar intento administrativo"><h2>Volver a autenticar la cuenta original</h2><p>El intento y su clave siguen en memoria. Inicia sesión con la misma cuenta; otra cuenta no puede recuperar esta actuación.</p><Login onSession={session=>{if(session.accountRef===recoveryAccount){completeAdminAuthentication(recoveryAccount);setNavigationError('');}else setNavigationError('Esta cuenta no corresponde al intento pendiente. Inicia sesión con la cuenta original.');}}/></section>}
+   {recoveryAccount&&<section className="container panel-page" aria-label={reservationIntentPending()?'Recuperar solicitud de reserva':'Recuperar intento administrativo'}><h2>Volver a autenticar la cuenta original</h2><p>El intento y su clave siguen en memoria. Inicia sesión con la misma cuenta; otra cuenta no puede recuperar esta actuación.</p><Login onSession={session=>{if(session.accountRef===recoveryAccount){completeAdminAuthentication(recoveryAccount);setNavigationError('');}else setNavigationError('Esta cuenta no corresponde al intento pendiente. Inicia sesión con la cuenta original.');}}/></section>}
    <div hidden={!!recoveryAccount}>
    <div hidden={path!=='/'}><Search onChoose={value=>{setSelection(value);go('/reservar');}}/></div>
    {path==='/plataforma'&&<PlatformAdministration/>}

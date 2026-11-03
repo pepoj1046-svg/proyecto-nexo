@@ -2672,6 +2672,36 @@ test('V04: browser facade rejects privileged pools, bounds requests and sanitize
 
 // Increment 2: browser-authenticated facade still uses the original inventory and identity RPCs.
 const journeys=async()=> (await import('../../src/db/web-reservation-service.mjs')).createWebReservationService(pool);
+test('5A2-PG1: post-COMMIT enrichment failure keeps a durable receipt recoverable only by the original actor',async()=>{
+ await terminalPoint();const s=await journeys(),body=await webQuote(s,webJourney(2)),k=key();
+ let interrupted=false;
+ const decorated={async connect(){const c=await pool.connect();return{release:()=>c.release(),async query(q,...args){
+  if(!interrupted&&typeof q==='string'&&q.startsWith('SELECT 1 FROM nexo.bookings')){interrupted=true;throw Error('POST_COMMIT_ENRICHMENT_LOST');}
+  return c.query(q,...args);
+ } };}};
+ const broken=(await import('../../src/db/web-reservation-service.mjs')).createWebReservationService(decorated);
+ await rejects(broken.reserve(fixture.tokens.p,k,body),/POST_COMMIT_ENRICHMENT_LOST/);
+ const rows=(await admin.query('SELECT id,price_bob,fare_version FROM nexo.bookings WHERE passenger_id=$1',[fixture.p])).rows;
+ assert.equal(rows.length,1);assert.equal(rows[0].price_bob,body.quote.totalBOB);
+ assert.equal((await admin.query('SELECT count(*)::int n FROM nexo.actions WHERE actor_id=$1 AND action_key=$2',[fixture.p,k])).rows[0].n,1);
+ await admin.query("UPDATE nexo.sessions SET revoked_at=clock_timestamp() WHERE user_id=$1",[fixture.p]);
+ await rejects(s.reserve(fixture.tokens.p,k,body),/UNAUTHENTICATED/);
+ const renewed=randomBytes(32).toString('hex');await session(fixture.p,renewed);
+ const before=await directorySnapshot();const replay=await s.reserve(renewed,k,body);
+ assert.equal(replay.bookings[0].bookingId,rows[0].id);assert.equal(replay.bookings[0].priceBOB,body.quote.totalBOB);
+ assert.equal((await s.list(fixture.tokens.other)).bookings.length,0);assert.deepEqual(await directorySnapshot(),before);
+});
+test('5A2-PG2: concurrent replays of a split APP group preserve all members, fare and exactly-once audit',async()=>{
+ await terminalPoint();const fill=await fixed(4);await acceptAll(fill);const s=await journeys();
+ const body={...await webQuote(s,webJourney(3)),parts:[{tripId:fixture.trips[0],seats:2},{tripId:fixture.trips[1],seats:1}],splitConsent:true,containsMinors:false},k=key();
+ const first=await s.reserve(fixture.tokens.p,k,body);assert.equal(first.bookings.length,2);
+ const before=await directorySnapshot();const replies=await Promise.all(Array.from({length:4},()=>s.reserve(fixture.tokens.p,k,body)));
+ for(const replay of replies)assert.deepEqual(replay,first);
+ assert.deepEqual(await directorySnapshot(),before);assert.ok((await occupancy()).every(x=>x.used<=6));
+ assert.equal(first.bookings.reduce((n,b)=>n+b.seats,0),3);
+ assert.equal(first.bookings.reduce((n,b)=>n+Math.round(Number(b.priceBOB)*100),0),Math.round(Number(body.quote.totalBOB)*100));
+ for(const b of first.bookings){assert.equal((await admin.query('SELECT count(*)::int n FROM nexo.booking_members WHERE booking_id=$1',[b.bookingId])).rows[0].n,b.seats);}
+});
 const webJourney=(seats=1,from=0,to=3,trip=0)=>({routeId:fixture.ra,tripId:fixture.trips[trip],boardingPointId:fixture.ra+':'+from,alightingPointId:fixture.ra+':'+to,seats,flow:'QUEUE'});
 async function webQuote(s,body,token=fixture.tokens.p){const q=await s.quote(token,body);return{...body,confirmed:true,quote:{fareId:q.fareId,fareVersion:q.fareVersion,totalBOB:q.totalBOB}};}
 test('W01: exact point lookup validates ordered enabled stops, preserves all segments and leaks no identities',async()=>{
