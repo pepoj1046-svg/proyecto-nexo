@@ -1,3 +1,4 @@
+import {seedDirectoryFixture} from './seed-directory-fixture.mjs';
 import { randomUUID,randomBytes,createHash } from 'node:crypto';
 import {hashPassword}from'../src/auth/passwords.mjs';
 import { createService } from '../src/db/service.mjs';
@@ -131,12 +132,78 @@ export async function seedWebDemo(db,pool) {
    }
    for(const b of(await db.query("SELECT id FROM nexo.bookings WHERE route_id=$1 AND passenger_id=$2 AND status='CONFIRMED'",[runs[1].route,users.passenger.id])).rows)await core.cancel(users.passenger.token,randomUUID(),b.id);
   }
+  if(process.env.NEXO_WEB_ADMIN_DIRECTORY_FIXTURE==='1'){
+   const ids=await seedDirectoryFixture(db,a.association,a.route);
+   // Trusted, pre-listener fixture only. The history traversal suite alone
+   // needs these acts. One setup transaction avoids 52 runtime connection,
+   // authority-bootstrap and commit round trips; each native act still checks
+   // actor/safety and appends its real immutable event.
+   if(process.env.NEXO_WEB_DRIVER_HISTORY_FIXTURE==='1'){
+    await db.query('BEGIN ISOLATION LEVEL READ COMMITTED');
+    try{
+     await db.query("SELECT set_config('nexo.session_token',$1,true)",[users.admin.token]);
+     await db.query("SET LOCAL lock_timeout='10s';SET LOCAL statement_timeout='15s'");
+     for(let i=0;i<52;i++)await db.query('SELECT nexo.set_driver_membership($1,$2,$3,$4)',[a.association,ids.drivers[2],i%2===1,'Historial ficticio previo del laboratorio']);
+     await db.query('COMMIT');
+    }catch(e){await db.query('ROLLBACK');throw e;}
+   }
+   const empty=randomUUID();await db.query("INSERT INTO nexo.associations(id,name)VALUES($1,'FICTICIO-DIRECTORIO-SIN-REGISTROS')",[empty]);await db.query("INSERT INTO nexo.memberships VALUES($1,$2,'ASSOCIATION_ADMIN',true)",[empty,users.admin.id]);
+  }
+  // The legacy access-control E2E now uses a historical, empty-custody service.
+  // Revocation during an active service is forbidden by 035 and tested separately.
+  if(process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1')await db.query("UPDATE nexo.trips SET status='COMPLETED',current_stop=3 WHERE id=$1",[operationalTrip.id]);
   const accounts={};
-  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1',...(process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1'?['admin']:[])]){
+  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1',...(process.env.NEXO_WEB_PLATFORM_FIXTURE==='1'?['platform','candidate1','candidate2','admin','reviewer']:process.env.NEXO_WEB_ADMIN_DIRECTORY_FIXTURE==='1'?['admin','reviewer']:process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1'?['admin']:[])]){
     const password=randomBytes(24).toString('base64url'),login='lab-'+label.toLowerCase();
     const user=users[label]?.id??randomUUID();if(!users[label])await db.query('INSERT INTO nexo.users VALUES($1,$2)',[user,'FICTICIO-WEB-'+label]);
     await db.query('INSERT INTO nexo.identity_accounts(user_id,login_key,password_hash)VALUES($1,$2,$3)',[user,login,await hashPassword(password)]);
     accounts[label]={login,password};
+  }
+  if(process.env.NEXO_WEB_PLATFORM_FIXTURE==='1'){
+   // Installer-only synthetic authority. No owner/provisioner survives setup.
+   const row=(await db.query('SELECT user_id,password_hash FROM nexo.identity_accounts WHERE login_key=$1',[accounts.platform.login])).rows[0];
+   // Bootstrap creates a separate unique identity, never elevates public signup.
+   const platformId=(await db.query('SELECT nexo.bootstrap_platform($1,$2,$3,true)AS id',['lab-platform-owner',row.password_hash,'Inicialización explícita del laboratorio E2E'])).rows[0].id;
+   accounts.platform.login='lab-platform-owner';
+   for(const[label,code]of[['candidate1','LAB-ADMIN-UNO'],['candidate2','LAB-ADMIN-DOS']]){
+    const id=(await db.query('SELECT user_id FROM nexo.identity_accounts WHERE login_key=$1',[accounts[label].login])).rows[0].user_id;
+    await db.query('SELECT nexo.platform_verify_identity($1,$2,$3,true)',[id,code,'Atestación ficticia del laboratorio']);
+   }
+   const token=randomBytes(32).toString('hex');await db.query("INSERT INTO nexo.sessions VALUES($1,$2,clock_timestamp()+interval '1 hour',NULL)",[createHash('sha256').update(token).digest('hex'),platformId]);
+   // Real native review acts, in one pre-listener setup transaction. No fake audit.
+   if(process.env.NEXO_WEB_PLATFORM_HISTORY_FIXTURE==='1'){
+    await db.query('BEGIN');try{await db.query("SELECT set_config('nexo.session_token',$1,true)",[token]);for(let i=0;i<52;i++){
+     const rev=(await db.query('SELECT nexo.platform_revision($1)AS r',[runs[0].association])).rows[0].r;
+     await db.query('SELECT nexo.web_platform_command($1,$2)',[randomUUID(),{kind:'STATE_REVIEW',associationId:runs[0].association,revision:rev,reason:'Revisión histórica ficticia '+i,confirmed:true}]);
+    }await db.query('COMMIT');}catch(e){await db.query('ROLLBACK');throw e;}
+   }
+  }
+  if(process.env.NEXO_WEB_FLEET_FIXTURE==='1'){
+   // Installer-only fixtures, native audited requests, before any listener exists.
+   const association=runs[0].association,hash=await hashPassword(randomBytes(32).toString('base64url'));
+   await db.query('BEGIN');try{
+    await db.query("SELECT set_config('nexo.session_token',$1,true)",[users.admin.token]);
+    for(let i=0;i<52;i++){
+     const code='LAB-SEED-'+String(i).padStart(3,'0'),id=(await db.query('SELECT nexo.register_identity($1,$2)AS id',['lab-fleet-seed-'+i,hash])).rows[0].id;
+     await db.query("SELECT nexo.platform_verify_identity($1,$2,'Atestación de fixture ficticio',true)",[id,code]);
+     for(const kind of ['REQUEST_DRIVER','REQUEST_VEHICLE']){
+      const revision=(await db.query('SELECT nexo.fleet_revision($1)AS r',[association])).rows[0].r;
+      await db.query('SELECT nexo.web_fleet_command($1,$2)',[randomUUID(),{kind,associationId:association,revision,reason:'Solicitud histórica ficticia '+i,confirmed:true,...(kind==='REQUEST_DRIVER'?{identityCode:code}:{vehicleCode:code,vehicleType:'VAGONETA_6',capacity:6})}]);
+     }
+    }await db.query('COMMIT');
+   }catch(e){await db.query('ROLLBACK');throw e;}
+  }
+  if(process.env.NEXO_WEB_ROUTE_CONFIG_FIXTURE==='1'){
+   const association=runs[0].association,route=runs[0].route;
+   const ends=(await db.query('SELECT origin_locality_id a,destination_locality_id b FROM nexo.routes WHERE id=$1',[route])).rows[0];
+   const predecessor=(await db.query('SELECT id FROM nexo.new_request_fares WHERE route_id=$1 AND from_stop=0 AND to_stop=3 AND NOT express AND valid_from<=clock_timestamp()AND(valid_until IS NULL OR valid_until>clock_timestamp())',[route])).rows[0].id;
+   await db.query('BEGIN');try{await db.query("SELECT set_config('nexo.session_token',$1,true)",[users.admin.token]);
+    for(let i=0;i<52;i++)for(const kind of ['ROUTE','FARE']){
+     const revision=(await db.query('SELECT nexo.config_revision($1)AS r',[association])).rows[0].r;
+     const spec=kind==='ROUTE'?{name:'LAB-HISTORIA-'+i,direction:'OUT',originId:ends.a,destinationId:ends.b,points:[]}:{from:0,to:3,express:false,amountBOB:'15.00',validFrom:null,validUntil:null,replaceFareId:predecessor};
+     await db.query('SELECT nexo.web_config_command($1,$2)',[randomUUID(),{kind:'CREATE_'+kind,associationId:association,...(kind==='FARE'?{routeId:route}:{}),revision,spec,reason:'Borrador histórico ficticio '+i,confirmed:true}]);
+    }await db.query('COMMIT');
+   }catch(e){await db.query('ROLLBACK');throw e;}
   }
   return {catalogToken:users.catalog.token,accounts};
 }

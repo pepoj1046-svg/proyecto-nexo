@@ -1,5 +1,37 @@
 # Trufis Bolivia — plan propuesto de Etapa 4
 
+> **Estado vigente — auditoría4A.6 (03/11/2026).** 4A.1–4A.5 están implementados
+> en `desarrollo/etapa-4`;4A.6 integra auditoría, correcciones y cierre de laboratorio.
+> Dictamen, pruebas y ratificación CI del SHA publicado en
+> [auditoría de Etapa4](REPORTES/ETAPA_4_AUDITORIA_Y_CIERRE.md) y PR #5.
+> [Guía transferible](ETAPA_4_GUIA_ADMINISTRACION.md). No se autoriza Etapa5.
+
+| Incremento | Estado técnico y frontera |
+|---|---|
+| 4A.1 | Directorio por asociación/ruta, sin requerir viaje; paginación real. |
+| 4A.2 | DRIVER existentes y contacto LAB; motivo, confirmación y protección de operaciones pendientes. |
+| 4A.3 | GENERAL_ADMIN explícito, bootstrap/atestación offline y primer ADMIN; asociación nueva inerte. |
+| 4A.4 | Solicitud/revisión de DRIVER, VAGONETA_6 y asignación base; no inicia viajes. |
+| 4A.5 | Borradores y publicaciones nativas de ruta/perfiles/tarifas; conserva contratos anteriores. |
+| 4A.6 | Auditoría integrada, reautorización de revisiones tras esperas y recuperación de intentos web. |
+
+**Autonomía parcial:** la activación comercial, catálogo, provisión de REVIEWER,
+revisión de permisos y primera fila conservan dependencias LAB/offline. GENERAL_ADMIN
+no es owner ni autoridad operativa global. No se acredita producción, habilitación
+legal ni venta inmediata.001–039 se conservan;040–041 corrigen funciones nativas sin
+reescribir tablas ni inventario. Etapas1–3 conservan sus cierres históricos.
+
+## Antecedente de planificación (01/11/2026)
+
+El texto siguiente conserva la propuesta y autorizaciones de aquella fecha. Sus
+frases «pendiente de programación» o «no existe GENERAL_ADMIN» son históricas;
+para el estado ejecutable prevalecen la tabla anterior, los contratos4A.1–5 y la
+auditoría4A.6. No se renumeran ni declaran implementadas las etapas5–10.
+
+> Vigencia posterior: autorizado únicamente el incremento de programación 4A.2.
+> El resto conserva el estado histórico de la propuesta; resultados actuales en
+> [el informe de 4A.2](REPORTES/ETAPA_4_INCREMENTO_4A2.md).
+
 Fecha: 01/11/2026. Referencia: `1f07fd9cb69676258bf277a561d9e8aa711bacb2`.
 **Diagnóstico de 4A; programación pendiente de autorización.**
 
@@ -154,3 +186,33 @@ Etapa 4 requerirá contratos aprobados implementados, operación sin fixtures ma
 para ese alcance, regresiones y cierre técnico separado. **Este plan no implementa
 4A ni cierra Etapa 4.** Tras entregar el diagnóstico se espera autorización del
 primer incremento; sin servicios, GPS, dinero, comunicaciones reales ni gastos.
+
+## Actualización de ejecución: 4A.1
+
+El propietario autorizó posteriormente solo la programación de 4A.1, desde
+`4223675` en `desarrollo/etapa-4`. El texto anterior conserva la planificación
+original. [Contrato de lectura](ETAPA_4_DIRECTORIO_ADMINISTRATIVO.md) y
+[informe de implementación](REPORTES/ETAPA_4_INCREMENTO_4A1.md) distinguen resultados
+ejecutados y pendientes. No se autoriza 4A.2 ni se declara cerrada Etapa 4.
+
+## Actualización de ejecución: 4A.2
+
+El propietario autorizó posteriormente 4A.2 desde `dacb017`, en la misma rama
+`desarrollo/etapa-4` y PR #5. Se limita a DRIVER existentes, contacto LAB e
+historia autorizada, sin depender de viajes. [Contrato](ETAPA_4_ADMINISTRACION_CHOFERES.md)
+y [resultados de implementación](REPORTES/ETAPA_4_INCREMENTO_4A2.md) prevalecen
+sobre las prohibiciones históricas de iniciar este corte que figuran arriba.
+001–034 inmutables; nueva035. Bajas en servicio/fila o custodia ambigua quedan
+bloqueadas y bajo revisión humana, sin inventar continuidad operativa. No altas,
+identidad global, GENERAL_ADMIN ni 4A.3; las demás etapas siguen pendientes.
+
+## Actualización autorizada: 4A.3
+
+El propietario autorizó exclusivamente autoridad general, primer acceso local y
+asociaciones desde3a49f43. [ADR](ADR_ADMINISTRACION_GENERAL_ETAPA_4.md),
+[contrato](ETAPA_4_ADMINISTRACION_ASOCIACIONES.md) e
+[informe](REPORTES/ETAPA_4_INCREMENTO_4A3.md) distinguen entrega y decisiones bloqueadas.
+001–036 conservadas;036 añade el módulo y037 corrige identidad de intención.
+Sin habilitación comercial/legal automática ni cambios
+operativos. Prohibiciones históricas de iniciar4A.3 arriba quedan superadas solo
+por este encargo. No se inicia4A.4 ni se declara cerrada Etapa4.

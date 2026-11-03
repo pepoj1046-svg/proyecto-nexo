@@ -1,9 +1,9 @@
 name: Laboratorio - dominio y PostgreSQL
 on:
   push:
-    branches: [desarrollo/etapa-1, desarrollo/etapa-2, desarrollo/etapa-3]
+    branches: [desarrollo/etapa-1, desarrollo/etapa-2, desarrollo/etapa-3, desarrollo/etapa-4]
   pull_request:
-    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2]
+    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2, planificacion/etapa-4a, desarrollo/etapa-4]
 permissions:
   contents: read
 jobs:
@@ -13,12 +13,12 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         node: ['22', '24']
-    name: tests (${{ matrix.os }}, Node ${{ matrix.node }})
+    name: dominio y PostgreSQL (${{ matrix.os }}, Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
-    # 8B: 38 isolated browser/PG labs (8A: 32). The last Windows/22 job
-    # needed 18m59s; allow the added coverage. Existing per-test, HTTP, SQL and
-    # launcher deadlines remain unchanged; retries stay disabled.
-    timeout-minutes: 25
+    # 4A.5: keep the existing 30-minute budget. Domain/PG and each browser
+    # project run independently; the combined Windows job reached 30 minutes
+    # after 116 E2E executions, without an assertion or transport failure.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,7 +29,25 @@ jobs:
         run: npm ci --no-fund
       - name: Dominio y PostgreSQL local aislado
         run: npm run test:all
+  web:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['22', '24']
+        project: [desktop, mobile]
+    name: web ${{ matrix.project }} (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Instalar dependencias fijadas
+        run: npm ci --no-fund
       - name: Instalar Chromium de pruebas
         run: npx --no-install playwright install chromium
-      - name: Interfaz web local - escritorio y móvil
-        run: npm run test:web
+      - name: Interfaz web local - proyecto completo
+        run: node scripts/test-web.mjs --project=${{ matrix.project }}
