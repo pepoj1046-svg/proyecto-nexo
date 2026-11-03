@@ -67,3 +67,8 @@ node scripts/test-web.mjs --suite=route-config-topology.spec.mjs,route-config-fa
 ```
 
 Verificación completa: `npm run test:all` y después `npm run test:web`. No se requiere instalar un servidor PostgreSQL del sistema ni contratar servicios. En Windows el cierre automatizado utiliza IPC; en Ubuntu se verifica también SIGINT real.
+
+
+### Chromium automatizado en Windows
+
+El runner aplica una mitigación específica de [Playwright43545](https://github.com/microsoft/playwright/issues/43545) para el error intermitente Winsock10055/`ERR_NO_BUFFER_SPACE`. Desactiva `TcpPortRandomizationWin` solamente en el navegador automatizado Windows; conserva todos los flags predeterminados descubiertos por CDP y cierra el probe vacío antes de las pruebas. No requiere añadir flags manualmente, cambiar el navegador personal, ampliar límites ni activar retries. Otros sistemas y el gateway de la aplicación conservan su configuración. La validación de esa mitigación y sus límites se ratifican en el PR sobre el mismo SHA final.

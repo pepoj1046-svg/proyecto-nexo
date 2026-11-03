@@ -44,13 +44,13 @@ Fallos intermedios resueltos: variable SQL reservada; nombre real `_030` del get
 
 ## Pruebas
 
-`npm run test:all` completado con exit0 en Debian13 local, Node24.19.0/PostgreSQL18.4: **75/75 unitarias y395/395 PostgreSQL**, cero fallos/omitidas. TypeScript y build web incluidos; propagación de salida9 del runner y cierre de los dos lanzadores HTTP verificados. `npm run test:web` también terminó con exit0: **136/136 ejecuciones E2E** (68 definiciones × escritorio/móvil),62 laboratorios aislados cerrados correctamente, SIGINT/puertos y reinicio sin persistencia verificados. Chromium154.0.8037.57. Cero retries añadidos. Los resultados CI Ubuntu/Windows × Node22/24 y CodeQL se ratifican sobre el SHA publicado en el PR; no se sustituyen por estos resultados locales.
+Primer pase integral del núcleo en `409fbc6`: `npm run test:all` completado con exit0 en Debian13 local, Node24.19.0/PostgreSQL18.4: **75/75 unitarias y395/395 PostgreSQL**, cero fallos/omitidas. TypeScript y build web incluidos; propagación de salida9 del runner y cierre de los dos lanzadores HTTP verificados. `npm run test:web` también terminó con exit0: **136/136 ejecuciones E2E** (68 definiciones × escritorio/móvil),62 laboratorios aislados cerrados correctamente, SIGINT/puertos y reinicio sin persistencia verificados. Chromium154.0.8037.57. Cero retries añadidos. Los resultados CI Ubuntu/Windows × Node22/24 y CodeQL se ratifican sobre el SHA publicado en el PR; no se sustituyen por estos resultados locales.
 
 Cobertura añadida: topología/publicación sin permiso ni viaje, OUT/IN, puntos/perfiles/reglas ambiguas, inmutabilidad con reservas; ordinaria/expresa/cero, vigencias futuras y retiro sin resurrección; cotización nueva vs contrato/recibo anterior y traslado real con tarifa retirada de selección; dos ADMIN independientes, ABA, sesiones revocadas/caducadas tras espera, scope, idempotencia/doble envío, rollback de auditoría, SQL/RLS/grants, páginas >50, HTTP32KiB/CSRF/campos cerrados, actualización poblada038→039/OID/checksums, cuatro abordados+dos recogidas, retiro con recepción/rescate y grupo dividido consentido.
 
 El informe anterior llamó555 «pruebas únicas» a72 unitarias+363 PostgreSQL+120 ejecuciones E2E: estas últimas son60 definiciones en dos dispositivos. La referencia correcta es **495 definiciones /555 ejecuciones**. Se conservan todas. Las repeticiones, Ubuntu/Windows y versiones Node no añaden casos únicos. Este informe distingue definiciones y ejecuciones por dispositivo.
 
-Total local: **538 definiciones lógicas** =75 unitarias+395 PostgreSQL+68 E2E. **606 ejecuciones** =75+395+136. Incremento:43 definiciones nuevas (3+32+8), conservando las495 anteriores. Las comprobaciones auxiliares de lanzadores/cierre no se suman como casos únicos.
+Primer pase local: **538 definiciones lógicas** =75 unitarias+395 PostgreSQL+68 E2E. **606 ejecuciones** =75+395+136. Incremento:43 definiciones nuevas (3+32+8), conservando las495 anteriores. Las comprobaciones auxiliares de lanzadores/cierre no se suman como casos únicos.
 
 Las ocho definiciones E2E nuevas se ejecutan en escritorio y móvil:
 
@@ -65,7 +65,7 @@ Los testigos PostgreSQL de Playwright son conexiones de **solo lectura**, restri
 
 ## Evidencias y límites
 
-Capturas ficticias de escritorio/móvil y sus hashes se conservan en `.local/4a5-evidence`; manifiesto público sin credenciales en `EVIDENCIAS_4A5.json`. La revisión automática de4A.4 ya rechazó publicar capturas de este laboratorio en el repositorio público: no se elude ni se vuelve a intentar subirlas por otra vía. El bloqueo previo no se presenta como una nueva denegación ocurrida en4A.5. El ZIP local conserva las capturas originales.
+Capturas ficticias de escritorio/móvil y sus hashes se conservan en `.local/4a5-evidence`; manifiesto público sin credenciales en `EVIDENCIAS_4A5.json` (capturas iniciales conservadas desde el ZIP, antes del ajuste exclusivo del lanzador). La revisión automática de4A.4 ya rechazó publicar capturas de este laboratorio en el repositorio público: no se elude ni se vuelve a intentar subirlas por otra vía. El bloqueo previo no se presenta como una nueva denegación ocurrida en4A.5. El ZIP local conserva las capturas originales.
 
 No se reconstruye una tarifa histórica anterior a039 si procedimientos antiguos ya la sobrescribieron. No se certifica seguridad física/legal de rutas, retención, tarifas oficiales, permisos reales, doble firma o política de custodia. Importación de topologías históricas >64 puntos y recorridos urbanos fuera del origen requieren revisión técnica/contractual. No hay pagos, GPS, notificaciones, despliegue ni servicios contratados.
 
@@ -73,4 +73,18 @@ No se reconstruye una tarifa histórica anterior a039 si procedimientos antiguos
 
 ## Evaluación del incremento
 
-4A.5 está implementado y verificado en laboratorio local; la ratificación CI/CodeQL del mismo SHA se registra en el PR después de terminar sus ejecuciones. No quedan defectos críticos/altos demostrables conocidos dentro de este alcance acotado. Las restricciones y revisiones humanas descritas siguen vigentes; no se declara cerrado el conjunto de Etapa4 ni se autoriza4A.6.
+El núcleo4A.5 está implementado y pasó la batería local y siete ejecuciones completas CI. La verificación final del lanzador Windows queda condicionada a la ratificación de pruebas locales, CI y CodeQL del SHA final en el PR. No quedan defectos críticos/altos demostrables conocidos dentro de este alcance acotado. Las restricciones y revisiones humanas descritas siguen vigentes; no se declara cerrado el conjunto de Etapa4 ni se autoriza4A.6.
+
+## Corrección del laboratorio Windows tras CI
+
+El commit inicial del núcleo, `409fbc6b0b20ecee1f342cf3c247548ce0a573a4`, pasó las cuatro combinaciones Ubuntu/Windows × Node22/24 en push, además de tres trabajos del PR. Se leyeron sus siete logs:75/395/136 aprobadas y62 cierres en cada uno. CodeQL aprobó, sin nuevas alertas. Sin embargo, el trabajo PR Windows/Node22 falló al navegar en la antigua prueba de permisos; una única comprobación controlada del mismo SHA volvió a fallar al consultar sesión en la antigua venta presencial móvil. Ambos mostraron `net::ERR_NO_BUFFER_SPACE`, en puntos distintos y sin respuesta HTTP de la aplicación; los laboratorios cerraron correctamente. No se ocultaron ni se siguió repitiendo hasta obtener verde.
+
+Los errores quedan conservados en los trabajos [125697586469](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41569104994/job/125697586469) y [125705601281](https://github.com/pepoj1046-svg/proyecto-nexo/actions/runs/41569104994/job/125705601281). El segundo auditor confirmó que los contextos/pools se cierran y encontró el mismo síntoma documentado en3.5,4A.2 y4A.3. No se demostró una fuga propia del núcleo4A.5.
+
+La investigación encontró la reproducción Windows/Chromium publicada en [Playwright43545](https://github.com/microsoft/playwright/issues/43545): `SO_RANDOMIZE_PORT` puede producir Winsock10055/ERR_NO_BUFFER_SPACE aun con poca ocupación TCP. [Playwright43557](https://github.com/microsoft/playwright/issues/43557) advierte que añadir un `--disable-features` aislado descarta la lista original. Es evidencia para una mitigación específica, no una prueba de que toda falla futura de red tenga esa causa.
+
+`scripts/chromium-lab-launch.mjs` ajusta **solo Chromium automatizado en Windows**. Descubre los flags reales de la instalación mediante CDP y un navegador vacío, cierra ese probe en `finally` y conserva la lista completa al añadir `TcpPortRandomizationWin`. Rechaza listas ausentes/ambiguas en vez de quitar protecciones silenciosamente. La opción de automatización necesaria para consultar los argumentos aplica exclusivamente al probe vacío. Linux/macOS no lanzan probe ni reciben ese ajuste. No se copian listas internas de Playwright ni se parchean dependencias.
+
+Dos pruebas unitarias comprueban preservación de defaults, entradas ambiguas, cierre ante éxito/error y ausencia de cambios en otras plataformas. Una comprobación adicional con Chromium real verificó un solo flag fusionado y los18 defaults originales conservados; esa comprobación valida la composición, no reproduce Windows desde Linux. El auditor de seguridad revisó el helper sin encontrar un defecto nuevo demostrable. No se cambió el gateway, límites, timeouts, reintentos, aserciones de negocio ni migraciones para esta mitigación.
+
+Las definiciones finales son **77 unitarias +395 PostgreSQL +68 E2E =540 casos distintos**; con ambos dispositivos son **608 ejecuciones** (77+395+136). Incremento total:45 definiciones nuevas respecto de495 anteriores. La repetición integral local y la matriz CI del SHA con el lanzador corregido se ratifican en el cuerpo del PR después de leer resultados reales. Los conteos del primer pase se conservan como tales, sin presentarlos como verificación de la corrección posterior.
