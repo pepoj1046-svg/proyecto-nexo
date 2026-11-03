@@ -500,7 +500,9 @@
     "tests/web/support/route-config-browser.mjs": "2b332cb263491b6b6f019259d93f36724af34d1352905bcce9f6cc62ab490cea",
     "tests/web/support/route-config-evidence.mjs": "a5f46f6a58fbcef4bf5e251829e7c3ca91a587aa8de5e60d82599dee75227adf",
     "tests/web/terminal-return.spec.mjs": "0c93237d9657a481a60c6a790b4aefe949174baa33307d9e3b06251713976886",
-    "tests/web/terminal-sales.spec.mjs": "2c6f8e3eebfc10db7f89f53e69cf074952b2e0c9ede9150ac153ff1086fd405b"
+    "tests/web/terminal-sales.spec.mjs": "2c6f8e3eebfc10db7f89f53e69cf074952b2e0c9ede9150ac153ff1086fd405b",
+    ".github/workflows/etapa-1-tests.yml": "259de37b929018235dc922b79f07f949e7145bf7120c2576ba5c6919116b39c4",
+    ".github/workflows/codeql.yml": "220f8b2b6de6d901f457e7d004d672d8c74d79f45a3e5ae113bdaaa845550703"
   },
   "windowsCompatibilityEvidence": {
     "upstream": "https://github.com/microsoft/playwright/issues/43545",
@@ -508,5 +510,21 @@
     "originalFailureJob": 125697586469,
     "controlledCheckJob": 125705601281,
     "finalResults": "Ratificación PR5; ningún resultado posterior se declara aprobado solo por este manifiesto."
+  },
+  "ciDistribution": {
+    "coreJobsPerEvent": 4,
+    "webJobsPerEvent": 8,
+    "projects": [
+      "desktop",
+      "mobile"
+    ],
+    "jobBudgetMinutes": 30,
+    "testRetries": 0,
+    "unchangedApplicationSourceCommit": "a720abe4d5c507002f1b902469807358eae878e1",
+    "unchangedApplicationFileCount": 182,
+    "cancelledCombinedJob": 125715483993,
+    "e2eCompletedBeforeCancellation": 116,
+    "labsClosedBeforeCancellation": 49,
+    "finalResults": "Ratificación PR5 tras leer los jobs del SHA final, sin declarar aprobado el job cancelado."
   }
 }

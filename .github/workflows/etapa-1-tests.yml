@@ -13,12 +13,11 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         node: ['22', '24']
-    name: tests (${{ matrix.os }}, Node ${{ matrix.node }})
+    name: dominio y PostgreSQL (${{ matrix.os }}, Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
-    # 4A.2: 473 cases / 44 isolated browser-PG labs. Windows/22 completed
-    # every test and restart in 25m05s but the 25m job was marked cancelled.
-    # Budget the measured full workload and runner cleanup; per-test, HTTP,
-    # SQL and launcher deadlines are unchanged, with no automatic retries.
+    # 4A.5: keep the existing 30-minute budget. Domain/PG and each browser
+    # project run independently; the combined Windows job reached 30 minutes
+    # after 116 E2E executions, without an assertion or transport failure.
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +29,25 @@ jobs:
         run: npm ci --no-fund
       - name: Dominio y PostgreSQL local aislado
         run: npm run test:all
+  web:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['22', '24']
+        project: [desktop, mobile]
+    name: web ${{ matrix.project }} (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Instalar dependencias fijadas
+        run: npm ci --no-fund
       - name: Instalar Chromium de pruebas
         run: npx --no-install playwright install chromium
-      - name: Interfaz web local - escritorio y móvil
-        run: npm run test:web
+      - name: Interfaz web local - proyecto completo
+        run: node scripts/test-web.mjs --project=${{ matrix.project }}

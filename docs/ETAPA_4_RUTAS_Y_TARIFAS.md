@@ -72,3 +72,8 @@ Verificación completa: `npm run test:all` y después `npm run test:web`. No se 
 ### Chromium automatizado en Windows
 
 El runner aplica una mitigación específica de [Playwright43545](https://github.com/microsoft/playwright/issues/43545) para el error intermitente Winsock10055/`ERR_NO_BUFFER_SPACE`. Desactiva `TcpPortRandomizationWin` solamente en el navegador automatizado Windows; conserva todos los flags predeterminados descubiertos por CDP y cierra el probe vacío antes de las pruebas. No requiere añadir flags manualmente, cambiar el navegador personal, ampliar límites ni activar retries. Otros sistemas y el gateway de la aplicación conservan su configuración. La validación de esa mitigación y sus límites se ratifican en el PR sobre el mismo SHA final.
+
+
+### Distribución de GitHub Actions
+
+Por cada Ubuntu/Windows y Node22/24, CI ejecuta dominio/PostgreSQL, web desktop y web mobile en trabajos independientes. Ambos proyectos usan todas las suites; cada proyecto aporta68 ejecuciones E2E y verifica su cierre/reinicio. Los comandos locales completos no cambian. Se conserva el presupuesto de30min por trabajo, los límites de la aplicación y cero retries; la separación reduce la carga de cada trabajo sin omitir ni duplicar casos dentro de una combinación.
