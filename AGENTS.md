@@ -6,14 +6,14 @@ Trabaja **solo** en este repositorio, `pepoj1046-svg/proyecto-nexo`. Nunca uses,
 ## Flujo de desarrollo
 - Rama principal protegida por convención: no hacer push ni merge directo a `main`.
 - Etapas 1–3 cerradas técnicamente en laboratorio, sin habilitación productiva.
-- Solo Incremento 4A.4 autorizado: altas de choferes/vehículos y asignaciones base;
+- Solo Incremento 4A.5 autorizado: rutas, sentidos, puntos, perfiles y tarifas versionadas;
   conservar directorio y gestión DRIVER de 4A.1/4A.2. Rama
   `desarrollo/etapa-4` desde planificación `4223675`, hijo del cierre `1f07fd9`.
 - PR independiente hacia `planificacion/etapa-4a`; no modificar/fusionar PR #3
-  ni ramas de etapas anteriores. No iniciar 4A.5 ni etapas 5–10.
+  ni ramas de etapas anteriores. No iniciar 4A.6 ni etapas 5–10.
 - Solo web adaptable, PostgreSQL local y datos ficticios; sin aplicaciones nativas,
   bancos, GPS real, comunicaciones externas ni despliegues.
-- Conservar 001–037 intactas; nuevas migraciones desde 038; 036 añade administración específica y bootstrap local
+- Conservar 001–038 intactas; nuevas migraciones desde 039; 036 añade administración específica y bootstrap local
   cerrado;037 liga intenciones a atestaciones. Sin privilegios operativos globales
   ni otro inventario. Reutilizar el núcleo transaccional y documentar decisiones pendientes.
 - Antes de editar, leer `docs/REQUISITOS_INICIALES.md`, `docs/ARQUITECTURA.md`, `docs/MODELO_DE_DATOS.md`, `docs/SEGURIDAD_PENDIENTE.md` y `docs/PRUEBAS_ETAPA_1.md`.

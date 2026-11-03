@@ -193,5 +193,17 @@ export async function seedWebDemo(db,pool) {
     }await db.query('COMMIT');
    }catch(e){await db.query('ROLLBACK');throw e;}
   }
+  if(process.env.NEXO_WEB_ROUTE_CONFIG_FIXTURE==='1'){
+   const association=runs[0].association,route=runs[0].route;
+   const ends=(await db.query('SELECT origin_locality_id a,destination_locality_id b FROM nexo.routes WHERE id=$1',[route])).rows[0];
+   const predecessor=(await db.query('SELECT id FROM nexo.new_request_fares WHERE route_id=$1 AND from_stop=0 AND to_stop=3 AND NOT express AND valid_from<=clock_timestamp()AND(valid_until IS NULL OR valid_until>clock_timestamp())',[route])).rows[0].id;
+   await db.query('BEGIN');try{await db.query("SELECT set_config('nexo.session_token',$1,true)",[users.admin.token]);
+    for(let i=0;i<52;i++)for(const kind of ['ROUTE','FARE']){
+     const revision=(await db.query('SELECT nexo.config_revision($1)AS r',[association])).rows[0].r;
+     const spec=kind==='ROUTE'?{name:'LAB-HISTORIA-'+i,direction:'OUT',originId:ends.a,destinationId:ends.b,points:[]}:{from:0,to:3,express:false,amountBOB:'15.00',validFrom:null,validUntil:null,replaceFareId:predecessor};
+     await db.query('SELECT nexo.web_config_command($1,$2)',[randomUUID(),{kind:'CREATE_'+kind,associationId:association,...(kind==='FARE'?{routeId:route}:{}),revision,spec,reason:'Borrador histórico ficticio '+i,confirmed:true}]);
+    }await db.query('COMMIT');
+   }catch(e){await db.query('ROLLBACK');throw e;}
+  }
   return {catalogToken:users.catalog.token,accounts};
 }

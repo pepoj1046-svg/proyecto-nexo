@@ -1,0 +1,76 @@
+# Etapa 4A.5 — rutas dirigidas y tarifas versionadas
+
+Base aprobada `d2bc50bc5222549fc8f6325279c4725e2117f2f8`. Repositorio `pepoj1046-svg/proyecto-nexo`, rama `desarrollo/etapa-4`, [PR #5](https://github.com/pepoj1046-svg/proyecto-nexo/pull/5) abierto en borrador hacia `planificacion/etapa-4a`. Exclusivamente laboratorio ficticio. No habilita producción ni acredita licencias de transporte.
+
+El SHA publicado y los resultados/URLs de GitHub Actions y CodeQL se ratifican en el cuerpo del PR **después** de leer las ejecuciones del mismo SHA. El manifiesto de evidencias fija hashes de las fuentes probadas y de001–038. Evita un commit documental posterior con un SHA distinto del verificado; un archivo no puede contener el hash de su propio commit.
+
+## Funciones y contratos
+
+- Administración dentro del directorio existente: borradores, versiones, detalle, validación, publicación, retiro e historia paginada de rutas y tarifas. Motivo, confirmación por actuación, teclado, cargas, errores y controles móviles.
+- OUT e IN explícitos e independientes. Puntos ordenados, localidades de catálogo activo, perfiles TERMINAL/URBAN/ROAD/UNCLASSIFIED y subida/bajada. No se infiere terminalidad ni se invierte automáticamente un recorrido. Validación estructural no equivale a verificación física de una carretera.
+- Una publicación topológica inserta otro UUID nativo de ruta/puntos/perfiles y conserva su familia. No modifica viajes, reservas, grupos, custodia ni puntos históricos. No copia autorizaciones VERIFIED ni crea viajes/inventario. La ruta sigue sin ser vendible mientras no cumpla elegibilidad nativa.
+- Tarifas por tramo/modalidad con dos decimales, ordinaria por plaza y expresa por vehículo completo. Vigencias UTC semiabiertas; importes >=0 conforme al contrato existente. Solapamiento exige predecesor compatible explícito; no se elige arbitrariamente entre tarifas ambiguas.
+- Nueva publicación agrega tarifa nativa con versión creciente. `fare_selection_ends` acorta únicamente la selección para solicitudes nuevas; la vista `new_request_fares` conserva RLS. El ID, versión, importe y **fechas originales** del contrato anterior permanecen disponibles para reservas/recuperaciones existentes.
+- Cotización obsoleta rechazada para clave nueva; replay autorizado conserva el recibo almacenado y el estado enriquecido que ya devolvía el adaptador. No se inventa una entidad «cotización confirmada» inexistente ni se modifica dinero.
+- Retiro de ruta bloqueado con filas, reservas vivas, pasajeros físicos, recogidas, incidencias, rescate o recepción pendientes. No materializa expiraciones ni cancela pasajeros para permitir el retiro. Ante custodia ambigua se exige revisión conservadora por asociación.
+- ADMIN completo configura topología. ADMIN limitado consulta solo rutas concedidas y gestiona sus tarifas; publicar otro UUID no amplía su alcance. GENERAL_ADMIN conserva4A.3, sin bypass operativo. REVIEWER/DRIVER/PASSENGER no obtienen configuración administrativa.
+- Intención incierta conserva cuerpo y clave; padre no desmonta el formulario pendiente. Un conflicto definitivo retira la intención y exige contexto/confirmación nuevos. No se promete recuperación de una clave después de cerrar o recargar por completo el navegador.
+
+Contrato y pasos de Windows: [ETAPA_4_RUTAS_Y_TARIFAS](../ETAPA_4_RUTAS_Y_TARIFAS.md).
+
+## Archivos, migración y reutilización
+
+001–038 preservadas byte por byte. Nueva `039_route_and_fare_administration.sql`: `config_drafts`, auditoría inmutable `config_events`, fin de selección y retiros. No existe otro inventario. RLS/grants mínimos, cuatro RPC públicas y helpers privados, `search_path=pg_catalog,nexo,pg_temp`.
+
+Se reutilizan nativos `routes`, `stops`, `web_point_profiles`, `fares`, ámbito034/035, autoridad036/037, idempotencia y `useCommands`.039 adapta **selectores nuevos** a la vista mediante reemplazos cerrados con comprobación exacta; conserva OID/ACL y lookups históricos por ID. El cambio tarifario legado de condiciones delega en la misma publicación versionada y registra el UUID nuevo. Los dos accesos de elegibilidad nativos respetan retiro. No se reescribe el motor de capacidad ni custodia.
+
+Otros archivos: servicio `web-route-config-service.mjs`, gateway, selector de cotizaciones en `business-service.mjs`, `RouteConfiguration.tsx`, integración `Directory.tsx`, mensajes/estilos y extensión compatible del callback de refresco de `use-command.ts`. Fixtures/runner, tres unitarias,32 casos PostgreSQL, cuatro suites Playwright con dos helpers; AGENTS actualizado al alcance autorizado y estos documentos/manifiesto.
+
+## Seguridad y concurrencia
+
+READ COMMITTED; intención antes de mutex/ámbito, mutex administrativo no bloqueante y rutas UUID en orden/NOWAIT. Después se estabilizan identidad/sesión/rol. Una espera revalida permisos y reloj real antes de recibo o publicación. Revisión ligada a actor/sesión y eventos de identidad/ámbito; protección ABA también tras deshabilitar/habilitar una identidad. Contenido/dependencias vuelven a validarse al publicar. Contexto, filtro, tamaño, permisos y sesión fijan los cursores.
+
+Una denegación o fallo de auditoría revierte conjuntamente borrador, nativos, fin de selección, evento y recibo. Un impedimento operativo autorizado registra revisión sin cambiar servicios. Ningún owner/provisioner por HTTP; petición parametrizada, campos cerrados, CSRF y Origin, presupuesto32KiB solo para el comando nuevo; otros endpoints mantienen2KiB.
+
+## Auditores y errores corregidos
+
+Dos subagentes genéricos manuales, solo lectura; sin editar, probar ni publicar. Principal único editor/ejecutor. No se afirma carga automática TOML.
+
+Seguridad detectó incompatibilidad de cerrar fechas históricas con recuperación014/015; se separó selección de contrato. Señaló revisión reutilizable tras ABA de identidad y replay legado sin reautorización después de espera: corregidos y cubiertos. La política restrictiva de rutas usa `id`, cubriendo el borde que el generador antiguo por `route_id` omitía. El límite HTTP Content-Length/stream ahora coincide. Revisión final acotada no encontró otro defecto nuevo demostrable; no equivale a una auditoría integral final de Etapa4.
+
+Funcionalidad/pruebas detectó publicación de estado guardado mientras se mostraban ediciones locales, contexto ausente al consultar tarifa desde lista global y tratamiento inseguro de rutas históricas de más de64 puntos. Se bloquea publicación sucia, se carga contexto autorizado y se exige revisión técnica sin truncar topología. También corrigió dos errores de las nuevas pruebas E2E: mensaje de revisión obsoleta y selección accidental de una tarifa histórica/otro borrador dentro del mismo laboratorio compartido.
+
+Fallos intermedios resueltos: variable SQL reservada; nombre real `_030` del getter legado; patrón SQL `LIKE 'config_%'` que incluía involuntariamente `configure_admin_scope` (ahora prefijo literal); aserciones de recibo enriquecido comparadas contra el estado previo a aceptación; preparación incompleta de solicitud de traslado/completed_at; orden de errores de validación; rechazo de vista no actualizable anterior a ACL. Los selectores nuevos reciben etiquetas accesibles explícitas. Las pruebas no aumentan tiempos ni retries.
+
+## Pruebas
+
+`npm run test:all` completado con exit0 en Debian13 local, Node24.19.0/PostgreSQL18.4: **75/75 unitarias y395/395 PostgreSQL**, cero fallos/omitidas. TypeScript y build web incluidos; propagación de salida9 del runner y cierre de los dos lanzadores HTTP verificados. `npm run test:web` también terminó con exit0: **136/136 ejecuciones E2E** (68 definiciones × escritorio/móvil),62 laboratorios aislados cerrados correctamente, SIGINT/puertos y reinicio sin persistencia verificados. Chromium154.0.8037.57. Cero retries añadidos. Los resultados CI Ubuntu/Windows × Node22/24 y CodeQL se ratifican sobre el SHA publicado en el PR; no se sustituyen por estos resultados locales.
+
+Cobertura añadida: topología/publicación sin permiso ni viaje, OUT/IN, puntos/perfiles/reglas ambiguas, inmutabilidad con reservas; ordinaria/expresa/cero, vigencias futuras y retiro sin resurrección; cotización nueva vs contrato/recibo anterior y traslado real con tarifa retirada de selección; dos ADMIN independientes, ABA, sesiones revocadas/caducadas tras espera, scope, idempotencia/doble envío, rollback de auditoría, SQL/RLS/grants, páginas >50, HTTP32KiB/CSRF/campos cerrados, actualización poblada038→039/OID/checksums, cuatro abordados+dos recogidas, retiro con recepción/rescate y grupo dividido consentido.
+
+El informe anterior llamó555 «pruebas únicas» a72 unitarias+363 PostgreSQL+120 ejecuciones E2E: estas últimas son60 definiciones en dos dispositivos. La referencia correcta es **495 definiciones /555 ejecuciones**. Se conservan todas. Las repeticiones, Ubuntu/Windows y versiones Node no añaden casos únicos. Este informe distingue definiciones y ejecuciones por dispositivo.
+
+Total local: **538 definiciones lógicas** =75 unitarias+395 PostgreSQL+68 E2E. **606 ejecuciones** =75+395+136. Incremento:43 definiciones nuevas (3+32+8), conservando las495 anteriores. Las comprobaciones auxiliares de lanzadores/cierre no se suman como casos únicos.
+
+Las ocho definiciones E2E nuevas se ejecutan en escritorio y móvil:
+
+| Suite | Comprobaciones de interfaz y PostgreSQL |
+|---|---|
+| `route-config-topology` (2) | Publicación OUT sin viajes/permisos; IN explícito y cambios sin guardar; teclado/axe/anchura |
+| `route-config-fares` (2) | Publicación ordinaria sin cambiar reservas; refresco403 con replay exacto; fechas UTC desde navegador La Paz y retiro futuro sin resurrección |
+| `route-config-races` (2) | POST perdido tras commit, doble clic, bloqueo del padre y una sola publicación; intención obsoleta rechazada y clave nueva confirmada |
+| `route-config-permissions` (2) | Listas nativas/borradores/historial >50 sin omisiones/duplicados; detalle tarifario desde lista global; cuatro roles independientes denegados, ámbito y CSRF |
+
+Los testigos PostgreSQL de Playwright son conexiones de **solo lectura**, restringidas por el runner a una base efímera loopback. Durante los escenarios, las preparaciones administrativas adicionales pasan por las mismas cookies/CSRF y RPC del navegador. Los fixtures se crean antes de abrir HTTP; no hay owner de escritura dentro de la aplicación.
+
+## Evidencias y límites
+
+Capturas ficticias de escritorio/móvil y sus hashes se conservan en `.local/4a5-evidence`; manifiesto público sin credenciales en `EVIDENCIAS_4A5.json`. La revisión automática de4A.4 ya rechazó publicar capturas de este laboratorio en el repositorio público: no se elude ni se vuelve a intentar subirlas por otra vía. El bloqueo previo no se presenta como una nueva denegación ocurrida en4A.5. El ZIP local conserva las capturas originales.
+
+No se reconstruye una tarifa histórica anterior a039 si procedimientos antiguos ya la sobrescribieron. No se certifica seguridad física/legal de rutas, retención, tarifas oficiales, permisos reales, doble firma o política de custodia. Importación de topologías históricas >64 puntos y recorridos urbanos fuera del origen requieren revisión técnica/contractual. No hay pagos, GPS, notificaciones, despliegue ni servicios contratados.
+
+4A.6 y etapas5–10 permanecen sin iniciar. El cierre general de Etapa4 no está autorizado por este incremento.
+
+## Evaluación del incremento
+
+4A.5 está implementado y verificado en laboratorio local; la ratificación CI/CodeQL del mismo SHA se registra en el PR después de terminar sus ejecuciones. No quedan defectos críticos/altos demostrables conocidos dentro de este alcance acotado. Las restricciones y revisiones humanas descritas siguen vigentes; no se declara cerrado el conjunto de Etapa4 ni se autoriza4A.6.
