@@ -21,3 +21,16 @@ test('5A3: a late private linking receipt stays hidden from another account and 
  // This is the original receipt. Its code was bound to the revoked session;
  // displaying it does not claim it is a newly issued/usable capability.
 });
+test('5A3: pending linking intent survives parent refresh/logout controls and preserves exact manual replay',async({page})=>{
+ await login(page,'operativo1','/pasajero');const mine=page.locator('.responsible-reservations'),sent=[];let originalCode;
+ await page.route('**/api/care/code',async route=>{
+  sent.push({body:route.request().postDataJSON(),key:route.request().headers()['idempotency-key']});
+  if(sent.length===1){const response=await route.fetch();expect(response.status()).toBe(200);originalCode=(await response.json()).code;await route.abort('failed');}else await route.continue();
+ });
+ await mine.getByLabel('Autorizo generar un código de un uso').check();await mine.getByRole('button',{name:'Generar código para mi cuenta',exact:true}).click();
+ const recovery=mine.getByRole('region',{name:'Recuperar actuación pendiente',exact:true});await expect(recovery).toContainText('Resultado incierto');
+ await expect(page.getByRole('button',{name:'Actualizar mis reservas',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Cerrar sesión',exact:true})).toBeDisabled();
+ await recovery.getByRole('button',{name:'Reintentar únicamente la actuación original',exact:true}).click();await expect(recovery).toHaveCount(0);
+ expect(sent).toHaveLength(2);expect(sent[1]).toEqual(sent[0]);await expect(mine.getByLabel('Código de vinculación ficticio',{exact:true})).toHaveValue(originalCode);
+ await expect(page.getByRole('button',{name:'Cerrar sesión',exact:true})).toBeEnabled();
+});

@@ -29,8 +29,9 @@ aprobación anticipada a esas ejecuciones ni autoriza producción.
    mutable durante la espera de sesión, POST repetido tras recibo conocido con
    refresh fallido y entrega de respuesta tardía tras cambiar la cuenta.
 
-Resultado diagnóstico: web 3 aprobadas / 1 fallida; unitarias 0 / 3. Logs y traza
-privados conservados. El inventario de cada familia de comandos y sus contratos
+Resultado diagnóstico: web 3 aprobadas / 1 fallida; unitarias 0 / 3. Logs privados
+conservados. Playwright generó trazas temporales; no se presentan como archivos
+retenidos si una ejecución posterior los reemplazó. El inventario de comandos y contratos
 está en [ETAPA_5_MOVIL_Y_COMANDOS.md](../ETAPA_5_MOVIL_Y_COMANDOS.md).
 
 ## B — Implementación
@@ -87,8 +88,8 @@ Resultados ejecutados al preparar este informe:
 | TypeScript y compilación web | Aprobados |
 | Runner negativo y arranque/cierre de APIs locales | Aprobados dentro de test:all, exit final 0 |
 
-La batería final web debe acreditar **84 casos por proyecto, 168 ejecuciones y
-78 cierres de laboratorio**, además de apagado/reinicio. Estos son criterios de
+La batería final web debe acreditar **86 casos por proyecto, 172 ejecuciones y
+82 cierres de laboratorio**, además de apagado/reinicio. Estos son criterios de
 completitud, no resultados atribuidos sin ejecución. La ratificación del SHA final
 en el PR documenta sus resultados reales, el exit observado, la matriz Ubuntu/
 Windows con Node 22/24 y CodeQL. No se suma una prueba repetida como definición nueva.
@@ -140,6 +141,18 @@ auditoría. Las bases y contraseñas de laboratorio son nuevas y ficticias.
   los casos existentes de permisos de configuración (2) y operación (1). Se repite
   la batería web y CI sobre el commit corregido; CodeQL de dad0aba es antecedente,
   no se atribuye como análisis del commit posterior.
+- Se reprodujeron dos brechas adicionales en Mis reservas: la primera página GET
+  no estaba ligada al CSRF original y el cierre de sesión del contenedor podía
+  desmontar un intento pendiente de sus hijos. Se reutiliza ahora el POST paginado
+  existente también en la primera página, con verificación posterior de identidad;
+  actualizar, paginar y cerrar sesión comprueban la guardia compartida. Dos E2E
+  nuevos fallaron antes de corregir y aprobaron después: A → B → A de reservas
+  propias y recuperación exacta de un código con controles del contenedor bloqueados.
+- El escenario independiente de permisos de plataforma agotaba el límite real de
+  120 solicitudes tras otros dos escenarios del mismo clúster. Se trasladó íntegro
+  a un laboratorio nuevo, conservando todas sus aserciones y roles. Las pruebas
+  nativas de rate limit siguen vigentes; no se añade espera ni se cambia política.
+  Los tres escenarios aprobaron con fixtures aislados.
 - Se detectó disco casi lleno por clústeres efímeros anteriores. Se limpiaron 304
   clústeres locales PG18 detenidos anteriores a 5A.3, verificando raíz, versión,
   ausencia de PID/proceso. Se conservaron diez recientes, todos los activos y los
