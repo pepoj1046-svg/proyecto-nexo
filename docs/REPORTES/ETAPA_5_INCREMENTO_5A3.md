@@ -14,7 +14,8 @@ skills que no figuran en el catálogo. La autorización de 5A.3 prevalece sobre 
 alcance histórico 4A.6 de AGENTS.md; se conserva su aislamiento de proyectos.
 
 Este documento fija implementación, evidencia y procedimiento. Al preparar su
-commit, la validación web completa y CI están en curso. Sus resultados y el
+commit, los resultados locales se consignan debajo y CI se ratifica sobre el
+SHA publicado. Sus resultados y el
 dictamen efectivo se ratifican en el comentario **«Ratificación final 5A.3» del
 PR #9**, identificando el SHA final y enlaces concretos. Este documento no atribuye
 aprobación anticipada a esas ejecuciones ni autoriza producción.
@@ -104,12 +105,24 @@ Resultados ejecutados al preparar este informe:
 | Regresiones móviles relevantes previas: recorrido, responsables y permisos | 4/4 |
 | Batería completa unitaria | 94/94 |
 | Batería completa PostgreSQL real 18.4 | 408/408 |
+| Cobertura web de escritorio con PostgreSQL | 86/86 casos distintos, 42 suites, verificados por cohortes |
+| Batería web móvil completa con PostgreSQL | 86/86, 42 suites, exit 0 |
+| Cierre y reinicio web | Aprobados; 42 laboratorios por proyecto y credenciales efímeras eliminadas |
 | TypeScript y compilación web | Aprobados |
 | Runner negativo y arranque/cierre de APIs locales | Aprobados dentro de test:all, exit final 0 |
 
-La batería final web debe acreditar **86 casos por proyecto, 172 ejecuciones y
-84 cierres de laboratorio**, además de apagado/reinicio. Estos son criterios de
-completitud, no resultados atribuidos sin ejecución. La ratificación del SHA final
+La cobertura de escritorio se verificó por cohortes: 33 suites/72 casos aprobaron
+antes de detenerse en el fixture compartido de condiciones; después se ejecutaron
+las suites afectadas y restantes, sin sumar repeticiones como casos nuevos. Se
+conservaron las huellas para comprobar que la aplicación y los otros tests no
+cambiaron: únicamente se aislaron escenarios y ajustaron los dos tests de panel
+montado descritos debajo. No se presenta el primer `npm run test:web` (exit 1)
+como una ejecución aprobada.
+
+La pasada móvil completa terminó con exit 0: 86 casos y 42 suites. En conjunto
+se verificaron **172 ejecuciones distintas y 84 laboratorios distintos cerrados**,
+además de apagado/reinicio. No se suman las repeticiones diagnósticas. CI debe
+acreditar sus resultados sobre el SHA publicado antes del dictamen. La ratificación del SHA final
 en el PR documenta sus resultados reales, el exit observado, la matriz Ubuntu/
 Windows con Node 22/24 y CodeQL. No se suma una prueba repetida como definición nueva.
 
@@ -225,7 +238,8 @@ Se añadió el filtro de PR sin cambiar matrices, timeouts, retries ni permisos.
 checkpoints documentales/dirigidos usan skip ci explícito para no repetir matrices;
 el commit final sin esa marca requiere ejecución completa real.
 
-Cada trabajo web guarda capturas y métricas ficticias de `.local/5a3-evidence/`
+La ejecución local conserva 14 PNG y 12 JSON de layout/axe, con cero violaciones
+y cero overflow en los estados comprobados. Cada trabajo web guarda capturas y métricas ficticias de `.local/5a3-evidence/`
 como artefacto `5a3-<sistema>-node<versión>-<proyecto>`, con retención técnica de siete
 días. No se suben accesos, cookies, trazas, CSRF, conexión SQL ni contraseñas. La
 ratificación enlaza los trabajos y CodeQL exactos; un check exitoso no sustituye
