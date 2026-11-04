@@ -103,7 +103,8 @@ se liga al CSRF original y comprueba identidad antes de mostrar resultados. Sus
 botones de actualizar, paginar y cerrar sesión respetan la guardia global para no
 desmontar los controladores hijos con intención pendiente. Dos regresiones reales
 (cambio A → B → A y cierre de sesión del contenedor) aprobaron después de corregir.
-El escenario independiente de permisos de plataforma se separa de los otros dos
+Los escenarios independientes de permisos de plataforma y solicitud de cancelación
+se separan de los demás
 para conservar el límite real 120/minuto sin esperas, retries o aserciones omitidas.
 
 No se cambia el significado de BOARD/ALIGHT, versiones, episodios, presencia,

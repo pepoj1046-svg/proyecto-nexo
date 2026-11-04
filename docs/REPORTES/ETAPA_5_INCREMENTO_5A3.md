@@ -75,6 +75,24 @@ ni se generaliza otro procedimiento físico. Los controles adicionales de montaj
 se aplican a los paneles identificados, no se promete una guardia universal nueva
 para cualquier futura pantalla. La máquina de recuperación no concede permisos.
 
+### Archivos y módulos afectados
+
+- `apps/web/src/use-command.ts`, `CommandRecovery.tsx` y `private-read.ts`:
+  recuperación RAM, separación recibo/consulta y lectura ligada a cuenta.
+- `Operations.tsx`, `Care.tsx`, `Responsibles.tsx`, `Functional.tsx`,
+  `Recovery.tsx` y `Safety.tsx`: integración individual de los paneles auditados,
+  conservación de sus controladores y bloqueo de controles incompatibles.
+- `main.tsx` y `styles.css`: teclado, foco, menú y contenedor de controles.
+- `tests/use-command.test.mjs`, siete suites web nuevas, pruebas anteriores de
+  recibos/consulta propia y helper de operaciones: regresiones y evidencias.
+  Las suites separadas de permisos y solicitud de cancelación contienen casos
+  anteriores íntegros, sin duplicarlos.
+- `scripts/test-web.mjs` y los workflows de pruebas/CodeQL: registro de suites,
+  base del PR y artefactos limitados a evidencias ficticias.
+- Este informe y `docs/ETAPA_5_MOVIL_Y_COMANDOS.md`: diagnóstico y contratos.
+
+No hay migraciones nuevas o modificadas, cambios de backend o dependencias.
+
 ## C — Pruebas y evidencia
 
 Resultados ejecutados al preparar este informe:
@@ -82,7 +100,7 @@ Resultados ejecutados al preparar este informe:
 | Prueba | Resultado verificado |
 | --- | --- |
 | Dirigidas unitarias: comandos, reservas 5A.2, orden de autenticación | 19/19, incluidas 8 nuevas |
-| Dirigidas nuevas de interfaz móvil con PostgreSQL | 8/8 |
+| Dirigidas nuevas de interfaz móvil con PostgreSQL | 10/10 |
 | Regresiones móviles relevantes previas: recorrido, responsables y permisos | 4/4 |
 | Batería completa unitaria | 94/94 |
 | Batería completa PostgreSQL real 18.4 | 408/408 |
@@ -90,12 +108,12 @@ Resultados ejecutados al preparar este informe:
 | Runner negativo y arranque/cierre de APIs locales | Aprobados dentro de test:all, exit final 0 |
 
 La batería final web debe acreditar **86 casos por proyecto, 172 ejecuciones y
-82 cierres de laboratorio**, además de apagado/reinicio. Estos son criterios de
+84 cierres de laboratorio**, además de apagado/reinicio. Estos son criterios de
 completitud, no resultados atribuidos sin ejecución. La ratificación del SHA final
 en el PR documenta sus resultados reales, el exit observado, la matriz Ubuntu/
 Windows con Node 22/24 y CodeQL. No se suma una prueba repetida como definición nueva.
 
-Se conservan huellas SHA-256 de 206 archivos funcionales para vincular las
+Se conservan huellas SHA-256 de 207 archivos funcionales para vincular las
 pruebas locales al código publicado. Las ejecuciones intermedias no se atribuyen
 al código posterior: tras estabilizar callbacks e interfaz se ejecutan de nuevo
 las baterías completas, sin repetirlas por cambios exclusivamente documentales.
@@ -172,6 +190,29 @@ auditoría. Las bases y contraseñas de laboratorio son nuevas y ficticias.
 - La consulta manual de una intención incierta conserva clave/cuerpo y no hace
   POST de actuación. Cuando hay recibo, recupera únicamente la lectura. La prueba
   de BOARD perdido comprueba también este camino y su testigo SQL sin cambios.
+- Una ejecución dirigida encontró un 404 del bundle al abrir una cuarta sesión:
+  la traza identificó que una compilación local paralela había eliminado el JS
+  referenciado por el HTML servido. Fue un solapamiento del montaje de pruebas,
+  no un rechazo de reservas o permisos. Se repitieron los casos afectados con el
+  build estable, sin aumentar tiempos ni cambiar la aplicación. Se evita compilar
+  fuentes distintas durante una ejecución web activa.
+- La pasada completa llegó a condiciones y se detuvo por 429: sus dos escenarios
+  acumulaban solicitudes en el mismo laboratorio. La traza del segundo recoge 78
+  solicitudes API (44 de sesión), con dos 429 al consultar el resultado; el testigo
+  SQL ya acreditaba CANCELLED, precio original y capacidad válida. Se separó
+  íntegramente ese escenario en `conditions-request.spec.mjs`, con el mismo fixture
+  de recorridos y testigo SQL. No se cambian contratos, límites ni aserciones.
+- El caso de menores asumía que cada abordaje desmontaba y cerraba el detalle de
+  integrantes. Al conservarlo montado para no perder intenciones, su siguiente
+  clic lo cerraba y esperaba un botón oculto. La traza mostró ambos toggles y
+  únicamente el primer BOARD. Se abre el detalle solo si está cerrado; se conservan
+  las tres actuaciones, la revisión del acompañante, rectificación, ausencia y
+  todos los testigos SQL, sin ampliar el timeout original de la prueba.
+- La regresión de responsables aún pulsaba «Generar código» después de perder la
+  respuesta; ese formulario queda bloqueado deliberadamente mientras existe una
+  intención. Ahora usa el botón explícito «Reintentar únicamente la actuación
+  original». Sigue exigiendo dos envíos con la misma clave, código distinto del
+  intento anterior completado e historial exacto de vinculaciones y revocaciones.
 - Se detectó disco casi lleno por clústeres efímeros anteriores. Se limpiaron 304
   clústeres locales PG18 detenidos anteriores a 5A.3, verificando raíz, versión,
   ausencia de PID/proceso. Se conservaron diez recientes, todos los activos y los
