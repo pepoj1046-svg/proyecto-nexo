@@ -54,6 +54,7 @@ export function OperationalPanel({view,children}:{view:'ADMIN'|'DRIVER';children
   try{
    const s=original??await privateApi<WebSession>('/api/session');
    if(g!==generation.current)return;
+   if(!original)setSession(s); // Authentication does not imply permission to read this operational view.
    if(!s.authenticated){setSession(s);setTrips([]);return;}
    // Bind the batch to one original CSRF and validate before publishing it.
    const overview=await privateApi<{trips:typeof trips}>('/api/operations/overview',{view},s.csrf);

@@ -132,6 +132,14 @@ auditoría. Las bases y contraseñas de laboratorio son nuevas y ficticias.
   esperaba reenviar POST después de un recibo conocido. Se fortalecieron los casos
   de tarifas, flota, plataforma y permisos: cero POST de más, mismo estado/auditoría;
   se conserva el reenvío idéntico cuando realmente se perdió el recibo.
+- Otra pasada detectó una regresión real de presentación: al denegar la consulta
+  operativa de una cuenta autenticada sin ese rol, la UI conservaba el login en vez
+  del estado autenticado y su cierre de sesión. Se restauró la publicación de la
+  identidad comprobada para las consultas manuales, manteniendo separados permiso
+  de negocio y datos privados. La consulta y RLS seguían devolviendo 403. Pasaron
+  los casos existentes de permisos de configuración (2) y operación (1). Se repite
+  la batería web y CI sobre el commit corregido; CodeQL de dad0aba es antecedente,
+  no se atribuye como análisis del commit posterior.
 - Se detectó disco casi lleno por clústeres efímeros anteriores. Se limpiaron 304
   clústeres locales PG18 detenidos anteriores a 5A.3, verificando raíz, versión,
   ausencia de PID/proceso. Se conservaron diez recientes, todos los activos y los
