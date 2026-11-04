@@ -18,11 +18,11 @@ test('reserva terminal confirmada por turno, sin aceptación discrecional, priva
  await page.getByRole('button',{name:'Actualizar mis reservas'}).click();await expect(page.locator('.saved-booking')).toContainText('Confirmada por turno');await expect(page.locator('.saved-booking')).toContainText('Bs 35');
  await mkdir('.local/screenshots',{recursive:true});await page.screenshot({path:`.local/screenshots/mis-reservas-${info.project.name}.png`,fullPage:true});expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
  let release,started;const gate=new Promise(resolve=>{release=resolve;}),held=new Promise(resolve=>{started=resolve;});let hold=true;
- await page.route('**/api/passenger/bookings',async route=>{if(hold){hold=false;const actual=await route.fetch();started();await gate;await route.fulfill({response:actual});}else await route.continue();});
+ await page.route('**/api/reservations/page',async route=>{if(hold){hold=false;const actual=await route.fetch();started();await gate;await route.fulfill({response:actual});}else await route.continue();});
  await page.getByRole('button',{name:'Actualizar mis reservas'}).click();await held;
  await page.getByRole('button',{name:'Cerrar sesión'}).click();await expect(page.locator('.saved-booking')).toHaveCount(0);await expect(page.getByLabel('Usuario ficticio',{exact:true})).toBeVisible();
  await login(page,'viajero1');await expect(page.getByRole('button',{name:'Cerrar sesión'})).toBeVisible();await expect(page.locator('.saved-booking')).toHaveCount(0);
- const late=page.waitForResponse(r=>r.url().endsWith('/api/passenger/bookings')&&r.request().method()==='GET');release();await late;await page.unroute('**/api/passenger/bookings');await expect(page.locator('.saved-booking')).toHaveCount(0);await expect(page.getByText(reference,{exact:true})).toHaveCount(0);
+ const late=page.waitForResponse(r=>r.url().endsWith('/api/reservations/page')&&r.request().method()==='POST');release();await late;await page.unroute('**/api/reservations/page');await expect(page.locator('.saved-booking')).toHaveCount(0);await expect(page.getByText(reference,{exact:true})).toHaveCount(0);
  const copied=await page.request.get('/api/passenger/bookings',{headers:{Cookie:cookie.name+'='+cookie.value}});expect(copied.status()).toBe(401);
 });
 test('respuesta perdida después del commit se reintenta con la misma clave y no duplica la reserva',async({page})=>{

@@ -62,3 +62,6 @@
 .route-configuration{min-width:0;max-width:100%;margin-top:1.5rem}.route-configuration fieldset{min-width:0;max-width:100%;padding:1rem;margin:1rem 0;border:1px solid var(--line);border-radius:10px}.route-configuration label{display:block;margin:.7rem 0}.route-configuration input:not([type=checkbox]),.route-configuration select{display:block;width:100%;max-width:100%;min-width:0;min-height:44px}.route-configuration .consent-check{display:flex;align-items:flex-start;gap:.6rem}.route-configuration .consent-check input{flex:0 0 auto}.route-configuration .button{white-space:normal;overflow-wrap:anywhere;max-width:100%;margin:.3rem .3rem .3rem 0}.route-configuration h5,.route-configuration p{overflow-wrap:anywhere}.route-configuration legend{max-width:100%;white-space:normal}
 
 .administrative-session-gate{border:0;padding:0;margin:0;min-width:0}
+.command-recovery{min-width:0;max-width:100%;margin:1rem 0;padding:1rem;border:2px solid #627451;border-radius:10px;background:#f4f6ed;overflow-wrap:anywhere}
+.command-recovery .button{max-width:100%;min-height:44px;white-space:normal;overflow-wrap:anywhere}
+.operational-controls{border:0;padding:0;margin:0;min-width:0}
