@@ -30,7 +30,7 @@ test('5A3: pending linking intent survives parent refresh/logout controls and pr
  await mine.getByLabel('Autorizo generar un código de un uso').check();await mine.getByRole('button',{name:'Generar código para mi cuenta',exact:true}).click();
  const recovery=mine.getByRole('region',{name:'Recuperar actuación pendiente',exact:true});await expect(recovery).toContainText('Resultado incierto');
  await expect(page.getByRole('button',{name:'Actualizar mis reservas',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Cerrar sesión',exact:true})).toBeDisabled();
- await recovery.getByRole('button',{name:'Reintentar únicamente la actuación original',exact:true}).click();await expect(recovery).toHaveCount(0);
- expect(sent).toHaveLength(2);expect(sent[1]).toEqual(sent[0]);await expect(mine.getByLabel('Código de vinculación ficticio',{exact:true})).toHaveValue(originalCode);
+ await recovery.getByRole('button',{name:'Reintentar únicamente la actuación original',exact:true}).click();await expect(mine.getByLabel('Código de vinculación ficticio',{exact:true})).toHaveValue(originalCode);await expect(recovery).toHaveCount(0);
+ expect(sent).toHaveLength(2);expect(sent[1]).toEqual(sent[0]);
  await expect(page.getByRole('button',{name:'Cerrar sesión',exact:true})).toBeEnabled();
 });

@@ -153,6 +153,10 @@ auditoría. Las bases y contraseñas de laboratorio son nuevas y ficticias.
   a un laboratorio nuevo, conservando todas sus aserciones y roles. Las pruebas
   nativas de rate limit siguen vigentes; no se añade espera ni se cambia política.
   Los tres escenarios aprobaron con fixtures aislados.
+- El panel de recuperación se ocultaba al limpiar el error antes de terminar el
+  reintento. Ahora mantiene un estado de operación en curso y aria-busy hasta
+  completarlo. Los E2E esperan el recibo o el error final observable antes de contar
+  solicitudes; no confunden la desaparición transitoria de un mensaje con éxito.
 - Se detectó disco casi lleno por clústeres efímeros anteriores. Se limpiaron 304
   clústeres locales PG18 detenidos anteriores a 5A.3, verificando raíz, versión,
   ausencia de PID/proceso. Se conservaron diez recientes, todos los activos y los

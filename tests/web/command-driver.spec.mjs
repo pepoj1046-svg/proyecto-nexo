@@ -18,7 +18,7 @@ test('5A3: lost real boarding reply is recovered manually once, with exact body/
   await page.locator('.expected-booking').filter({hasText:'Terminal de Yacuiba (ficticia)'}).getByRole('button',{name:'Registrar abordaje del grupo',exact:true}).click();
   const recovery=page.getByRole('region',{name:'Recuperar actuación pendiente',exact:true});await expect(recovery).toContainText('Resultado incierto');
   expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(320);
+  const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));expect(width.scroll).toBe(width.client);
   const committed=await audit.read(tripId);expect(committed.onboard).toBe(4);expect(committed.trip.status).toBe('QUEUED');expect(committed.bookings).toEqual(before.bookings);expect(committed.segments).toEqual(before.segments);
   await page.evaluate(()=>window.dispatchEvent(new Event('online')));expect(sent).toHaveLength(1);
   await expect(page.getByLabel('Vehículo autorizado',{exact:true})).toBeDisabled();

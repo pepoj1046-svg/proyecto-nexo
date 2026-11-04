@@ -33,7 +33,7 @@ test('5A3: A-B-A during manifest refresh is rejected by original CSRF, then reco
    await revoke(page);await loginApi(page,'adminH');await route.fulfill({response:actual});
   },{times:1});
   await page.locator('.expected-booking').filter({hasText:'Terminal de Yacuiba (ficticia)'}).getByRole('button',{name:'Registrar abordaje del grupo',exact:true}).click();
-  const recovery=page.getByRole('region',{name:'Recuperar actuación pendiente',exact:true});await expect(recovery).toContainText('Recibo recibido');expect(status).toBe(403);
+  const recovery=page.getByRole('region',{name:'Recuperar actuación pendiente',exact:true});await expect(recovery).toContainText('Recibo recibido; consulta pendiente');expect(status).toBe(403);
   const committed=await audit.read(tripId);await recovery.getByRole('button',{name:'Actualizar consulta sin repetir actuación',exact:true}).click();await expect(recovery).toHaveCount(0);
   expect(sent).toHaveLength(1);expect(await audit.read(tripId)).toEqual(committed);for(const id of foreign)await expect(page.locator('.trip-operations').getByText(id,{exact:true})).toHaveCount(0);
  }finally{await audit.close();}
