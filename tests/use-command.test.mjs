@@ -6,7 +6,7 @@ import {transform} from 'esbuild';
 // Exercise the real hook's command logic without a DOM or a second implementation.
 // Refs persist across send calls; setters record state and no effect fires a write.
 let moduleId=0;
-async function harness(refresh=async()=>{},path='/api/operations/command',recovery=false,retireRejected=false){
+async function harness(refresh=async()=>{},path='/api/operations/command',recovery=false,retireRejected=false,scopedRefresh=false){
  const writes=[],state=[],recoveries=[],locks=[];let actor='A';
  class PrivateApiError extends Error{constructor(message,status,code){super(message);this.status=status;this.code=code;}}
  const env={useRef:value=>({current:value}),useState:value=>{const i=state.length;state.push(value);return[value,v=>{state[i]=v;}];},useEffect:()=>{},
@@ -19,7 +19,7 @@ async function harness(refresh=async()=>{},path='/api/operations/command',recove
  const source=(await transform(prefix+raw,{loader:'ts',format:'esm'})).code;
  const {useCommands}=await import('data:text/javascript;base64,'+Buffer.from(source+'\n// '+moduleId++).toString('base64'));
  delete globalThis.__nexoCommandHarness;
- return{command:useCommands(refresh,path,0,retireRejected,recovery),env,writes,state,recoveries,locks,set actor(a){actor=a;}};
+ return{command:useCommands(refresh,path,0,retireRejected,recovery,scopedRefresh),env,writes,state,recoveries,locks,set actor(a){actor=a;}};
 }
 test('5A3: command freezes nested original body before awaiting session',async()=>{
  const f=await harness();
@@ -28,8 +28,8 @@ test('5A3: command freezes nested original body before awaiting session',async()
  assert.equal(f.writes[0].body.parts[0].seats,2);
 });
 test('5A3: a received command receipt plus failed refresh retries only refresh',async()=>{
- let reads=0;const f=await harness(async()=>{if(!reads++)throw Error('READ_FAILED');});
- await f.command.send({kind:'BOARD',bookingId:'fictional'});await f.command.send({kind:'BOARD',bookingId:'fictional'});
+ let reads=0;const f=await harness(async()=>{if(!reads++)throw Error('READ_FAILED');},'/api/operations/command',true,false,true);
+ await f.command.send({kind:'BOARD',bookingId:'fictional'});await f.command.consult();
  assert.equal(f.writes.length,1);assert.equal(reads,2);
 });
 test('5A3: late command reply cannot refresh or return private result for a different account',async()=>{
@@ -39,10 +39,10 @@ test('5A3: late command reply cannot refresh or return private result for a diff
  assert.equal(await pending,undefined);assert.equal(refreshed,0);
 });
 test('5A3: reviewed commands reject a changed intent and manual recovery preserves original key/body',async()=>{
- const f=await harness(async()=>{},'/api/operations/command',true);const base=f.env.request;let lost=true;
+ const f=await harness(async()=>{},'/api/operations/command',true,false,true);const base=f.env.request;let lost=true;
  f.env.request=async(...args)=>{const r=await base(...args);if(args[0]!=='/api/session'&&lost){lost=false;throw Error('LOST_COMMITTED_REPLY');}return r;};
  await f.command.send({kind:'BOARD',parts:[{seats:2}]});
- await f.command.send({kind:'ALIGHT',parts:[{seats:6}]});assert.equal(f.writes.length,1);
+ await f.command.send({kind:'ALIGHT',parts:[{seats:6}]});assert.equal(f.writes.length,1);await f.command.consult();assert.equal(f.writes.length,1);assert.equal(f.locks.at(-1),true);
  await f.command.retry();assert.equal(f.writes.length,2);assert.deepEqual(f.writes[1],f.writes[0]);assert.equal(f.locks.at(-1),false);
 });
 test('5A3: wrong-account replay cannot send; original account with renewed CSRF keeps intent',async()=>{

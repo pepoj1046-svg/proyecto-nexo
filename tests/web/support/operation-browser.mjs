@@ -12,7 +12,7 @@ function watch(page){
   const path=new URL(r.url()).pathname;if(!path.startsWith('/api/'))return;
   const interesting=!r.ok()||['/api/session','/api/login','/api/logout','/api/operations/overview','/api/operations/snapshot'].includes(path);if(!interesting)return;
   const event={path,status:r.status()};record(event);
-  try{const b=await r.json();if(!r.ok())event.error=typeof b.error==='string'&&/^[A-Z_]+$/.test(b.error)?b.error:'REQUEST_REJECTED';
+  try{const b=await r.json();if(path==='/api/login'&&r.ok()&&b.authenticated&&typeof b.csrf==='string')csrf.set(page,b.csrf);else if(path==='/api/logout'&&r.ok())csrf.delete(page);if(!r.ok())event.error=typeof b.error==='string'&&/^[A-Z_]+$/.test(b.error)?b.error:'REQUEST_REJECTED';
    else if(path==='/api/operations/snapshot')Object.assign(event,{tripId:b.tripId,state:b.status,phase:b.phase,operationAllowed:b.operationAllowed,departureEligible:b.departureEligible,bookings:b.bookings?.length});
    else if(path==='/api/operations/overview')event.trips=b.trips?.map(t=>({tripId:t.tripId,state:t.status}));
    else event.authenticated=b.authenticated;

@@ -22,6 +22,9 @@ test('5A3: lost real boarding reply is recovered manually once, with exact body/
   const committed=await audit.read(tripId);expect(committed.onboard).toBe(4);expect(committed.trip.status).toBe('QUEUED');expect(committed.bookings).toEqual(before.bookings);expect(committed.segments).toEqual(before.segments);
   await page.evaluate(()=>window.dispatchEvent(new Event('online')));expect(sent).toHaveLength(1);
   await expect(page.getByLabel('Vehículo autorizado',{exact:true})).toBeDisabled();
+  await recovery.getByRole('button',{name:'Consultar estado sin repetir actuación',exact:true}).click();
+  await expect(page.locator('.trip-facts')).toContainText('4 abordados observados');await expect(recovery).toContainText('Resultado incierto');
+  expect(sent).toHaveLength(1);expect(await audit.read(tripId)).toEqual(committed);await expect(page.getByLabel('Vehículo autorizado',{exact:true})).toBeDisabled();
   await recovery.getByRole('button',{name:'Reintentar únicamente la actuación original',exact:true}).click();await expect(recovery).toHaveCount(0);
   expect(sent).toHaveLength(2);expect(sent[1]).toEqual(sent[0]);expect(await audit.read(tripId)).toEqual(committed);
   await expect(page.locator('.trip-facts')).toContainText('4 abordados observados');

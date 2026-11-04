@@ -42,12 +42,13 @@ export function useCommands(refresh:(result?:unknown,session?:WebSession)=>Promi
    // identity before publishing. Other callbacks retain both identity checks.
    const current=scopedRefresh?session:await actor();
    await refresh(attempt.result,current);
+   if(!mounted.current)return;
    if(!scopedRefresh)await actor();
    attempts.current.delete(fingerprint);setReceived(false);return attempt.result;
   }catch(e){
    let authenticationLost=e instanceof PrivateApiError&&e.status===401;
    if(attempts.current.size&&mounted.current){try{await actor();}catch(auth){authenticationLost||=auth instanceof PrivateApiError&&auth.status===401;}}
-   const recover=protect&&attempts.current.size>0&&(accountMismatch||authenticationLost);
+   const recover=protect&&mounted.current&&attempts.current.size>0&&(accountMismatch||authenticationLost);
    if(recover){const original=attempts.current.values().next().value;if(original)requestAdminAuthentication(token.current,original.account);}
    const definite=!recover&&retireRejected&&!attempt?.received&&e instanceof PrivateApiError&&[400,401,403,404,409,413,429].includes(e.status);
    if(definite){attempts.current.delete(fingerprint);setRejected(true);}
@@ -59,5 +60,22 @@ export function useCommands(refresh:(result?:unknown,session?:WebSession)=>Promi
  };
  const send=(body:Command)=>run(body);
  const retry=()=>{const first=attempts.current.entries().next().value;return first?run(first[1].body,first[0]):Promise.resolve(undefined);};
- return{busy,error,send,rejected,pending,received,retry};
+ const consult=async()=>{
+  if(!scopedRefresh||running.current||!mounted.current)return;
+  const first=attempts.current.entries().next().value;if(!first)return;
+  const[fingerprint,attempt]=first;if(attempt.received)return run(attempt.body,fingerprint);
+  running.current=true;setBusy(true);setError('');
+  const identity=async()=>{
+   const s=await privateApi<WebSession>('/api/session');
+   if(!mounted.current)throw Error('La vista ya no está activa.');
+   if(!s.authenticated||s.accountRef!==attempt.account){requestAdminAuthentication(token.current,attempt.account);throw Error('Consulta con la cuenta original.');}
+   return s;
+  };
+  try{
+   await refresh(undefined,await identity());await identity();
+   setError('Consulta autorizada actualizada; el resultado de la actuación sigue incierto. No se reenvió y se conserva su clave original.');
+  }catch(e){if(mounted.current){try{await identity();}catch{}setError(errorText(e)+' No se reenvió la actuación. Se conserva su intención original.');}}
+  finally{running.current=false;if(mounted.current)setBusy(false);}
+ };
+ return{busy,error,send,rejected,pending,received,retry,consult,canConsult:scopedRefresh};
 }

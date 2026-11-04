@@ -63,7 +63,8 @@ dependencias, almacenes de pasajeros/asientos, colas offline o políticas nuevas
 
 ### Extensión deliberadamente acotada
 
-El indicador scopedRefresh solo se usa en operaciones y CarePanel: sus callbacks
+El indicador scopedRefresh solo se usa en operaciones, CarePanel,
+PassengerRecovery, RecoveryConsole, DriverRescue y HandoffPanel: sus callbacks
 ligan **todas** las lecturas a la sesión original y comprueban identidad antes de
 publicar. Los demás mantienen las comprobaciones exteriores. No copiar ese
 indicador a un callback no auditado.
@@ -94,10 +95,10 @@ completitud, no resultados atribuidos sin ejecución. La ratificación del SHA f
 en el PR documenta sus resultados reales, el exit observado, la matriz Ubuntu/
 Windows con Node 22/24 y CodeQL. No se suma una prueba repetida como definición nueva.
 
-Se conservaron huellas de 204 archivos funcionales durante la batería. Tras aprobar
-test:all solo se ajustaron aserciones web de recibos conocidos: no se atribuye un
-cambio de backend o aplicación a esas actualizaciones de expectativas. No se repite
-la matriz PostgreSQL por cambios exclusivamente en esos tests Playwright.
+Se conservan huellas SHA-256 de 206 archivos funcionales para vincular las
+pruebas locales al código publicado. Las ejecuciones intermedias no se atribuyen
+al código posterior: tras estabilizar callbacks e interfaz se ejecutan de nuevo
+las baterías completas, sin repetirlas por cambios exclusivamente documentales.
 
 ### Escenarios nuevos verificables
 
@@ -157,6 +158,20 @@ auditoría. Las bases y contraseñas de laboratorio son nuevas y ficticias.
   reintento. Ahora mantiene un estado de operación en curso y aria-busy hasta
   completarlo. Los E2E esperan el recibo o el error final observable antes de contar
   solicitudes; no confunden la desaparición transitoria de un mensaje con éxito.
+- Mantener montado el manifiesto dejó controles secundarios habilitados durante
+  una actualización retenida. Se bloquean con fieldset y las guardias de intención;
+  se conservan los controladores y el botón manual de recuperación.
+- Las pruebas largas de recepción y rescate expusieron consultas de sesión
+  redundantes que agotaban 120/minuto. Se reutilizan la selección de la misma
+  cuenta y los handoffs del snapshot recién autorizado; se consulta siempre el
+  inventario actual y se comprueba identidad antes de publicar. No se amplían
+  límites, tiempos ni reintentos. Pasaron terminal, carretera y recorrido completo.
+- Un callback de traslado seguro no propagaba la sesión original: la guardia
+  impedía actualizar el panel tras el recibo. Se transmite explícitamente a sus
+  consultas autorizadas y se mantienen los controladores tras cambiar de estado.
+- La consulta manual de una intención incierta conserva clave/cuerpo y no hace
+  POST de actuación. Cuando hay recibo, recupera únicamente la lectura. La prueba
+  de BOARD perdido comprueba también este camino y su testigo SQL sin cambios.
 - Se detectó disco casi lleno por clústeres efímeros anteriores. Se limpiaron 304
   clústeres locales PG18 detenidos anteriores a 5A.3, verificando raíz, versión,
   ausencia de PID/proceso. Se conservaron diez recientes, todos los activos y los

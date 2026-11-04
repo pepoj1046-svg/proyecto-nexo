@@ -12,7 +12,7 @@ La autorización posterior del propietario prevalece sobre el alcance histórico
   overflow horizontal a 320 px y en emulación de zoom de layout al 200 %.
   Esto no certifica todos los estados, lectores de pantalla o dispositivos físicos.
 - El cuarto caso falla: Escape no cierra la navegación móvil ni devuelve el foco
-  al botón. Hay captura y traza privadas bajo `.local/web-test-results`.
+  al botón. Se generaron captura y traza temporales bajo `.local/web-test-results`; las ejecuciones posteriores pueden reemplazarlas.
 - Tres regresiones unitarias sobre el manejador real useCommands fallan en la base:
   el cuerpo anidado se puede modificar mientras espera sesión; un recibo recibido
   seguido de refresh rechazado vuelve a emitir POST; una respuesta tardía puede
@@ -75,13 +75,15 @@ confunde una respuesta tardía con un permiso para una cuenta nueva.
 
 La protección adicional del formulario y el botón explícito de recuperación se
 activan en `BookingJourney`, `TripOperations`, `CarePanel` y generación de códigos
-de responsables. Rechazan otro cuerpo mientras el original está pendiente. El
+de responsables, `PassengerRecovery`, `RecoveryConsole`, `DriverRescue` y
+`HandoffPanel`. Rechazan otro cuerpo mientras el original está pendiente. El
 callback siempre recupera la intención conservada, aunque su botón original haya
 desaparecido del estado consultado. Los formularios administrativos 4A.6 mantienen
 sus controles de reintento y su retiro explícito de rechazos definitivos; se
 refuerza la prueba de recibo conocido para exigir cero POST adicionales.
 
-Solo los refresh de operaciones y CarePanel activan `scopedRefresh`: envían todas
+Solo los refresh de operaciones, CarePanel, PassengerRecovery, RecoveryConsole,
+DriverRescue y HandoffPanel activan `scopedRefresh`: envían todas
 sus lecturas POST con el CSRF original y comprueban la cuenta antes de publicar.
 Los demás callbacks conservan verificaciones de identidad antes y después. No
 habilitar ese indicador en un callback nuevo sin auditar sus lecturas y efectos.
@@ -110,6 +112,23 @@ botón. Los paneles de rescates, condiciones, cancelación y revisión conservan
 procedimientos nativos y no reciben automáticamente otro flujo físico genérico.
 La mejora compartida de cuerpo/recibo no autoriza repetir una actuación distinta.
 
+La consulta manual de una intención incierta no reenvía el comando ni elimina su
+clave. Si ya hay recibo, la recuperación únicamente refresca sus lecturas. La
+consulta posterior no prueba por sí sola que la actuación se haya confirmado.
+Los controles incompatibles y la paginación se bloquean mientras una intención
+protegida siga pendiente; el botón de recuperación permanece accesible.
+
+Para evitar consultas redundantes, la recuperación del viaje reutiliza la lista
+de selección ya mostrada de la misma cuenta y vuelve a consultar el snapshot
+actual con el CSRF original. La lista no autoriza actuaciones: el servidor
+revalida el ámbito y devuelve el inventario vigente. Una actualización completa
+manual vuelve a consultar overview. La recepción usa los handoffs del snapshot
+recién autorizado; no mantiene un inventario adicional ni omite validaciones SQL.
+Los callbacks de rescate propagan la sesión original y sus errores, y conservan
+montados sus controladores durante cambios de estado. El login reutiliza la
+respuesta autorizada para iniciar estas consultas ligadas, sin cachear sesiones.
+
+
 ### Correcciones durante las pruebas dirigidas
 
 - Se observó un 429 real en el recorrido completo por comprobaciones redundantes
@@ -127,7 +146,7 @@ La mejora compartida de cuerpo/recibo no autoriza repetir una actuación distint
   creada por ese laboratorio. No se debilitaron aserciones ni se añadieron retries.
 
 Pruebas dirigidas aprobadas: 19 unitarias (incluye las 8 nuevas del manejador),
-8 E2E nuevos y 4 E2E anteriores relevantes en móvil, con PostgreSQL real. Los
+casos E2E nuevos y anteriores relevantes en móvil, con PostgreSQL real. Los
 resultados completos de C se publican en el informe, sin confundir ejecuciones
 dirigidas o históricas con una batería final nueva.
 
