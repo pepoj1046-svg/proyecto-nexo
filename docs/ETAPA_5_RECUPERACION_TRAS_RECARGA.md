@@ -229,58 +229,289 @@ Todos los nombres siguientes son **propuestos e inexistentes en la base**.
 No se ha creado ningún endpoint, RPC, tabla o ticket. La revisión debe aprobar
 también el arranque de sesión de 5.1 antes de habilitar lectura privada restaurada.
 
-### 5.1 Arranque y reautenticación en equipo compartido
+### 5.1 Revisión complementaria: sesiones y reautenticación entre pestañas
 
-GET /api/session con authenticated=true **no demuestra una contraseña introducida
-en el documento restaurado**. Un gate activado solo por presencia del ticket puede
-evadirse borrando o corrompiendo el almacenamiento; no basta para la garantía de
-privacidad solicitada.
+**Esta sección sustituye la propuesta de retirar el handle compartido al servir
+HTML del commit 85cd26e. Esa propuesta se descarta:** recargar o autenticar un
+documento no debe invalidar el contexto de otros documentos. La cookie compartida
+no puede continuar siendo, simultáneamente, la única selección de cuenta de todas
+las pestañas y una frontera de autenticación independiente para cada documento.
 
-Se propone un arranque de documento con estas condiciones:
+Se conservan las decisiones aprobadas: treinta minutos no renovables, ticket
+mínimo en sessionStorage, reautenticación obligatoria, sin datos privados antes
+de verificarla y recuperación solo de lectura. Ninguna arquitectura de esta
+sección se ha implementado ni autoriza iniciar 5A.4-B.
 
-1. Cada carga completa del HTML de la aplicación crea una época de documento
-   (bootId) y un contexto web anónimo. Se retira de la RAM del gateway el handle
-   previo de esa cookie antes de servir el documento; no se cancela ni revierte
-   ninguna operación SQL. El token SQL nunca estuvo en el navegador.
-   Este cambio ocurre después de los controles de transporte/origen, solo para
-   HTML de la aplicación; un asset, origen ajeno o petición rechazada no reinicia
-   sesiones. No invalida todas las sesiones SQL de una cuenta.
-2. La respuesta HTML contiene solo la pantalla pública/bloqueada. Ningún panel
-   privado, código, recibo, familia de ticket o consulta privada se monta o publica
-   antes de una contraseña válida mediante el login existente. En recuperación,
-   los demás paneles permanecen bloqueados hasta verificar también sello y cuenta
-   original en servidor; no basta comparar el accountRef editable del ticket.
-   La regla no depende
-   del ticket; evita saltarse el gate borrándolo. Navegación SPA dentro del documento
-   ya autenticado conserva el contrato existente.
-3. El servidor asocia el nuevo login a ese bootId en su RAM. GET de sesión o una
-   bandera en Web Storage no sustituyen esa evidencia. Sesión/login pueden exponer
-   environmentId y bootId no sensibles; CSRF continúa solo en memoria/cookie según
-   el mecanismo actual. No agregar secretos al ticket ni nuevos proveedores.
-4. La restauración desde bfcache exige el mismo gate: ocultar/limpiar datos en
-   pagehide antes de congelar, invalidar generaciones y volver al arranque anónimo
-   del servidor al restaurar. No reutilizar una captura DOM o una promesa en vuelo
-   como prueba de reautenticación. Debe probarse pageshow.persisted; el no-store
-   existente no se toma como garantía universal de ausencia de bfcache.
-5. El lector de recuperación comprueba que el handle/bootId siguen registrados y
-   ligados a esa autenticación **antes y después** de la lectura SQL. El actor del
-   context capturado no prueba por sí solo que su entrada siga en el Map después
-   de una espera; createWebSessions.actor actual no comprueba esa pertenencia.
-6. La UI compara cuenta original, época de ejecución/documento, CSRF en RAM,
-   identificador de consulta y generación antes de publicar. Un cambio de sesión,
-   logout o A → B → A descarta respuestas antiguas y exige una lectura nueva.
+#### 5.1.1 Evidencia del comportamiento actual
 
-Es un cambio deliberado del ciclo de sesión a revisar: otra pestaña que compartía
-esa cookie puede recibir 401 y debe conservar sus intenciones RAM según 5A.3.
-No se afirma aislamiento de cookies entre pestañas ni se revocan por recuperar
-todos los dispositivos de una cuenta. Las operaciones SQL ya autorizadas pueden
-terminar; el gate no prueba su rollback. El manejo de HTML/pagehide/bfcache es un
-gate de aceptación, no una capacidad demostrada con la inspección actual.
+La inspección corresponde al código funcional heredado de 3d16680, intacto en
+85cd26e. Diferenciar el HTML público, la cookie y la sesión SQL es necesario:
 
-Este mecanismo protege la vista restaurada y el acceso mediante el handle retirado.
-No borra fotografías, miniaturas del navegador/SO, datos ya vistos ni otra pestaña
-previamente autenticada y abierta. La entrega física del equipo requiere un cierre
-de sesión efectivo; no prometer privacidad forense ni protección contra XSS activo.
+| Fuente real | Hecho comprobado |
+| --- | --- |
+| [web-gateway.mjs](../src/http/web-gateway.mjs) | Cookie trufis_lab_<puerto>, HttpOnly, SameSite=Strict y Path=/. No está particionada por pestaña. El HTML se sirve sin invalidar el handle. login escribe otra cookie y logout la expira. Cada petición captura context antes del await del handler. |
+| [web-sessions.mjs](../src/http/web-sessions.mjs) | Un handle selecciona una única entrada con token SQL, CSRF y expiración. login crea otra entrada y elimina la anterior; no comprueba si otra pestaña la usa. actor(context) consulta el token capturado, sin comprobar que la misma entrada siga registrada. |
+| [private-api.ts](../apps/web/src/private-api.ts) | sessionRead y authenticationWrite son variables del módulo de cada documento. Ordenan sus propias peticiones, no las de otra pestaña. GET actuales no adjuntan el CSRF; login/logout comparten la cookie del navegador. |
+| [main.tsx](../apps/web/src/main.tsx) | recoveryAccount, guardias y formularios son locales al documento. hidden conserva controladores mientras pide la cuenta original. beforeunload advierte, pero no impide recargar ni demuestra privacidad en bfcache. No hay manejo actual de pagehide/pageshow que lo acredite. |
+| [Login.tsx](../apps/web/src/Login.tsx) | El formulario consulta la sesión, envía contraseña al login y limpia el campo. No crea un contexto autenticado independiente para su documento. |
+| [admin-intent.ts](../apps/web/src/admin-intent.ts) | Sets y Map en RAM conservan intenciones de ese documento; no son un bloqueo compartido entre pestañas ni autoridad de identidad. |
+| [010, sesiones SQL](../database/migrations/010_security_and_abuse.sql) | Cada login emite un token distinto con expiración propia. logout revoca el token seleccionado, no todos los tokens del usuario. Este soporte nativo permite separar contextos sin crear otra tabla de identidad. |
+
+Traza deducida del gateway y de esas funciones, con T1 y T2 dentro del **mismo
+BrowserContext/perfil**, no dos contextos Playwright aislados:
+
+| Paso | Cookie común y efecto en T1/T2 |
+| --- | --- |
+| T1 autentica A | Cookie C1 selecciona token A1 y CSRF c1. T2 también envía C1, aunque tenga otra RAM. |
+| T2 recarga en la base actual | El HTML no cambia C1. GET /api/session responde A/c1 sin pedir otra contraseña; los paneles pueden cargar datos. No satisface la nueva reautenticación tras recarga. |
+| T2 vuelve a autenticar A | Login crea C2/A2/c2 y retira C1. El navegador usa C2 también en T1; un POST de T1 con c1 falla CSRF. GET de T1 puede observar A con otro CSRF. Coincidir en accountRef no demuestra continuidad del contexto. |
+| T2 autentica B | La cookie cambia a C3/B/c3. La siguiente consulta de sesión de T1 puede observar B; una intención A debe conservar su cuenta/cuerpo/clave y bloquear su uso por B. No tiene por qué desaparecer la RAM, pero sí se interrumpe su acceso. |
+| T2 hace logout | Se revoca el token seleccionado y se expira la cookie compartida. T1 pierde acceso mediante esa cookie, incluso si conserva otro estado en pantalla. No equivale a cancelar su reserva. |
+| Petición de T1 capturada antes del cambio | Puede seguir usando el token/context capturado si ya estaba autorizada. Retirar la entrada web no prueba rollback ni invalida retroactivamente ese objeto; una respuesta privada tardía necesita validación de contexto y generación. |
+
+Además, un Set-Cookie anónimo tardío de una pestaña puede competir con el login de
+otra. La cola local de private-api no ordena esas respuestas de todo el navegador.
+SameSite, HttpOnly y beforeunload no convierten una cookie en una cookie por pestaña.
+
+**Sonda ejecutada en esta revisión:** se importó el módulo real web-sessions.mjs
+mediante Node en stdin, con identity/business dobles en memoria y un jar de cookie
+simulado. Se comprobaron seis observaciones con aserciones: P1 dos consumidores
+ven A; P2 session conserva autenticación y CSRF al simular recarga; P3 login A2
+rechaza c1; P4 actor acepta el objeto capturado tras retirar su handle si el token
+sigue válido; P5 login B cambia la cuenta observable; P6 logout revoca el token
+seleccionado. Las seis observaciones aprobaron. No fue una prueba de dos pestañas
+reales, HTTP, PostgreSQL, contraseña, RLS o de la arquitectura propuesta. No se
+crearon archivos de tests ni se modificaron datos.
+
+Las pruebas existentes [web-sessions](../tests/web-sessions.test.mjs) y
+[orden de autenticación](../tests/web-auth-order.test.mjs) cubren rotación y orden
+local, no prueban independencia de dos pestañas con el mismo jar. Se inspeccionaron;
+no se ejecutó una batería funcional en esta revisión.
+
+#### 5.1.2 Comparación de alternativas
+
+| Alternativa | Privacidad y efectos secundarios | Evaluación |
+| --- | --- | --- |
+| Retirar o rotar la cookie al recargar HTML | Puede forzar login del documento nuevo, pero invalida el acceso de todas las pestañas que la usan y compite con respuestas en vuelo. | Descartada por el requisito de conservación entre pestañas. |
+| Mantener cookie de cuenta y añadir reauthenticated=true/tabId en el navegador | Evita esa rotación, pero el indicador es manipulable y el servidor aún entrega datos privados mediante la cookie antigua. | No cumple. Un gate solo visual o activado por el ticket tampoco cumple. |
+| Mantener cookie de cuenta y añadir solo un grant al endpoint de recibos | Puede proteger esa lectura; otros GET/POST privados siguen dependiendo del actor global. Login B vuelve a afectar a T1 y puede mezclar vistas. | Insuficiente para las garantías completas. Si se extiende correctamente a todos los handlers, converge en los contextos siguientes. |
+| Credencial/cookie, ruta u origen diferente por documento | No es aislamiento de pestaña por sí solo: cookies se comparten y duplicar URL puede copiar el ámbito. Introduce rutas/cookies y gestión adicional. | Más complejo y sin resolver automáticamente frescura o bfcache. No se propone. |
+| Cookie de contenedor sin cuenta + contexto autenticado por documento en RAM | Cookie no selecciona actor. Cada documento conserva token SQL y CSRF propios; nueva carga crea un contexto anónimo sin retirar otros. | Recomendada: adaptación central de las sesiones actuales, sin proveedor, tabla de identidad o inventario nuevo. |
+
+La recomendación es la alternativa de menor complejidad **que cumple todos los
+requisitos**, no una corrección de un solo botón. Requiere revisar los handlers
+privados comunes, el transporte y el gate de main. Limitarla al lector de tickets
+mientras las rutas antiguas aceptan la cookie sola dejaría un bypass.
+
+#### 5.1.3 Arquitectura recomendada y prueba de reautenticación
+
+Separar dos niveles en la RAM del gateway:
+
+- **Contenedor de navegador:** handle aleatorio HttpOnly, SameSite y origen/puerto
+  verificados. Agrupa contextos, pero no contiene una cuenta activa predeterminada
+  ni permite acceder a su lista de documentos, tokens o CSRF autenticados.
+- **Contexto lógico de documento:** selector opaco D, generación G, estado de
+  autenticación, token SQL, accountRef derivado y CSRF aleatorio propios, con su
+  expiración. Solo el gateway crea/transiciona este registro. D no es una credencial.
+  Los secretos SQL permanecen en servidor; D/G/CSRF de cliente solo viven en RAM.
+
+```mermaid
+flowchart LR
+    C[Cookie de contenedor sin cuenta] --> D1[Documento T1: contexto D1]
+    C --> D2[Documento T2: contexto D2]
+    D1 --> A[Token SQL A y CSRF propios]
+    D2 --> B[Token SQL B o estado anónimo]
+    A --> PG[PostgreSQL: actor y permisos actuales]
+    B --> PG
+```
+
+Contrato de bootstrap/login, por revisar antes de programar:
+
+1. Cargar HTML no retira ni sustituye el contenedor válido o los contextos de otras
+   pestañas. Una nueva instancia JS o una restauración que exige reautenticación
+   comienza bloqueada. Sin prueba privada en RAM, GET /api/session solo obtiene
+   un **contexto anónimo nuevo** D y su CSRF de bootstrap, nunca datos de una cuenta
+   ya autenticada. Puede reutilizarse esa ruta existente; no se necesita proponer
+   otro endpoint de identidad. El selector se genera en servidor, no se acepta un
+   tabId del cliente para reemplazar un contexto existente.
+   El bootstrap se pide sin selector autenticado. Un D autenticado con prueba
+   ausente/incorrecta se rechaza; no devuelve un secreto nuevo ni se degrada a
+   anónimo. Solo el arranque o una reautenticación explícita instalan en el cliente
+   el nuevo contexto anónimo; un error de una petición no cambia el transporte.
+2. Login explícito presenta D, cookie, Origin y CSRF de bootstrap, además de las
+   credenciales ya admitidas. identity.login vuelve a verificar contraseña/versión/
+   actividad y emite una sesión SQL independiente. Tras verificar la identidad, el
+   servidor instala el contexto autenticado y emite **otro CSRF secreto** en esa
+   respuesta. El CSRF de bootstrap queda consumido; no se admite para reautenticar
+   un contexto que ya está autenticado.
+3. Cada lectura o escritura privada requiere cookie de contenedor + D + CSRF de
+   ese contexto, también en GET privados. Reutilizar X-CSRF-Token y un selector
+   cerrado, por ejemplo X-Nexo-Document; ambos se verifican, no se confían. El CSRF
+   autenticado sirve además como prueba de posesión del contexto en RAM. D, cookie,
+   ticket, accountRef o un booleano, solos o combinados sin esa prueba, no autorizan.
+4. GET /api/session con D conocido pero sin su prueba válida no devuelve su CSRF,
+   accountRef o estado privado. Crear un contexto anónimo tampoco puede degradar
+   o sobreescribir otro autenticado con ese D. No hay operación para recuperar el
+   secreto autenticado mediante cookie + selector o mediante un ticket válido.
+5. Un nuevo documento no obtiene la prueba de la RAM de otra pestaña. No guardar
+   D/G/CSRF, tokens o flags autenticantes en sessionStorage, localStorage, URL,
+   window.name, history.state, BroadcastChannel, service worker o el ticket. Los
+   únicos campos persistidos siguen siendo los del ticket de la sección 4.
+6. Para reautenticar un contexto existente se exige su prueba actual y nueva
+   verificación de contraseña; si se perdió/expiró la prueba se crea otro contexto
+   anónimo, no se resetea otro D por conocerlo. Cada login autorizado cambia G y
+   CSRF solo en ese contexto. Una cookie válida no equivale a nueva contraseña.
+7. Las respuestas de login se instalan con comparación del registro/generación
+   capturados antes de sus awaits. Dos login concurrentes no pueden reinstalar una
+   versión vieja ni devolver una prueba activa del contexto perdedor. Una sesión SQL
+   emitida pero no instalada no se devuelve al navegador; su revocación de limpieza
+   es una operación de seguridad acotada, no una cancelación de negocio.
+
+El contenedor se mantiene estable durante recarga, login y reautenticación de un
+documento. No escribir en él la nueva cuenta ni rotar su valor por esos eventos.
+Si hay que reemitir la misma cookie por su mantenimiento, no cambia autoridad o
+pruebas de otros documentos, ni renueva plazos de tickets o sesiones SQL. Su
+creación inicial puede competir entre dos pestañas sin cookie: se debe comprobar
+la vinculación efectiva antes de permitir cualquier operación; si se perdió,
+fallar cerrado sin transferir contextos o reenviar comandos.
+
+**Qué prueba el servidor:** existe un contexto ligado a ese contenedor, creado o
+renovado tras verificar realmente credenciales con la identidad existente, con
+prueba de posesión y sesión SQL vigente. **Qué no puede probar HTTP:** que D sea
+una pestaña física única o que nadie copió credenciales completas de un navegador
+comprometido. Un XSS/operador con todos los secretos de una sesión puede usarlos;
+no presentar un nonce como atestación de documento, identidad legal o presencia
+humana. La defensa contra una bandera/ticket manipulado no es una defensa absoluta
+contra robo de las credenciales activas.
+
+#### 5.1.4 Fronteras de autorización y respuestas tardías
+
+- Aplicar el contrato a **todos** los handlers privados de la app, incluidos GET
+  de sesión autenticada, reservas propias y ofertas. El bootstrap/login anónimos
+  son excepciones cerradas sin datos privados; catálogo público sigue siendo público.
+  No admitir fallback cookie-only o selección del primer contexto autenticado.
+- Derivar el token desde el contexto registrado y pasarlo a los servicios actuales.
+  PostgreSQL sigue verificando actor, revocación, rol, asociación y terminal. D o G
+  no seleccionan libremente usuario/SQL y no reemplazan RLS.
+- Comprobar pertenencia viva al Map, contenedor, generación, prueba y vencimiento
+  antes del servicio y antes de entregar datos privados. No reutilizar solamente
+  el objeto context capturado; ese es precisamente el límite observado en P4.
+- En el cliente, capturar entorno, D/G, cuenta e intención/generación de consulta.
+  Incrementar la generación de presentación al comenzar una autenticación, logout
+  o restauración, antes de esperar red. Un GET/login/recibo A1 tardío no se publica
+  después de B o A2, aunque accountRef vuelva a coincidir.
+- Comprobar también esa captura antes de despachar tras cualquier await/cola.
+  Si cambió el contexto propio, una continuación antigua no envía el comando con
+  credenciales nuevas, aunque la cuenta vuelva a ser A. Conserva el intento y pide
+  acción manual; el login no lo reanuda automáticamente. Cambiar D2 no modifica la
+  captura D1 de una operación que el usuario de T1 ya inició.
+- Mantener las colas de private-api por documento. No hace falta un mutex de login
+  global entre pestañas ni copiar sus credenciales mediante mensajes. Respuestas
+  antiguas no reinstalan pruebas ni reemplazan un contenedor activo.
+- La vigencia del contexto no supera su sesión SQL; otro login no la prolonga.
+  Caducar/revocar un hijo invalida ese hijo. Expirar/borrar el contenedor o revocar
+  globalmente la identidad puede afectar a todos: es una frontera de seguridad
+  explícita, no un efecto secundario de recargar una pestaña.
+- Mantener límites globales de memoria y tráfico, sin ampliarlos ni expulsar
+  contextos activos para aceptar uno nuevo. Saturación devuelve rechazo al nuevo
+  bootstrap; no elimina intentos ni cancela operaciones existentes. No se promete
+  disponibilidad absoluta frente a abuso o borrado externo de cookies.
+
+No se requiere SQL nuevo para almacenar contextos web: se reutilizan las sesiones
+SQL independientes existentes y el Map del gateway. La RPC de recibos de 5.4 sigue
+siendo la propuesta aditiva separada. Sí cambia el protocolo privado común y sus
+pruebas; no debe coexistir con una vía antigua que permita recuperar autoridad de
+cuenta solo mediante cookie. La transición se prueba en laboratorio, sin prometer
+compatibilidad de sesiones activas entre versiones o reinicios del gateway.
+
+#### 5.1.5 Reservas y comandos pendientes de 5A.2/5A.3
+
+| Evento | Documento afectado | Otros documentos |
+| --- | --- | --- |
+| T2 recarga o autentica A/B | T2 exige login nuevo; ticket solo consulta. Si T2 perdió su cuerpo al recargar, no puede reenviarlo. | D1/token/CSRF y controladores de T1 no se sustituyen; una petición de T1 sigue con su actor original. |
+| T2 reautentica manteniendo su RAM | Mantener montado el controlador/Attempt, su cuenta, clave, cuerpo y recibo. Actualizar transporte solo tras autenticar la cuenta requerida; ocultar datos mientras tanto. | No cambia el acceso de T1 ni sus intenciones. |
+| T2 hace logout explícito | Revocar el token SQL de T2 mediante logout nativo, retirar solo su contexto y limpiar su RAM/tickets locales. Conservar la guardia de logout si su propio intento está pendiente. | No expirar el contenedor común ni revocar tokens de T1. La interfaz debe explicar «Cerrar sesión de esta pestaña». |
+| Revocación administrativa, logout_all ya autorizado o pérdida global del entorno | Fallar cerrado en el alcance revocado. La RAM no concede acceso ni prueba rollback. | Puede afectar a varios contextos por su contrato de seguridad; no se añade una acción global nueva en esta revisión. |
+| pagehide/bfcache de T2 | Bloquear su presentación antes de congelar, retirar su prueba de autenticación de uso en RAM e invalidar callbacks; mantener la intención privada en RAM si el navegador conserva el documento. Al volver, bootstrap nuevo y contraseña, sin replay automático. | No ejecutar logout/reset global ni desmontar T1. |
+
+Mantener el significado de los controladores originales: freeze del cuerpo antes
+del await, key y cuenta originales, bloqueo de otra intención y recibo recibido
+separado de fallo de actualización. Un contexto nuevo de la misma cuenta puede
+recuperar una intención RAM mediante acción manual y permisos actuales; no se
+recalcula el cuerpo o consentimiento para adaptarlo al login. En recuperación tras
+recarga falta ese cuerpo: únicamente consulta según el ticket, nunca retry del
+comando original.
+
+Una respuesta perdida/cambio de contexto puede conservar UNCERTAIN incluso si hubo
+COMMIT. Un recibo confirmado no ocasiona otro POST por fallar su consulta. No vaciar
+attempts, cambiar keys de React o llamar dispose solo porque T2 autenticó otra
+cuenta. Las vistas pueden bloquearse sin destruir sus controladores de intención.
+Tras cambiar de contexto propio, su respuesta antigua queda privada y una consulta
+manual nueva exige cuenta original; A → B → A no restaura callbacks antiguos.
+
+No llamar logout ni mutadores por beforeunload/pagehide: no son una confirmación
+fiable de cierre. En bfcache hay que impedir pintura y consultas privadas antes
+del nuevo login, además de conservar las intenciones en el documento que realmente
+siga en RAM. Debe demostrarse con el navegador; ocultar tarde en pageshow o confiar
+solo en Cache-Control:no-store no acredita ausencia de flash. No se prometen
+recuperación de RAM destruida, eliminación de miniaturas del SO ni privacidad de
+otra pestaña ya abierta y autenticada frente a quien controla físicamente el equipo.
+
+#### 5.1.6 Pruebas reproducibles necesarias antes de aceptar B
+
+Diseño de pruebas, **no implementación ni ejecuciones nuevas de PostgreSQL/E2E**.
+Usar el gateway auténtico y el runner de laboratorio con datos ficticios. Para
+comparar pestañas, crear T1/T2/T3 con browserContext.newPage() dentro del **mismo**
+contexto Playwright; crear dos browser.newContext() no prueba cookie compartida.
+Usar dos cuentas A/B y, en los casos de permisos, pasajero/chofer/administrador de
+asociaciones distintas. No simular la autorización reemplazando todo el gateway.
+
+| ID | Caso reproducible | Evidencia y aceptación |
+| --- | --- | --- |
+| S01 | Caracterizar la base: T1 login A, T2 recarga/login A/login B/logout. Capturar cookie/CSRF solo en RAM del test. | En la base se observa cambio compartido; no se presenta como aprobación del contrato nuevo. Comparar después con los mismos pasos del candidato. |
+| S02 | T1 hace reserva real; esperar COMMIT con route.fetch y retener solo su respuesta. T2 recarga y autentica B antes de liberar la respuesta de T1. | T1 obtiene su resultado A autorizado; cookie-contenedor y contexto D1 no cambian. Una reserva/recibo/auditoría por key, mismo grupo/precio y capacidad por segmento. |
+| S03 | Pausar T1 antes del COMMIT mediante barrera controlada SQL; T2 autentica/recarga y luego liberar T1. Repetir con rollback real. | El resultado depende de la transacción original, no de T2. No crear replays ni inferir rollback por la recarga. |
+| S04 | T1 A con BOARD u otro comando pendiente; T2 alterna A → B → A mientras se demoran sus respuestas. | Token/actor de T1 siguen siendo A; datos antiguos de T2 no se repueblan. No segundo movimiento, cancelación o cambio de custodia. |
+| S05 | Con cookie común y D1 conocido, T2 omite o falsifica prueba; intenta GET de sesión, lectura, comando y login sobre D1. | No obtiene CSRF autenticado, cuenta o datos, ni sobrescribe D1. CSRF de bootstrap consumido no autoriza otro login sobre un contexto autenticado. |
+| S06 | Recargar T2 con ticket válido, borrado, corrupto y flags/tabId inyectados en storage; mantener cookie A. | Cero datos visibles y cero consultas privadas antes del login exigido. Ningún campo local activa autoridad; ticket válido tampoco crea contexto autenticado. |
+| S07 | Navegar T2 fuera y volver por bfcache con lectura pendiente; conservar T1 activo. Usar trazas/frames y pageshow.persisted. | Sin flash/árbol accesible privado antes del login ni callbacks viejos; T1 intacto. Si el navegador no reproduce bfcache, declararlo no verificado. |
+| S08 | Duplicar T2/window.open y comprobar copia de sessionStorage, con intentos simultáneos de recuperación. | Contextos anónimos distintos; no se copian pruebas. Cada uno exige login; misma referencia consulta el recibo sin escrituras ni renovación del plazo. |
+| S09 | Logout explícito de T2 y logout bloqueado por intento propio pendiente; T1 mantiene petición en vuelo. | Se revoca solo token T2 cuando proceda; T1 sigue válido. No se expira la cookie común ni se borran intentos/tickets de otra pestaña. |
+| S10 | Caducar un contexto, revocar un token y revocar identidad/rol por los mecanismos existentes, con barreras de consulta. | Afectación según alcance real; nueva autenticación no amplía permisos. Distinguir rechazo de una operación ya autorizada que puede terminar. |
+| S11 | Dos login de un mismo documento con respuestas inversas; login fallido y cuenta equivocada durante recuperación. | Comparación de versión antes de instalar el contexto; ninguna respuesta vieja reinstala pruebas o datos. Intento original queda conservado y oculto. |
+| S12 | Dos primeras aperturas sin cookie y respuestas bootstrap tardías; cookie borrada/expirada externamente. | Vinculación verificada o fallo cerrado, sin reanudar comandos ni transferir contextos. No hay sustitución de cookie de cuenta durante login normal. |
+| S13 | T1 ya recibió recibo y su actualización falla; T2 reautentica mientras T1 recupera manualmente. | T1 conserva recibo y hace solo lectura, cero POST adicionales de negocio. Repetir con respuesta perdida sin recibo y cuerpo RAM para exigir la key/cuerpo originales en el replay manual de T1. |
+| S14 | Ticket a 29:59.999/30:00, recargas y nuevos login en T2, respuesta de recibo tardía. | createdAt/expiresAt/key invariables; no se persisten D/G/CSRF o tokens, no se muestra como vigente tras vencer y no se renueva al autenticar. |
+| S15 | Origen/CSRF falsos, otro contenedor, rol/asociación ajenos, bootstrap masivo y límites de memoria/tráfico. | Controles completos de todos los handlers; sin fallback cookie-only, filtración de claves o expulsión de contextos activos. Rechazos no alteran negocio. |
+| S16 | Regresión de las máquinas 5A.2/5A.3, desktop/móvil, teclado/320 px/200 %, cierre/reinicio, CI y CodeQL. | Conservar pruebas anteriores y añadir estas brechas; resultados reales del SHA funcional. No aumentar timeouts/retries ni debilitar aserciones. |
+
+En S02/S03, el interceptor controla transporte después de ejecutar contra PostgreSQL
+real; no fabrica un recibo exitoso. Los testigos SQL comparan reservas, miembros,
+precios/versiones, segmentos, cola, movimientos, custodia, acciones y auditoría de
+negocio. Autenticación emite/revoca sesiones y sus eventos legítimos: verificarlos
+por separado en vez de exigir que toda la DB permanezca idéntica después del login.
+No guardar cookies, pruebas, contraseñas, cuerpos o datos privados en los artefactos.
+
+Las expectativas antiguas de rotación de cookie global deben revisarse de forma
+explícita al cambiar el protocolo: la defensa pasa a ser rotación de contexto/CSRF
+del documento y cookie común sin actor. No basta borrar una aserción de seguridad
+para aprobar el candidato. Los contratos de inventario, roles y recibos conservan
+sus regresiones; S01 mantiene documentado el comportamiento anterior.
+
+#### 5.1.7 Dictamen de la revisión complementaria
+
+El arranque que retira el handle común **no es aceptable** para el requisito nuevo
+sobre otras pestañas. Se recomienda contenedor sin autoridad y contextos autenticados
+por documento, con verificación SQL independiente y prueba RAM exigida en todos los
+handlers privados. No necesita nueva infraestructura de identidad ni persistencia
+adicional de credenciales; sí una adaptación explícita del protocolo común.
+
+**5A.4-B no debe comenzar con el contrato anterior y no queda autorizado por esta
+revisión.** El contrato corregido es una base técnica viable para que el propietario
+lo revise y autorice expresamente. Sus garantías de runtime, privacidad en bfcache
+con conservación de intenciones, y aislamiento con varias pestañas quedan como gates
+obligatorios a demostrar durante B; no se declaran probadas por una sonda de módulo.
+No se cambia el ticket de treinta minutos ni el resto de decisiones aprobadas.
 
 ### 5.2 Emisión: POST /api/recovery/ticket
 
@@ -304,8 +535,7 @@ de sesión efectivo; no prometer privacidad forense ni protección contra XSS ac
   cookie HttpOnly/SameSite, JSON y límites actuales. No GET, query string, URL
   derivada del ticket o Idempotency-Key que invoque una escritura.
 - Tras autenticar, validar sello, versión, aplicación, origen esperado, ejecución, plazo fijo y
-  familia; derivar actor de sesión SQL y comparar accountRef. Revalidar handle y
-  boot. Comprobar nuevamente el plazo justo antes de responder: una consulta
+  familia; derivar actor de sesión SQL y comparar accountRef. Revalidar contenedor y contexto/generación del documento según 5.1. Comprobar nuevamente el plazo justo antes de responder: una consulta
   iniciada antes de vencer no extiende la referencia mientras espera. Una firma
   válida no reemplaza permisos o reautenticación.
 - El HTTP 200 es una respuesta a la consulta, no una nueva reserva. Respuestas
@@ -518,7 +748,7 @@ solo las brechas nuevas. No sustituir PostgreSQL por respuestas simuladas del ga
 | T15 | Cliente A → B → A durante consulta, respuesta tardía del login y de recibo | CSRF+boot+generación descartan datos viejos aunque accountRef termine otra vez en A. |
 | T16 | Mismo equipo con cookie A, ticket inexistente/corrupto/borrado y restauración de documento | Ninguna vista/API privada se carga desde el gate antes de reautenticar; no bypass por Web Storage. |
 | T17 | bfcache, pagehide/pageshow, back/forward y restauración de pestaña, cuando Chromium lo permita | Pantalla bloqueada sin flash privado; nuevo arranque antes de consultar. Registrar si un tipo de restauración no pudo reproducirse. |
-| T18 | Duplicar pestaña / window.open con sessionStorage copiado; login A/B en ambas | No asumir exclusividad; lectores no mutan; handle invalidado y respuestas antiguas se descartan. |
+| T18 | Duplicar pestaña / window.open con sessionStorage copiado; login A/B en ambas | No asumir exclusividad; lectores no mutan; contexto renovado solo en su documento y respuestas antiguas descartadas, sin invalidar el otro. |
 | T19 | Reinicio solo gateway con DB conservada; reinicio completo, mismo puerto y nuevos IDs | Entorno anterior inválido; ningún resignado, lookup cruzado o autenticación restaurada por coincidencia local. |
 | T20 | Logout, cambio de cuenta y descarte con petición en vuelo | Limpiar namespace/RAM y callbacks sin cancelar, liberar capacidad o borrar recibos. |
 | T21 | Storage disabled/QuotaExceeded, datos truncados o escrituras interrumpidas | Fallo anterior al envío; el texto distingue pérdida de referencia de resultado incierto ya enviado. |
@@ -574,7 +804,7 @@ eliminar un bloqueo de UX.
 | --- | --- |
 | Alcance inicial | Aprobar solo reservas APP QUEUE/ENROUTE; dejar las demás familias bajo sus contratos RAM hasta su revisión específica. No se consideran todas recuperables por tener actions. |
 | Emisión previa firmada + RPC | Aprobar los dos contratos HTTP y la futura proyección aditiva. No basta una consulta por clave para garantizar fechas de un intento sin metadatos acreditados. |
-| Reautenticación por documento y pestañas compartidas | Aceptar arranque anónimo en cargas completas y su efecto en otras pestañas que comparten cookie. Si se exige conservar sus sesiones sin ese efecto, debe diseñarse otra vinculación por documento antes de B, no simularla con tabId. |
+| Reautenticación por documento y pestañas compartidas | Revisar y aprobar el contenedor sin cuenta, contextos independientes y prueba RAM de 5.1. Recarga/login no invalidan otras pestañas; logout debe indicar su alcance de documento. Sin fallback cookie-only. |
 | Garantía temporal | Confirmar que treinta minutos es vigencia lógica del ticket; no destrucción física verificable del almacenamiento cuando el navegador está cerrado. El plazo de treinta minutos ya está aprobado y no se propone cambiarlo. |
 | Almacenamiento no disponible | Propuesta: bloquear el nuevo envío en modo recuperable. Decidir aparte si se permite continuar explícitamente con el modo RAM de 5A.3 y sus límites, sin prometer recuperación tras recarga. |
 | Terminal compartida | Revisar procedimiento operativo de cierre de sesión al entregar el equipo y límites de otras pestañas/miniaturas. No inventar identidad legal o retención comercial. |
@@ -596,11 +826,16 @@ autoriza eliminarlos. Nada de este diseño exige proveedores o recursos de pago.
 - Validación documental y de Git al publicar: solo este Markdown nuevo respecto
   del SHA exacto; enlaces locales, cercas y referencias de evidencia verificadas;
   código funcional, tests, workflows, 001–041, dependencias y datos intactos.
-  Comprobaciones estáticas aprobadas: 20 enlaces locales con sus líneas de anclaje,
-  una cerca Mermaid equilibrada (sin renderizar el diagrama), 41 migraciones
+  Comprobaciones estáticas de la revisión complementaria aprobadas: 29 enlaces
+  locales con sus líneas de anclaje, dos cercas Mermaid equilibradas (sin renderizar
+  los diagramas), 41 migraciones
   históricas sin cambios y ausencia de las dos rutas propuestas en el gateway.
-- La validación documental no ejecuta la máquina, verifica un HMAC o demuestra un
-  ataque E2E; esos resultados quedan pendientes de B y de su autorización expresa.
+- En la revisión complementaria se ejecutó la sonda P1–P6 de 5.1.1 sobre el módulo
+  original con dependencias dobles en RAM. Demuestra esos comportamientos del módulo,
+  no las garantías del diseño nuevo ni un navegador/PostgreSQL real. Se añaden los
+  escenarios S01–S16 solo como especificación, sin archivos de prueba o código.
+- La validación documental no ejecuta la máquina nueva, verifica un HMAC o demuestra
+  un ataque E2E; esos resultados quedan pendientes de B y de su autorización expresa.
 
 **Dictamen de A:** propuesta lista para revisión del contrato y sus gates. No hay
 implementación funcional ni declaración de seguridad de una capacidad aún inexistente.
