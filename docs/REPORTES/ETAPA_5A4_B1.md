@@ -208,3 +208,15 @@ Evidencias locales: `.local/5a4-b1-evidence/` (PNG y JSON sin pruebas de sesión
 subdirectorios de evidencia ficticia; no publica accesos, cookies o trazas completas.
 Los filtros de ambos workflows incluyen el destino `desarrollo/etapa-5a3` para
 este PR; matrices, timeouts, retries y límites siguen sin cambios.
+
+## Incidencia de regresión detectada durante la batería completa
+
+`conditions-request.spec.mjs` esperaba consultar la cancelación pendiente después
+ de `p.reload()` mediante la cookie compartida. Reproducción: la nueva página
+muestra correctamente el formulario anónimo y ninguna reserva; por eso falló la
+aserción antigua. Se añadió autenticación manual de la misma cuenta y se mantuvo
+la comprobación de solicitud pendiente, rechazo/CSRF, cancelación administrativa,
+precio original de 140 BOB, auditoría y capacidad. La prueba dirigida real pasó.
+No se cambió el comportamiento de las condiciones ni la política de cancelación.
+La matriz del candidato anterior puede conservar ese fallo; únicamente los
+checks del SHA final sirven para el dictamen.
