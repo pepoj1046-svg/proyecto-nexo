@@ -2,7 +2,7 @@ import{watchDocument,proofHeaders,rawBootstrap,rememberDocument}from'./document-
 import{expect}from'@playwright/test';
 import{readFile,mkdir,writeFile}from'node:fs/promises';
 const accounts=JSON.parse(await readFile(process.env.NEXO_WEB_CREDENTIALS_FILE,'utf8')).accounts;
-export async function login(page,user){watchDocument(typeof page.page==='function'?page.page():page);await page.getByLabel('Usuario ficticio',{exact:true}).fill(accounts[user].login);await page.getByLabel('Contraseña de prueba',{exact:true}).fill(accounts[user].password);await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();}
+export async function login(page,user){watchDocument(typeof page.page==='function'?page.page():page);await page.getByLabel('Usuario ficticio',{exact:true}).fill(accounts[user].login);await page.getByLabel('Contraseña de prueba',{exact:true}).fill(accounts[user].password);const target=typeof page.page==='function'?page.page():page;const response=target.waitForResponse(r=>new URL(r.url()).pathname==='/api/login');await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await(await response).finished();await expect(target.getByRole('button',{name:'Verificando…',exact:true})).toHaveCount(0);}
 export async function prepare(page,user,enroute=false){
  await page.goto('/');
  if(enroute){for(const[label,query]of[['Origen','Palmar de prueba'],['Destino','Villa Montes']]){await page.getByRole('combobox',{name:label,exact:true}).fill(query);await page.getByRole('option',{name:new RegExp('^'+query+' ')}).first().click();}await page.getByRole('button',{name:'Buscar viajes',exact:true}).click();}

@@ -28,13 +28,26 @@ Rama: `desarrollo/etapa-5a4-b1`. Diseño incorporado sin merge desde
 ## Validaciones ya ejecutadas en el primer avance
 
 - TypeScript y compilación web aprobados.
-- 98 pruebas unitarias aprobadas (incluidas ocho de contextos, concurrencia,
+- 104 pruebas unitarias aprobadas (incluidas nueve de contextos, concurrencia,
   límites, CSRF y revocación).
 - Cinco pruebas dirigidas PostgreSQL 18.4 aprobadas: F09, W07, W08, O07, Z07.
 - Dirigidas Chromium escritorio: dos de reservation-session, una de
   reservation-identity-read y una de private-account-read aprobadas.
-- Detectada adaptación pendiente de una aserción administrativa: el nuevo 401
-  oculta la consulta hasta la reautenticación explícita; se conserva el recibo.
+- Batería completa `npm run test:all`: 104 unitarias y 409 integraciones
+  PostgreSQL 18.4 aprobadas; runner de salida y listeners locales aprobados.
+- 18 E2E dirigidas de escritorio aprobadas. Siete nuevos escenarios B1 incluyen
+  pestañas del mismo BrowserContext, bootstrap simultáneo, cookie/selector sin
+  prueba, pérdida de respuesta tras COMMIT, recibo conocido y restauración.
+- La prueba determinista de pagehide/pageshow protege DOM y respuestas tardías.
+  La navegación real atrás/adelante exigió contraseña, pero Chromium 154 recargó
+  el documento: `response-cache-control-no-store` y
+  `response-cache-control-no-store-with-js-network-request`. No se declara
+  verificada una restauración real de bfcache en ese entorno.
+- Las regresiones antiguas se adaptaron al rechazo 401 de selectores caducados
+  y a la autenticación obligatoria tras recargas. Se mantienen los testigos SQL
+  y las aserciones de grupos, capacidad, tarifas y cantidad de escrituras.
+- Se separaron las familias E2E B1 en tres laboratorios aislados para respetar
+  los límites existentes de tráfico y autenticación, sin alterarlos.
 
 ## Pendiente antes de proponer cierre
 

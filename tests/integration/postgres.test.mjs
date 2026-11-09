@@ -2738,8 +2738,8 @@ test('W06: passed pickup, revoked driver and inactive sessions cannot create or 
  await admin.query("UPDATE nexo.sessions SET revoked_at=clock_timestamp()WHERE user_id=$1",[fixture.p]);await rejects(s.list(fixture.tokens.p),/UNAUTHENTICATED/);
 });
 const documentHeaders=s=>({'X-Nexo-Document':s.documentId,'X-Nexo-Generation':String(s.generation)});
-async function browserLogin(web,loginName='browser.ficticio'){
- await identity.register({login:loginName,password});const initial=await fetch(web.url+'/api/session');const anon=await initial.json(),cookie=initial.headers.get('set-cookie').split(';')[0];
+async function browserLogin(web,loginName='browser.ficticio',sharedCookie){
+ await identity.register({login:loginName,password});const initial=await fetch(web.url+'/api/session',{headers:sharedCookie?{Cookie:sharedCookie}:{}});const anon=await initial.json(),cookie=initial.headers.get('set-cookie').split(';')[0];
  const r=await postJson(web.url,'/api/login',{login:loginName,password},{Origin:web.url,Cookie:cookie,...documentHeaders(anon),'X-CSRF-Token':anon.csrf});assert.equal(r.status,200);
  return{cookie:r.headers['set-cookie'][0].split(';')[0],documentId:r.body.documentId,generation:r.body.generation,csrf:r.body.csrf,anonCookie:cookie,anonCsrf:anon.csrf,login:loginName};
 }
@@ -4311,4 +4311,19 @@ test('4A6-C: committed configuration receipt ignores unrelated writer mutex with
  try{await blocker.query('BEGIN');await blocker.query('SELECT nexo.platform_mutex()');assert.deepEqual(await routeConfig().command(fixture.tokens.adminA,k,b),receipt);assert.deepEqual(await directorySnapshot(),before);await rejects(routeConfig().command(fixture.tokens.adminA,key(),b),/CONFIG_BUSY/);
  }finally{await blocker.query('ROLLBACK');await blocker.end();}
  await provisionPool.query('SELECT nexo.configure_admin_scope($1,$2,$3,true)',[fixture.adminA,fixture.A,[fixture.ra]]);await rejects(routeConfig().command(fixture.tokens.adminA,k,b),/FORBIDDEN_SCOPE/);
+});
+
+test('B1-01: real SQL sessions in one container retain independent accounts and token-specific revocation',async()=>{
+ const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
+  const a=await browserLogin(web,'b1.account.a'),b=await browserLogin(web,'b1.account.b',a.cookie);assert.equal(a.cookie,b.cookie);assert.notEqual(a.documentId,b.documentId);
+  const headers=x=>({Cookie:x.cookie,...documentHeaders(x),'X-CSRF-Token':x.csrf});
+  const sa=await(await fetch(web.url+'/api/session',{headers:headers(a)})).json(),sb=await(await fetch(web.url+'/api/session',{headers:headers(b)})).json();assert.equal(sa.authenticated,true);assert.equal(sb.authenticated,true);assert.notEqual(sa.accountRef,sb.accountRef);
+  assert.equal((await fetch(web.url+'/api/passenger/bookings',{headers:{Cookie:a.cookie}})).status,401);
+  const guessed=await fetch(web.url+'/api/session',{headers:{Cookie:a.cookie,...documentHeaders(a)}});assert.equal(guessed.status,403);assert.deepEqual(await guessed.json(),{error:'CSRF_REQUIRED'});
+  const bootstrap=await fetch(web.url+'/api/session',{headers:{Cookie:a.cookie}}),anon=await bootstrap.json();assert.equal(anon.authenticated,false);assert.equal(anon.accountRef,undefined);assert.notEqual(anon.documentId,a.documentId);
+  const logout=await postJson(web.url,'/api/logout',{}, {Origin:web.url,...headers(b)});assert.equal(logout.status,200);assert.equal(logout.headers['set-cookie'],undefined);
+  assert.equal((await fetch(web.url+'/api/session',{headers:headers(b)})).status,401);assert.equal((await fetch(web.url+'/api/passenger/bookings',{headers:headers(a)})).status,200);
+  const rows=(await admin.query('SELECT a.login_key,s.revoked_at FROM nexo.identity_accounts a JOIN nexo.sessions s ON s.user_id=a.user_id WHERE a.login_key=ANY($1) ORDER BY a.login_key',[['b1.account.a','b1.account.b']])).rows;assert.equal(rows.length,2);assert.equal(rows[0].revoked_at,null);assert.notEqual(rows[1].revoked_at,null);
+  await admin.query("UPDATE nexo.sessions SET expires_at=clock_timestamp()-interval '1 second' WHERE user_id=(SELECT user_id FROM nexo.identity_accounts WHERE login_key='b1.account.a')");assert.equal((await fetch(web.url+'/api/passenger/bookings',{headers:headers(a)})).status,401);
+ }finally{await web.close();}
 });

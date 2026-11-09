@@ -8,3 +8,9 @@ test('SQL revocation and expiration invalidate only the selected document and co
 test('late SQL validation cannot return data after the context is replaced',async()=>{const f=fixture(),a=await f.login(await f.boot()),c=f.context(a.handle,a.body);let release;f.gate(new Promise(r=>release=r));const read=f.sessions.actor(c),reauth=f.sessions.login(c,{});release();await reauth;/* read may validate first; a second validation must reject the old frame */await read;await assert.rejects(f.sessions.actor(c),/AUTHENTICATION_REQUIRED/);});
 test('concurrent same-generation logins install one result and revoke the losing SQL token',async()=>{const f=fixture(),a=await f.boot(),c=f.context(a.handle,a.body);let release;f.gate(new Promise(r=>release=r));const pending=[f.sessions.login(c,{}),f.sessions.login(c,{})];release();const r=await Promise.allSettled(pending);assert.equal(r.filter(x=>x.status==='fulfilled').length,1);assert.equal(r.filter(x=>x.status==='rejected').length,1);assert.equal(f.revoked.size,1);});
 test('anonymous bootstrap is bounded without evicting active documents',async()=>{const f=fixture(2),a=await f.login(await f.boot());await f.boot(a.handle);await assert.rejects(f.boot(a.handle),/RATE_LIMITED/);assert.equal((await f.sessions.actor(f.context(a.handle,a.body))).accountRef,a.body.accountRef);});
+
+test('SQL validation held across logout rejects the copied in-flight context after release',async()=>{
+ const f=fixture(),a=await f.login(await f.boot()),c=f.context(a.handle,a.body);let release;
+ f.gate(new Promise(r=>release=r));const pending=f.sessions.actor(c);
+ await f.sessions.logout(c);release();await assert.rejects(pending,/AUTHENTICATION_REQUIRED/);
+});

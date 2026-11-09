@@ -20,6 +20,7 @@ window.addEventListener('pagehide',()=>{document.getElementById('document-conten
 window.addEventListener('pageshow',event=>{if(event.persisted){document.getElementById('document-content')?.setAttribute('hidden','');suspendDocument();}});
 function App(){
  const documentGate=useSyncExternalStore(subscribeDocument,documentLock,()=>null);
+ const[documentView,setDocumentView]=useState(0);
  const [path,setPath]=useState(location.pathname),[menu,setMenu]=useState(false),[selection,setSelection]=useState<Selection|null>(null);
  const heading=useRef<HTMLElement>(null),menuButton=useRef<HTMLButtonElement>(null),first=useRef(true),currentPath=useRef(path);
  const recoveryAccount=useAdminRecovery(),protectedIntent=useAdminIntent(),[navigationError,setNavigationError]=useState('');
@@ -38,9 +39,9 @@ function App(){
   </div></header>
   <main id="contenido" ref={heading} tabIndex={-1}>
    {navigationError&&<p className="container message error" role="alert">{navigationError}</p>}
-   {documentGate&&<section className="container panel-page" aria-label="Reautenticación tras restaurar la página"><h2>Vuelve a autenticar esta página</h2><p>Los datos permanecen ocultos. No se reenviaron operaciones. Si había un intento, utiliza la cuenta original.</p><Login onSession={s=>{if(!unlockDocument(s))setNavigationError('Autentica la cuenta original de esta página.');else setNavigationError('');}}/></section>}
+   {documentGate&&<section className="container panel-page" aria-label="Reautenticación tras restaurar la página"><h2>Vuelve a autenticar esta página</h2><p>Los datos permanecen ocultos. No se reenviaron operaciones. Si había un intento, utiliza la cuenta original.</p><Login onSession={s=>{if(!unlockDocument(s))setNavigationError('Autentica la cuenta original de esta página.');else{if(s.accountRef)completeAdminAuthentication(s.accountRef);if(!adminIntentPending())setDocumentView(v=>v+1);setNavigationError('');}}}/></section>}
    {!documentGate&&recoveryAccount&&<section className="container panel-page" aria-label={reservationIntentPending()?'Recuperar solicitud de reserva':'Recuperar intento administrativo'}><h2>Volver a autenticar la cuenta original</h2><p>El intento y su clave siguen en memoria. Inicia sesión con la misma cuenta; otra cuenta no puede recuperar esta actuación.</p><Login onSession={session=>{if(session.accountRef===recoveryAccount){completeAdminAuthentication(recoveryAccount);setNavigationError('');}else setNavigationError('Esta cuenta no corresponde al intento pendiente. Inicia sesión con la cuenta original.');}}/></section>}
-   <div id="document-content" hidden={!!recoveryAccount||!!documentGate}>
+   <div key={documentView} id="document-content" hidden={!!recoveryAccount||!!documentGate}>
    <div hidden={path!=='/'}><Search onChoose={value=>{setSelection(value);go('/reservar');}}/></div>
    {path==='/plataforma'&&<PlatformAdministration/>}
    {path==='/reservar'&&<Reservation selection={selection} back={()=>go('/')} />}
