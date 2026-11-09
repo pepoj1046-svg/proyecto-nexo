@@ -50,7 +50,9 @@ emulado. Para la matriz remota se utiliza el Chromium fijado por Playwright; su
 versión realmente ejecutada aparece en los mensajes `NATIVE_BFCACHE` y artefactos.
 No se presentan versiones de Firefox/WebKit no instaladas como verificadas.
 
-La configuración se limita a un proceso/perfil efímero creado por
+Se selecciona el canal completo `chromium` de Chrome for Testing, en lugar de
+asumir que el headless shell predeterminado se comporta igual. La configuración
+se limita a un proceso/perfil efímero creado por
 [el helper de pruebas](../../tests/web/support/native-bfcache.mjs), que exige
 `NEXO_WEB_TEST_LOCAL=1` y URL `http://127.0.0.1:puerto`:
 
@@ -192,3 +194,16 @@ tests, sin cambiar el navegador personal ni la configuración de la aplicación.
   SHA siguen como referencia histórica; la matriz del nuevo commit comprobará
   además las regresiones nuevas. Sus resultados exactos se publican por separado
   en el comentario final, únicamente cuando terminen.
+
+## 8. Compatibilidad del harness observada en CI
+
+El candidato inicial `b1d3adc` no acredita una matriz verde: Windows detectó
+`CHROMIUM_DEFAULT_FEATURES_AMBIGUOUS` al intentar recalibrar dentro del test las
+opciones ya calibradas por el runner. Se reutilizan ahora directamente las
+`launchOptions` del proyecto, preservando sus args e ignoreDefaultArgs juntos.
+Ubuntu registró un timeout de preparación antes de acreditar eventos nativos;
+ese log por sí solo no demuestra un defecto de Nexo. Para el ensayo nativo se
+selecciona explícitamente Chrome for Testing completo, sin asumir equivalencia
+con el shell predeterminado, y se registra su versión antes de autenticar.
+No se amplían tiempos ni se permite que una recarga pase como bfcache. El
+comentario final distinguirá el candidato fallido de los resultados del SHA final.

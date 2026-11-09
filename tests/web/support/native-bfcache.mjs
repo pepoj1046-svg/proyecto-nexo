@@ -1,6 +1,5 @@
 import{chromium,expect}from'@playwright/test';
 import{mkdir,writeFile}from'node:fs/promises';
-import{chromiumLabLaunch}from'../../../scripts/chromium-lab-launch.mjs';
 
 // Experimental browser policy, isolated to a loopback test profile. Application
 // Cache-Control/SQL/session policies are NEVER changed. See the audit report.
@@ -12,7 +11,10 @@ const experiments=[
 ];
 export async function nativeLab(baseURL,info){
  if(process.env.NEXO_WEB_TEST_LOCAL!=='1'||!/^http:\/\/127\.0\.0\.1:\d+$/.test(baseURL??''))throw Error('LOCAL_NATIVE_BFCACHE_ONLY');
- const options=await chromiumLabLaunch(chromium,{executablePath:process.env.NEXO_BROWSER_EXECUTABLE});
+ // The test runner already calibrated the Windows arguments. Recalibrating
+ // inside a test would inherit its ignoreDefaultArgs but replace its args.
+ // Use full Chrome for Testing (new headless), not the default headless shell.
+ const options={...(info.project.use.launchOptions??{}),channel:'chromium',...(process.env.NEXO_BROWSER_EXECUTABLE?{executablePath:process.env.NEXO_BROWSER_EXECUTABLE}:{})};
  // Preserve the installed Playwright/Windows defaults via public CDP, including
  // its existing disable-features policy. Never append a replacement blind list.
  const probe=await chromium.launch({...options,args:[...(options.args??[]),'--enable-automation']});let argumentsList;
@@ -20,6 +22,7 @@ export async function nativeLab(baseURL,info){
  const enabled=argumentsList.filter(a=>a.startsWith('--enable-features='));
  if(enabled.length>1)throw Error('AMBIGUOUS_BROWSER_FEATURES');
  const browser=await chromium.launch({...options,ignoreDefaultArgs:[...(options.ignoreDefaultArgs??[]),'--disable-back-forward-cache',...enabled],args:[...(options.args??[]),'--enable-features='+[...(enabled[0]?.slice('--enable-features='.length).split(',')??[]),...experiments].join(',')]});
+ console.log('NATIVE_LAB_BROWSER '+JSON.stringify({version:browser.version(),channel:'chromium',experimentalLoopbackProfile:true}));
  const{viewport,isMobile,hasTouch,userAgent}=info.project.use;
  const context=await browser.newContext({baseURL,viewport,isMobile,hasTouch,userAgent});
  // Establish an anonymous container before loading the document under audit;
