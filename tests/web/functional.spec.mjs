@@ -1,8 +1,9 @@
+import{privateGet,proofHeaders,watchDocument}from'./support/document-browser.mjs';
 import{test,expect}from'@playwright/test';
 import{readFile,mkdir}from'node:fs/promises';
 import AxeBuilder from'@axe-core/playwright';
 const accounts=JSON.parse(await readFile(process.env.NEXO_WEB_CREDENTIALS_FILE,'utf8')).accounts;
-const login=async(page,label)=>{await page.getByLabel('Usuario ficticio',{exact:true}).fill(accounts[label].login);await page.getByLabel('Contraseña de prueba',{exact:true}).fill(accounts[label].password);await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();};
+const login=async(page,label)=>{watchDocument(page);await page.getByLabel('Usuario ficticio',{exact:true}).fill(accounts[label].login);await page.getByLabel('Contraseña de prueba',{exact:true}).fill(accounts[label].password);await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();};
 const choose=async page=>{await page.goto('/');await page.getByRole('button',{name:'Probar Yacuiba'}).click();await expect(page.locator('.association-card')).toHaveCount(3);await page.getByRole('article',{name:'Horizonte del Chaco · ficticia',exact:true}).getByRole('button',{name:'Elegir viaje',exact:true}).first().click();};
 const checkout=async(page,user)=>{await page.getByRole('button',{name:'Reservar con sesión'}).click();await login(page,user);await page.getByRole('button',{name:'Revisar solicitud',exact:true}).click();await page.getByLabel('Confirmo el recorrido').check();};
 test('una asociación con rutas diferentes conserva estado y terminal de cada ruta',async({page})=>{
@@ -11,9 +12,9 @@ test('una asociación con rutas diferentes conserva estado y terminal de cada ru
 test('reserva terminal confirmada por turno, sin aceptación discrecional, privacidad, recarga y cierre de sesión',async({page,browser,baseURL},info)=>{
  await choose(page);await checkout(page,'viajero0');await page.getByRole('button',{name:'Registrar solicitud',exact:true}).click();await expect(page.getByRole('status')).toContainText('Confirmada');const reference=(await page.locator('.checkout code').textContent()).trim();
  expect(await page.evaluate(()=>document.cookie)).toBe('');const cookie=(await page.context().cookies()).find(c=>c.name.startsWith('trufis_lab_'));expect(cookie.httpOnly).toBeTruthy();expect(cookie.sameSite).toBe('Strict');
- await page.goto('/pasajero');await expect(page.locator('.saved-booking')).toHaveCount(1);await expect(page.locator('.saved-booking')).toContainText(reference);await expect(page.locator('.saved-booking')).toContainText('Confirmada');await page.reload();await expect(page.locator('.saved-booking')).toHaveCount(1);
+ await page.goto('/pasajero');await expect(page.locator('.saved-booking')).toHaveCount(0);await login(page,'viajero0');await expect(page.locator('.saved-booking')).toHaveCount(1);await expect(page.locator('.saved-booking')).toContainText(reference);await expect(page.locator('.saved-booking')).toContainText('Confirmada');await page.reload();await expect(page.locator('.saved-booking')).toHaveCount(0);await login(page,'viajero0');await expect(page.locator('.saved-booking')).toHaveCount(1);
  const device={baseURL,viewport:page.viewportSize(),userAgent:info.project.use.userAgent,isMobile:info.project.use.isMobile,hasTouch:info.project.use.hasTouch};
- const other=await browser.newContext(device);try{const p=await other.newPage();await p.goto('/pasajero');await login(p,'viajero1');await expect(p.getByRole('button',{name:'Cerrar sesión'})).toBeVisible();await expect(p.locator('.saved-booking')).toHaveCount(0);await expect(p.getByText(reference,{exact:true})).toHaveCount(0);const denied=await other.request.get('/api/operator/offers');expect(denied.status()).toBe(403);}finally{await other.close();}
+ const other=await browser.newContext(device);try{const p=await other.newPage();await p.goto('/pasajero');await login(p,'viajero1');await expect(p.getByRole('button',{name:'Cerrar sesión'})).toBeVisible();await expect(p.locator('.saved-booking')).toHaveCount(0);await expect(p.getByText(reference,{exact:true})).toHaveCount(0);const denied=await privateGet(p,'/api/operator/offers');expect(denied.status()).toBe(403);}finally{await other.close();}
  const operator=await browser.newContext(device);try{const p=await operator.newPage();await p.goto('/operador');await login(p,'driver0');await expect(p.getByRole('button',{name:'Aceptar oferta '+reference.slice(0,8),exact:true})).toHaveCount(0);}finally{await operator.close();}
  await page.getByRole('button',{name:'Actualizar mis reservas'}).click();await expect(page.locator('.saved-booking')).toContainText('Confirmada por turno');await expect(page.locator('.saved-booking')).toContainText('Bs 35');
  await mkdir('.local/screenshots',{recursive:true});await page.screenshot({path:`.local/screenshots/mis-reservas-${info.project.name}.png`,fullPage:true});expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
@@ -27,7 +28,7 @@ test('reserva terminal confirmada por turno, sin aceptación discrecional, priva
 });
 test('respuesta perdida después del commit se reintenta con la misma clave y no duplica la reserva',async({page})=>{
  await choose(page);await checkout(page,'viajero2');const keys=[];let first=true;await page.route('**/api/reservations',async route=>{keys.push(route.request().headers()['idempotency-key']);if(first){first=false;await route.fetch();await route.abort('failed');}else await route.continue();});
- await page.getByRole('button',{name:'Registrar solicitud',exact:true}).click();await expect(page.getByRole('alert')).toContainText('respuesta puede haberse perdido');await page.getByRole('button',{name:'Reintentar la misma solicitud'}).click();await expect(page.getByRole('status')).toContainText('Solicitud registrada');expect(keys).toHaveLength(2);expect(keys[0]).toBe(keys[1]);await page.goto('/pasajero');await expect(page.locator('.saved-booking')).toHaveCount(1);
+ await page.getByRole('button',{name:'Registrar solicitud',exact:true}).click();await expect(page.getByRole('alert')).toContainText('respuesta puede haberse perdido');await page.getByRole('button',{name:'Reintentar la misma solicitud'}).click();await expect(page.getByRole('status')).toContainText('Solicitud registrada');expect(keys).toHaveLength(2);expect(keys[0]).toBe(keys[1]);await page.goto('/pasajero');await login(page,'viajero2');await expect(page.locator('.saved-booking')).toHaveCount(1);
 });
 test('puntos intermedios muestran nombres, orden y tarifa real sin índices al pasajero',async({page},info)=>{
  await choose(page);await page.getByLabel('Subida',{exact:true}).selectOption({label:'Parada Palmar (ficticia)'});await page.getByLabel('Bajada',{exact:true}).selectOption({label:'Parada Paso del Chaco (ficticia)'});await expect(page.locator('.reservation-total')).toContainText('15');await expect(page.getByLabel('Subida',{exact:true}).locator('option').last()).toHaveJSProperty('disabled',true);
@@ -40,7 +41,7 @@ test('el acceso espera el contexto inicial de sesión antes de enviar credencial
  try{
   await page.goto('/pasajero');await ready;await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeDisabled();
   delayed=false;release();await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeEnabled();await login(page,'viajero8');await expect(page.getByRole('button',{name:'Cerrar sesión',exact:true})).toBeVisible();
-  expect((await(await page.request.get('/api/session')).json()).authenticated).toBe(true);await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click();await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeVisible();
+  expect((await(await privateGet(page,'/api/session')).json()).authenticated).toBe(true);await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click();await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeVisible();
   expect((await(await page.request.get('/api/session')).json()).authenticated).toBe(false);
  }finally{delayed=false;release();await page.unroute('**/api/session');}
 });

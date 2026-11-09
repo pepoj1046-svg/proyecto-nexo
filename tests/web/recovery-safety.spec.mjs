@@ -1,3 +1,4 @@
+import{proofHeaders}from'./support/document-browser.mjs';
 import{test,expect}from'@playwright/test';
 import AxeBuilder from'@axe-core/playwright';
 import{mkdir,writeFile}from'node:fs/promises';
@@ -13,7 +14,7 @@ test('discrepancias de pasajero: cuatro motivos, evidencia, revisión administra
   await booking.getByRole('button',{name:'Reportar un problema',exact:true}).click();const review=booking.locator('.safety-review');await expect(review).toContainText('Reportes registrados: 0');
   const b={bookingId:id,episode:0,kind:'NOT_BOARDED',confirmed:true};
   await rejected(d,'/api/safety/report',b,'FORBIDDEN');await rejected(a,'/api/safety/report',b,'FORBIDDEN');
-  const csrf=await page.request.post('/api/safety/report',{headers:{Origin:baseURL,'Content-Type':'application/json'},data:b});expect(csrf.status()).toBe(403);
+  const csrf=await page.request.post('/api/safety/report',{headers:{...proofHeaders(page),'X-CSRF-Token':'',Origin:baseURL,'Content-Type':'application/json'},data:b});expect(csrf.status()).toBe(403);
   for(const [n,kind]of['NOT_BOARDED','ALIGHT_INCORRECT','WRONG_REPLACEMENT','OTHER_OPERATIONAL'].entries()){
    await review.getByLabel('Tipo de problema',{exact:true}).selectOption(kind);await review.getByLabel('Confirmo abrir una revisión').check();
    const report=await commandClick(page,review.getByRole('button',{name:'Registrar reporte para revisión',exact:true}),'/api/safety/report');expect(report.result.inventoryChanged).toBe(false);expect(report.result.moneyProcessed).toBe(false);

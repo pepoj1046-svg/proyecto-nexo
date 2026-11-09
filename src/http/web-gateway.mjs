@@ -53,7 +53,8 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   };
   const authenticated=handler=>secured(async(context,req,b)=>{
     await sessions.actor(context);
-    return handler(context.entry.token,req.headers['idempotency-key'],b);
+    const result=await handler(context.entry.token,req.headers['idempotency-key'],b);
+    await sessions.actor(context);return result;
   });
   const publicHandlers=new Map([
     ['/api/localities',(_context,_req,b)=>service.localities(b)],
@@ -88,7 +89,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
     ['/api/safety/command',authenticated((token,key,b)=>safety.command(token,key,b))],
     ['/api/safety/report',authenticated((token,key,b)=>safety.report(token,key,b))],
     ['/api/login',secured(async(context,_req,b,cookie)=>{const r=await sessions.login(context,b);cookie(r.handle);return r.body;})],
-    ['/api/logout',secured(async(context,_req,b,cookie)=>{if(Object.keys(b).length)throw denial(400,'INVALID_REQUEST');const r=await sessions.logout(context);cookie(null);return r;})],
+    ['/api/logout',secured(async(context,_req,b)=>{if(Object.keys(b).length)throw denial(400,'INVALID_REQUEST');return sessions.logout(context);})],
     ['/api/conditions/context',authenticated((token,_key,b)=>conditions.context(token,b))],
     ['/api/conditions/route',authenticated((token,_key,b)=>conditions.route(token,b))],
     ['/api/conditions/declare',authenticated((token,key,b)=>conditions.declare(token,key,b))],
@@ -144,10 +145,10 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
         if(++total>120||inflight>=6)throw denial(429,'RATE_LIMITED');inflight++;entered=true;
         if(req.url==='/api/session'&&req.method==='GET'){
           if(!sessions)return send(200,{authenticated:false,mode:'LOCAL_LAB',reservationWritesEnabled:false});
-          const result=await sessions.session(context);if(result.handle)setCookie(result.handle);return send(200,result.body);
+          const result=await sessions.session(context,req.headers['x-csrf-token']);if(result.handle)setCookie(result.handle);return send(200,result.body);
         }
         if(req.method==='GET'&&sessions&&['/api/passenger/bookings','/api/operator/offers'].includes(req.url)){
-          await sessions.actor(context);return send(200,await business[req.url.includes('passenger')?'page':'operatorList'](context.entry.token));
+          await sessions.actor(context);sessions.csrf(context,req.headers['x-csrf-token']);const result=await business[req.url.includes('passenger')?'page':'operatorList'](context.entry.token);await sessions.actor(context);return send(200,result);
         }
         if(/^\/api\/(admin|driver|passenger)(\/|$)/.test(req.url))throw denial(401,'AUTHENTICATION_REQUIRED');
         const handler=publicHandlers.get(req.url)??privateHandlers.get(req.url);

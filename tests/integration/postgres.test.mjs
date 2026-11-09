@@ -2737,29 +2737,30 @@ test('W06: passed pickup, revoked driver and inactive sessions cannot create or 
  const body=await webQuote(s,{...webJourney(),flow:'ENROUTE'});await rejects(s.reserve(fixture.tokens.p,key(),body),/PICKUP_PASSED_OR_INCOMPATIBLE/);
  await admin.query("UPDATE nexo.sessions SET revoked_at=clock_timestamp()WHERE user_id=$1",[fixture.p]);await rejects(s.list(fixture.tokens.p),/UNAUTHENTICATED/);
 });
-async function browserLogin(web,loginName='browser.ficticio'){
- await identity.register({login:loginName,password});const initial=await fetch(web.url+'/api/session');const anon=await initial.json(),cookie=initial.headers.get('set-cookie').split(';')[0];
- const r=await postJson(web.url,'/api/login',{login:loginName,password},{Origin:web.url,Cookie:cookie,'X-CSRF-Token':anon.csrf});assert.equal(r.status,200);
- return{cookie:r.headers['set-cookie'][0].split(';')[0],csrf:r.body.csrf,anonCookie:cookie,anonCsrf:anon.csrf,login:loginName};
+const documentHeaders=s=>({'X-Nexo-Document':s.documentId,'X-Nexo-Generation':String(s.generation)});
+async function browserLogin(web,loginName='browser.ficticio',sharedCookie){
+ await identity.register({login:loginName,password});const initial=await fetch(web.url+'/api/session',{headers:sharedCookie?{Cookie:sharedCookie}:{}});const anon=await initial.json(),cookie=initial.headers.get('set-cookie').split(';')[0];
+ const r=await postJson(web.url,'/api/login',{login:loginName,password},{Origin:web.url,Cookie:cookie,...documentHeaders(anon),'X-CSRF-Token':anon.csrf});assert.equal(r.status,200);
+ return{cookie:r.headers['set-cookie'][0].split(';')[0],documentId:r.body.documentId,generation:r.body.generation,csrf:r.body.csrf,anonCookie:cookie,anonCsrf:anon.csrf,login:loginName};
 }
-test('W07: browser login rotates handle/CSRF, HttpOnly cookie hides SQL token and logout revokes copied cookie',async()=>{
+test('W07: browser login keeps container and rotates document/CSRF, HttpOnly cookie hides SQL token and logout revokes copied cookie',async()=>{
  const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
-  const a=await browserLogin(web);assert.notEqual(a.cookie,a.anonCookie);assert.notEqual(a.csrf,a.anonCsrf);
-  let r=await fetch(web.url+'/api/passenger/bookings',{headers:{Cookie:a.cookie}});assert.equal(r.status,200);assert.deepEqual((await r.json()).bookings,[]);
-  r=await fetch(web.url+'/api/session',{headers:{Cookie:a.cookie}});const session=await r.json();assert.equal(session.authenticated,true);assert.ok(!('token'in session));
-  assert.equal((await postJson(web.url,'/api/logout',{}, {Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.anonCsrf})).status,403);
-  assert.equal((await postJson(web.url,'/api/logout',{}, {Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf})).status,200);
-  assert.equal((await fetch(web.url+'/api/passenger/bookings',{headers:{Cookie:a.cookie}})).status,401);
+  const a=await browserLogin(web);assert.equal(a.cookie,a.anonCookie);assert.notEqual(a.csrf,a.anonCsrf);
+  let r=await fetch(web.url+'/api/passenger/bookings',{headers:{Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf}});assert.equal(r.status,200);assert.deepEqual((await r.json()).bookings,[]);
+  r=await fetch(web.url+'/api/session',{headers:{Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf}});const session=await r.json();assert.equal(session.authenticated,true);assert.ok(!('token'in session));
+  assert.equal((await postJson(web.url,'/api/logout',{}, {Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.anonCsrf})).status,403);
+  assert.equal((await postJson(web.url,'/api/logout',{}, {Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf})).status,200);
+  assert.equal((await fetch(web.url+'/api/passenger/bookings',{headers:{Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf}})).status,401);
  }finally{await web.close();}
 });
 test('W08: cross-origin/CSRF writes, forged identity, expired and SQL-revoked browser sessions are denied',async()=>{
  const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
-  const a=await browserLogin(web);const headers={Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf};
+  const a=await browserLogin(web);const headers={Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf};
   assert.equal((await postJson(web.url,'/api/reservations',webJourney(),{...headers,Origin:'https://external.invalid'})).status,403);
   assert.equal((await postJson(web.url,'/api/reservations',webJourney(),{Origin:web.url,Cookie:a.cookie})).status,403);
   assert.equal((await postJson(web.url,'/api/reservations/quote',{...webJourney(),userId:fixture.p},headers)).status,400);
   const user=(await admin.query('SELECT user_id FROM nexo.identity_accounts WHERE login_key=$1',[a.login])).rows[0].user_id;await admin.query("UPDATE nexo.sessions SET expires_at=clock_timestamp()-interval '1 second'WHERE user_id=$1",[user]);
-  assert.equal((await fetch(web.url+'/api/passenger/bookings',{headers:{Cookie:a.cookie}})).status,401);
+  assert.equal((await fetch(web.url+'/api/passenger/bookings',{headers:{Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf}})).status,401);
  }finally{await web.close();}
 });
 test('W09: two different passengers race for the final seat, with exactly one persistent winner',async()=>{
@@ -2822,7 +2823,7 @@ test('O07: incidents block departure without cancellation, money or notification
 });
 test('O08: HTTP operations require session, CSRF and native authorization rather than a browser role',async()=>{
  const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
-  assert.equal((await postJson(web.url,'/api/operations/overview',{view:'ADMIN'},{Origin:web.url})).status,403);const a=await browserLogin(web,'web.operations'),headers={Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf};
+  assert.equal((await postJson(web.url,'/api/operations/overview',{view:'ADMIN'},{Origin:web.url})).status,403);const a=await browserLogin(web,'web.operations'),headers={Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf};
   assert.equal((await postJson(web.url,'/api/operations/overview',{view:'ADMIN'},headers)).status,403);assert.equal((await postJson(web.url,'/api/operations/snapshot',{view:'PASSENGER',tripId:fixture.trips[0]},headers)).status,403);
   assert.equal((await postJson(web.url,'/api/operations/command',opBody('DEPART',{tripId:fixture.trips[0],role:'DRIVER'}),{...headers,'Idempotency-Key':key()})).status,400);
  }finally{await web.close();}
@@ -2894,7 +2895,7 @@ test('R06: revoked sessions, memberships and terminal grants block recovery read
  await admin.query('UPDATE nexo.sessions SET revoked_at=clock_timestamp()WHERE user_id=$1',[fixture.p]);await rejects(r.passenger(fixture.tokens.p,{bookingId:x.g.bookingIds[0]}),/UNAUTHENTICATED/);assert.equal((await admin.query('SELECT status FROM nexo.bookings WHERE id=$1',[x.g.bookingIds[0]])).rows[0].status,'CONFIRMED');
 });
 test('R07: recovery HTTP requires CSRF, strict schema and SQL-derived authority without arbitrary RPCs',async()=>{
- const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{const a=await browserLogin(web,'web.recovery'),headers={Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf};
+ const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{const a=await browserLogin(web,'web.recovery'),headers={Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf};
  assert.equal((await postJson(web.url,'/api/recovery/overview',{view:'ADMIN'},headers)).status,403);assert.equal((await postJson(web.url,'/api/recovery/overview',{view:'DRIVER'},{Origin:web.url,Cookie:a.cookie})).status,403);
  assert.equal((await postJson(web.url,'/api/recovery/command',recoveryBody('ASSIGN_ROAD',{tripId:fixture.trips[0],version:2,targetTripId:fixture.trips[1],priority:'ORIGIN',actorId:fixture.adminA}),{...headers,'Idempotency-Key':key()})).status,400);assert.equal((await postJson(web.url,'/api/recovery/passenger',{bookingId:randomUUID()},headers)).status,403);assert.equal((await postJson(web.url,'/api/recovery/sql',{},headers)).status,404);
  }finally{await web.close();}
@@ -2968,11 +2969,11 @@ test('Z07: every fixed private POST is CSRF guarded, public reads cannot select 
  for(const path of ['/api/login','/api/logout','/api/conditions/context','/api/conditions/route','/api/conditions/declare','/api/conditions/command','/api/reservations/page','/api/management/detail','/api/management/command','/api/reservations','/api/reservations/quote','/api/operator/accept','/api/operations/overview','/api/operations/snapshot','/api/operations/command','/api/recovery/overview','/api/recovery/detail','/api/recovery/passenger','/api/recovery/transfer','/api/recovery/command','/api/terminal/directory','/api/terminal/sale-context','/api/terminal/quote','/api/terminal/walk-in','/api/terminal/return-options','/api/terminal/command']){
   const r=await postJson(web.url,path,{}, {Origin:web.url,Cookie:cookie});assert.equal(r.status,403,path);assert.equal(r.body.error,'CSRF_REQUIRED',path);
  }
- assert.equal((await postJson(web.url,'/api/terminal/command',{}, {Origin:web.url,Cookie:cookie,'X-CSRF-Token':anon.csrf})).status,401);
+ assert.equal((await postJson(web.url,'/api/terminal/command',{}, {Origin:web.url,Cookie:cookie,...documentHeaders(anon),'X-CSRF-Token':anon.csrf})).status,401);
  for(const path of ['/api/terminal/constructor','/api/login/','/api/recovery/command?public=true'])assert.equal((await postJson(web.url,path,{}, {Origin:web.url,Cookie:cookie})).status,404);
  assert.equal((await postJson(web.url,'/api/localities',{query:'Ya'}, {Origin:web.url})).status,200);
  assert.equal((await postJson(web.url,'/api/localities',{kind:'RETURN_QUEUE'}, {Origin:web.url})).status,400);
- const a=await browserLogin(web,'terminal.revocation');await postJson(web.url,'/api/logout',{}, {Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf});assert.equal((await postJson(web.url,'/api/terminal/directory',{}, {Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf})).status,403);
+ const a=await browserLogin(web,'terminal.revocation');await postJson(web.url,'/api/logout',{}, {Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf});assert.equal((await postJson(web.url,'/api/terminal/directory',{}, {Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf})).status,401);
  }finally{await web.close();}
 });
 test('Z08: new return wrapper exposes no generic privileges and revoked sessions block reads and mutations',async()=>{
@@ -3037,7 +3038,7 @@ test('A607: cancellation reuses whole-group rules for splits, started parts and 
 });
 test('A608: new browser queries and administrative commands enforce CSRF, session and live route scope',async()=>{
  const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
-  const a=await browserLogin(web,'management.ficticio'),headers={Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf};
+  const a=await browserLogin(web,'management.ficticio'),headers={Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf};
   for(const path of ['/api/reservations/page','/api/management/detail','/api/management/command'])assert.equal((await postJson(web.url,path,{}, {Origin:web.url,Cookie:a.cookie})).status,403);
   assert.equal((await postJson(web.url,'/api/reservations/page',{},headers)).status,200);
   const g=await fixed(1);assert.equal((await postJson(web.url,'/api/management/detail',{bookingId:g.bookingIds[0]},headers)).status,403);
@@ -3246,7 +3247,7 @@ test('K811: a failure while confirming the second direct split part rolls back t
 });
 test('K812: new safety browser endpoints require CSRF, a current session and server-derived authority',async()=>{
  const g=await individualFixture(2),account=await managedAccount('safety.web');await admin.query('UPDATE nexo.bookings SET passenger_id=$1 WHERE id=$2',[account.user_id,g.bookingIds[0]]);const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});
- try{const a=await browserLogin(web,'safety.web'),headers={Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf},b={bookingId:g.bookingIds[0],episode:0,kind:'NOT_BOARDED',confirmed:true};
+ try{const a=await browserLogin(web,'safety.web'),headers={Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf},b={bookingId:g.bookingIds[0],episode:0,kind:'NOT_BOARDED',confirmed:true};
  for(const path of['/api/safety/context','/api/safety/report','/api/safety/command','/api/safety/handoffs'])assert.equal((await postJson(web.url,path,{}, {Origin:web.url,Cookie:a.cookie})).status,403);
  const r=await postJson(web.url,'/api/safety/report',b,{...headers,'Idempotency-Key':key()});assert.equal(r.status,200);assert.equal(r.body.inventoryChanged,false);
  assert.equal((await postJson(web.url,'/api/safety/report',{...b,associationId:fixture.B},{...headers,'Idempotency-Key':key()})).status,400);assert.equal((await postJson(web.url,'/api/safety/handoffs',{tripId:fixture.trips[0]},headers)).status,403);
@@ -3396,7 +3397,7 @@ test('T8B13: driver account controls never create roles, cross associations or l
 });
 test('T8B14: new browser endpoints enforce CSRF, closed schemas, role authority and revoked sessions',async()=>{
  const g=await individualFixture(2),account=await managedAccount('care.web');await admin.query('UPDATE nexo.bookings SET passenger_id=$1 WHERE id=$2',[account.user_id,g.bookingIds[0]]);const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});
- try{const a=await browserLogin(web,'care.web'),headers={Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf},body={bookingId:g.bookingIds[0]};
+ try{const a=await browserLogin(web,'care.web'),headers={Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf},body={bookingId:g.bookingIds[0]};
  for(const path of['context','list','code','review','accounts','command'])assert.equal((await postJson(web.url,'/api/care/'+path,body,{Origin:web.url,Cookie:a.cookie})).status,403);
  assert.equal((await postJson(web.url,'/api/care/context',body,headers)).status,200);
  assert.equal((await postJson(web.url,'/api/care/command',careBody('ABSENCE',{...body,episode:0,reason:'NOT_PRESENT_AT_BOARDING'}),{...headers,'Idempotency-Key':key()})).status,403);
@@ -3574,7 +3575,7 @@ test('4A1-09: populated 033 upgrades add only projections and preserve every row
 test('4A1-10: real HTTP enforces CSRF, exact input, association scope and revoked browser sessions',async()=>{
  const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
   const a=await browserLogin(web,'directory.web'),subject=(await admin.query('SELECT user_id FROM nexo.identity_accounts WHERE login_key=$1',[a.login])).rows[0].user_id;
-  const headers={Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf},body={associationId:fixture.A,section:'VEHICLES'};
+  const headers={Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf},body={associationId:fixture.A,section:'VEHICLES'};
   assert.equal((await postJson(web.url,'/api/directory/page',body,headers)).status,403);
   await provisionPool.query("SELECT nexo.provision_role($1,$2,'ASSOCIATION_ADMIN',true,'Fixture de directorio')",[subject,fixture.A]);
   const before=await directorySnapshot();const r=await postJson(web.url,'/api/directory/page',body,headers);assert.equal(r.status,200);assert.equal(r.body.total,3);assert.deepEqual(await directorySnapshot(),before);
@@ -3752,7 +3753,7 @@ test('4A2-16: populated 034 upgrade preserves all business rows, receipts and im
 test('4A2-17: real HTTP driver endpoints enforce CSRF, Origin, closed bodies, permissions and revoked sessions',async()=>{
  const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});
  try{const a=await browserLogin(web,'driver.admin.http'),actor=(await admin.query('SELECT user_id FROM nexo.identity_accounts WHERE login_key=$1',[a.login])).rows[0].user_id;
-  await provisionPool.query("SELECT nexo.provision_role($1,$2,'ASSOCIATION_ADMIN',true,'Administración ficticia 4A2')",[actor,fixture.A]);const d=await freeAccessDriver(),body=await accessBody(d.id),headers={Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf,'Idempotency-Key':key()};
+  await provisionPool.query("SELECT nexo.provision_role($1,$2,'ASSOCIATION_ADMIN',true,'Administración ficticia 4A2')",[actor,fixture.A]);const d=await freeAccessDriver(),body=await accessBody(d.id),headers={Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf,'Idempotency-Key':key()};
   for(const path of['context','history','command','contact'])assert.equal((await postJson(web.url,'/api/driver-admin/'+path,{}, {Origin:web.url,Cookie:a.cookie})).status,403);
   assert.equal((await postJson(web.url,'/api/driver-admin/command',body,{...headers,Origin:'http://foreign.invalid'})).status,403);
   assert.equal((await postJson(web.url,'/api/driver-admin/command',{...body,role:'ASSOCIATION_ADMIN'},headers)).status,400);
@@ -3762,7 +3763,7 @@ test('4A2-17: real HTTP driver endpoints enforce CSRF, Origin, closed bodies, pe
   // Rejection deletes the revoked browser handle. Obtain the anonymous CSRF
   // context before testing a second endpoint, instead of reusing an invalid CSRF.
   const anonymous=await fetch(web.url+'/api/session',{headers:{Cookie:a.cookie}}),anon=await anonymous.json();assert.equal(anon.authenticated,false);
-  const second=await postJson(web.url,'/api/driver-admin/history',{associationId:fixture.A,userRef:d.id},{Origin:web.url,Cookie:anonymous.headers.get('set-cookie').split(';')[0],'X-CSRF-Token':anon.csrf});assert.equal(second.status,401);assert.deepEqual(second.body,{error:'AUTHENTICATION_REQUIRED'});
+  const second=await postJson(web.url,'/api/driver-admin/history',{associationId:fixture.A,userRef:d.id},{Origin:web.url,Cookie:anonymous.headers.get('set-cookie').split(';')[0],...documentHeaders(anon),'X-CSRF-Token':anon.csrf});assert.equal(second.status,401);assert.deepEqual(second.body,{error:'AUTHENTICATION_REQUIRED'});
  }finally{await web.close();}
 });
 test('4A2-18: scope changes before acquisition deny writes and restored identical scopes invalidate history cursors',async()=>{
@@ -4019,7 +4020,7 @@ test('4A4-18: ordinary identity login/logout does not permanently invalidate an 
 });
 test('4A4-19: real HTTP requires CSRF/Origin, rejects field injection and reauthorizes committed receipts after revocation',async()=>{
  const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{const a=await browserLogin(web,'fleet.http.admin'),actor=(await admin.query('SELECT user_id FROM nexo.identity_accounts WHERE login_key=$1',[a.login])).rows[0].user_id;await provisionPool.query("SELECT nexo.provision_role($1,$2,'ASSOCIATION_ADMIN',true,'Ficticio')",[actor,fixture.A]);
-  const headers={Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf,'Idempotency-Key':key()},b=await fleetBody('REQUEST_VEHICLE',{vehicleCode:'LAB-HTTP',vehicleType:'VAGONETA_6',capacity:6});for(const path of['context','page','command'])assert.equal((await postJson(web.url,'/api/fleet-admin/'+path,{}, {Origin:web.url,Cookie:a.cookie})).status,403);
+  const headers={Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf,'Idempotency-Key':key()},b=await fleetBody('REQUEST_VEHICLE',{vehicleCode:'LAB-HTTP',vehicleType:'VAGONETA_6',capacity:6});for(const path of['context','page','command'])assert.equal((await postJson(web.url,'/api/fleet-admin/'+path,{}, {Origin:web.url,Cookie:a.cookie})).status,403);
   assert.equal((await postJson(web.url,'/api/fleet-admin/command',b,{...headers,Origin:'http://foreign.invalid'})).status,403);assert.equal((await postJson(web.url,'/api/fleet-admin/command',{...b,role:'DRIVER'},headers)).status,400);for(const kind of['constructor','toString','__proto__',null,[],{}])assert.equal((await postJson(web.url,'/api/fleet-admin/command',{...b,kind},headers)).status,400);const first=await postJson(web.url,'/api/fleet-admin/command',b,headers);assert.equal(first.status,200);assert.deepEqual((await postJson(web.url,'/api/fleet-admin/command',b,headers)).body,first.body);
   await admin.query('UPDATE nexo.sessions SET revoked_at=clock_timestamp()WHERE user_id=$1',[actor]);assert.equal((await postJson(web.url,'/api/fleet-admin/command',b,headers)).status,401);assert.equal((await admin.query("SELECT FROM nexo.fleet_admin_events WHERE kind='REQUEST_VEHICLE'")).rowCount,1);
  }finally{await web.close();}
@@ -4167,7 +4168,7 @@ test('4A5-24: populated038 upgrade preserves native contracts, original fare dat
  }finally{await db.end();await admin.query('DROP DATABASE '+admin.escapeIdentifier(database));}
 });
 test('4A5-25: HTTP configuration accepts bounded multi-point topology, rejects oversized/CSRF/Origin/injected authority',async()=>{
- const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{const a=await browserLogin(web,'config.http'),actor=(await admin.query('SELECT user_id FROM nexo.identity_accounts WHERE login_key=$1',[a.login])).rows[0].user_id;await provisionPool.query("SELECT nexo.provision_role($1,$2,'ASSOCIATION_ADMIN',true,'Ficticio')",[actor,fixture.A]);const headers={Origin:web.url,Cookie:a.cookie,'X-CSRF-Token':a.csrf,'Idempotency-Key':key()},context=(await postJson(web.url,'/api/route-config/context',{associationId:fixture.A},headers)).body;
+ const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{const a=await browserLogin(web,'config.http'),actor=(await admin.query('SELECT user_id FROM nexo.identity_accounts WHERE login_key=$1',[a.login])).rows[0].user_id;await provisionPool.query("SELECT nexo.provision_role($1,$2,'ASSOCIATION_ADMIN',true,'Ficticio')",[actor,fixture.A]);const headers={Origin:web.url,Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf,'Idempotency-Key':key()},context=(await postJson(web.url,'/api/route-config/context',{associationId:fixture.A},headers)).body;
   const spec=configRoute();spec.points=Array.from({length:12},(_,i)=>i===11?{...spec.points[2],index:11}:i===0?spec.points[0]:{...spec.points[0],index:i,name:'LAB-INTERMEDIO-'+i,kind:'ROAD',alightingAllowed:true});const b={kind:'CREATE_ROUTE',associationId:fixture.A,revision:context.revision,spec,reason:'Ruta ficticia de más de2KB',confirmed:true};assert.ok(Buffer.byteLength(JSON.stringify(b))>2048);assert.equal((await postJson(web.url,'/api/route-config/command',b,headers)).status,200);
   for(const path of['context','page','detail','command'])assert.equal((await postJson(web.url,'/api/route-config/'+path,{}, {Origin:web.url,Cookie:a.cookie})).status,403);assert.equal((await postJson(web.url,'/api/route-config/command',b,{...headers,Origin:'http://foreign.invalid'})).status,403);assert.equal((await postJson(web.url,'/api/route-config/command',{...b,role:'GENERAL_ADMIN'},headers)).status,400);assert.equal((await postJson(web.url,'/api/route-config/command',{...b,reason:'X'.repeat(33000)},headers)).status,413);assert.equal((await postJson(web.url,'/api/driver-admin/context',{associationId:fixture.A,padding:'X'.repeat(2500)},headers)).status,413);
  }finally{await web.close();}
@@ -4310,4 +4311,19 @@ test('4A6-C: committed configuration receipt ignores unrelated writer mutex with
  try{await blocker.query('BEGIN');await blocker.query('SELECT nexo.platform_mutex()');assert.deepEqual(await routeConfig().command(fixture.tokens.adminA,k,b),receipt);assert.deepEqual(await directorySnapshot(),before);await rejects(routeConfig().command(fixture.tokens.adminA,key(),b),/CONFIG_BUSY/);
  }finally{await blocker.query('ROLLBACK');await blocker.end();}
  await provisionPool.query('SELECT nexo.configure_admin_scope($1,$2,$3,true)',[fixture.adminA,fixture.A,[fixture.ra]]);await rejects(routeConfig().command(fixture.tokens.adminA,k,b),/FORBIDDEN_SCOPE/);
+});
+
+test('B1-01: real SQL sessions in one container retain independent accounts and token-specific revocation',async()=>{
+ const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
+  const a=await browserLogin(web,'b1.account.a'),b=await browserLogin(web,'b1.account.b',a.cookie);assert.equal(a.cookie,b.cookie);assert.notEqual(a.documentId,b.documentId);
+  const headers=x=>({Cookie:x.cookie,...documentHeaders(x),'X-CSRF-Token':x.csrf});
+  const sa=await(await fetch(web.url+'/api/session',{headers:headers(a)})).json(),sb=await(await fetch(web.url+'/api/session',{headers:headers(b)})).json();assert.equal(sa.authenticated,true);assert.equal(sb.authenticated,true);assert.notEqual(sa.accountRef,sb.accountRef);
+  assert.equal((await fetch(web.url+'/api/passenger/bookings',{headers:{Cookie:a.cookie}})).status,401);
+  const guessed=await fetch(web.url+'/api/session',{headers:{Cookie:a.cookie,...documentHeaders(a)}});assert.equal(guessed.status,403);assert.deepEqual(await guessed.json(),{error:'CSRF_REQUIRED'});
+  const bootstrap=await fetch(web.url+'/api/session',{headers:{Cookie:a.cookie}}),anon=await bootstrap.json();assert.equal(anon.authenticated,false);assert.equal(anon.accountRef,undefined);assert.notEqual(anon.documentId,a.documentId);
+  const logout=await postJson(web.url,'/api/logout',{}, {Origin:web.url,...headers(b)});assert.equal(logout.status,200);assert.equal(logout.headers['set-cookie'],undefined);
+  assert.equal((await fetch(web.url+'/api/session',{headers:headers(b)})).status,401);assert.equal((await fetch(web.url+'/api/passenger/bookings',{headers:headers(a)})).status,200);
+  const rows=(await admin.query('SELECT a.login_key,s.revoked_at FROM nexo.identity_accounts a JOIN nexo.sessions s ON s.user_id=a.user_id WHERE a.login_key=ANY($1) ORDER BY a.login_key',[['b1.account.a','b1.account.b']])).rows;assert.equal(rows.length,2);assert.equal(rows[0].revoked_at,null);assert.notEqual(rows[1].revoked_at,null);
+  await admin.query("UPDATE nexo.sessions SET expires_at=clock_timestamp()-interval '1 second' WHERE user_id=(SELECT user_id FROM nexo.identity_accounts WHERE login_key='b1.account.a')");assert.equal((await fetch(web.url+'/api/passenger/bookings',{headers:headers(a)})).status,401);
+ }finally{await web.close();}
 });

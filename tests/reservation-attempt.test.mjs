@@ -71,3 +71,10 @@ test('confirmation freezes the quote before a delayed identity check, and no POS
  assert.equal(f.writes.length,0);assert.equal(f.locked,true);release();await pending;
  assert.equal(f.writes[0].a.body.seats,2);assert.equal(f.writes[0].a.body.quote.totalBOB,'70.00');assert.equal(f.view.phase,'UPDATED');
 });
+
+test('explicit session 401 keeps the original intent and requires its account instead of losing recovery',async()=>{
+ const f=fixture();let expired=false;
+ f.deps.session=async()=>{if(expired)throw Object.assign(new Error('AUTHENTICATION_REQUIRED'),{status:401});return{authenticated:true,accountRef:'original',csrf:'fresh'};};
+ f.deps.write=async()=>{expired=true;throw Error('Lost response');};
+ await f.machine.submit('original',()=>({seats:1}));assert.equal(f.view.phase,'AUTH_REQUIRED');assert.equal(f.machine.pending,true);assert.equal(f.locked,true);assert.deepEqual(f.auth,['original']);
+});
