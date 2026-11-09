@@ -28,7 +28,7 @@ test('B1: real history restoration requires a password; record actual bfcache av
  try{
   const page=await context.newPage();await page.addInitScript(()=>{window.addEventListener('pageshow',e=>{window.__nexoTestHistoryPersisted=e.persisted;});});
   await panelLogin(page,'terminal0','/pasajero');const own=await page.locator('.saved-booking code').first().textContent();
-  await page.goto('/');await page.goBack();await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeVisible();await expect(page.getByText(own,{exact:true})).toBeHidden();
+  await page.goto('/');await page.goBack({waitUntil:'commit'});await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeVisible();await expect(page.getByText(own,{exact:true})).toBeHidden();
   const persisted=await page.evaluate(()=>window.__nexoTestHistoryPersisted===true);
   const reasons=await page.evaluate(()=>performance.getEntriesByType('navigation')[0]?.notRestoredReasons?.reasons?.map(r=>r.reason)??[]);
   const auth=page.getByRole('region',{name:'Reautenticación tras restaurar la página'});await login(await auth.count()?auth:page,'terminal0');
