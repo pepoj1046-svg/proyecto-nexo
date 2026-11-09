@@ -3,7 +3,7 @@ on:
   push:
     branches: [desarrollo/etapa-1, desarrollo/etapa-2, desarrollo/etapa-3, desarrollo/etapa-4]
   pull_request:
-    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2, planificacion/etapa-4a, desarrollo/etapa-4, desarrollo/etapa-5a2]
+    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2, planificacion/etapa-4a, desarrollo/etapa-4, desarrollo/etapa-5a2, desarrollo/etapa-5a3]
 permissions:
   contents: read
 jobs:
@@ -56,7 +56,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: 5a3-${{ matrix.os }}-node${{ matrix.node }}-${{ matrix.project }}
-          path: .local/5a3-evidence/
+          path: |
+            .local/5a3-evidence/
+            .local/5a4-b1-evidence/
           include-hidden-files: true
           if-no-files-found: ignore
           retention-days: 7

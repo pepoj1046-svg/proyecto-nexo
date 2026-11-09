@@ -10,7 +10,7 @@ import{useEffect,useState,useRef}from'react';
 import{post}from'./api';
 import{money,eligibleSeats}from'./model';
 import type{Service,Availability}from'./model';
-import{privateApi}from'./private-api';
+import{privateApi,PrivateApiError}from'./private-api';
 import {PageControls} from './Management';
 import type {PageCursor} from './Management';
 import{Login}from'./Login';
@@ -59,7 +59,7 @@ export function PrivateReservations({operator=false}:{operator?:boolean}){
    if(!s.authenticated){setBookings([]);setOffers([]);return;}
    if(operator){const data=await privateApi<{offers:typeof offers}>('/api/operator/offers');if(g===generation.current)setOffers(data.offers);}
    else{const data=await readForAccount<{bookings:Booking[];nextCursor:PageCursor;total:number}>('/api/reservations/page',{limit:50,cursor},s);if(g===generation.current){setSession(s);setBookings(data.bookings);setStack(history);setPageIndex(index);setNextCursor(data.nextCursor);setTotal(data.total);}}
-  }catch(e){if(g===generation.current){if(!scope){setBookings([]);setOffers([]);}setError(err(e));}if(scope)throw e;}
+  }catch(e){if(g===generation.current){if(!scope){setBookings([]);setOffers([]);if(e instanceof PrivateApiError&&e.status===401)setSession(null);}setError(err(e));}if(scope)throw e;}
   finally{if(g===generation.current)setBusy(false);}
  };
  useEffect(()=>{void load();return()=>{generation.current++;};},[operator]);

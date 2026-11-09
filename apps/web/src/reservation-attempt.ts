@@ -39,7 +39,11 @@ export class ReservationAttempt{
  activate(){this.disposed=false;}
  private update(value:Partial<AttemptView>){this.view={...this.view,...value};if(!this.disposed)this.deps.changed(this.view);}
  private async actor(){
-  const s=await this.deps.session();
+  let s:WebSession;
+  try{s=await this.deps.session();}catch(e){
+   if(e instanceof Error&&'status'in e&&e.status===401&&this.attempt){this.update({phase:'AUTH_REQUIRED',receipt:null,current:null});this.deps.protect(true);this.deps.authenticate(this.attempt.account);}
+   throw e;
+  }
   if(this.disposed)throw Error('La vista ya no está activa.');
   if(!s.authenticated||!s.accountRef||this.attempt&&s.accountRef!==this.attempt.account){
    this.update({phase:'AUTH_REQUIRED',receipt:null,current:null});
