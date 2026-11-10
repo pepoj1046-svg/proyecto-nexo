@@ -76,7 +76,8 @@ test('ciclo real de terminal, cuatro abordajes y dos recogidas urbanas hasta lle
   // A seventh reserved seat must fail even though only four people have boarded.
   const extra={routeId:s.trip.route_id,tripId,boardingPointId:s.trip.route_id+':1',alightingPointId:s.trip.route_id+':3',seats:1,flow:'ENROUTE'};
   const q=await api(page,'/api/reservations/quote',extra);expect(q.status()).toBe(200);const{fareId,fareVersion,totalBOB}=await q.json();
-  await rejected(page,'/api/reservations',{...extra,quote:{fareId,fareVersion,totalBOB},confirmed:true},'NO_CAPACITY',409);
+  const emission=await api(page,'/api/recovery/ticket',{v:1,family:'RESERVATION_APP'});expect(emission.status()).toBe(200);const ticket=await emission.json();
+  const seventh=await api(page,'/api/reservations',{...extra,quote:{fareId,fareVersion,totalBOB},confirmed:true},ticket.key,ticket);expect(seventh.status()).toBe(409);expect(await seventh.json()).toEqual({error:'NO_CAPACITY'});
   await checkpoint('08-septima-plaza-rechazada-sin-retencion',{status:'IN_TRANSIT',phase:'URBAN_COLLECTION',onboard:4,boards:1});
   await d.getByRole('button',{name:'Registrar llegada a Parada Palmar (ficticia)',exact:true}).click();
   await expect(d.getByRole('button',{name:'Recogidas completadas: iniciar viaje al destino'})).toBeDisabled();

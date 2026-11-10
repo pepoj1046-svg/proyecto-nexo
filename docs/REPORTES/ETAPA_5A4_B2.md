@@ -111,14 +111,23 @@ minutos. No usar en producción.
 - 26 pruebas dirigidas unitarias aprobadas: firma, alteraciones, vencimiento exacto,
   anomalías de reloj, almacenamiento mínimo/bloqueado/lleno, preflight, cuerpo
   original, respuestas tardías y orden de autenticación B1.
-- 9 pruebas dirigidas PostgreSQL 18.4 aprobadas inicialmente (B2-01–09): recibos
+- 11 pruebas dirigidas PostgreSQL 18.4 aprobadas (B2-01–11): recibos
   propios, familias, split/expreso/enroute, permisos, COMMIT/ROLLBACK bajo bloqueo,
   cuatro replay concurrentes, revocación real durante espera, HTTP y reinicio.
 - Actualización 041 poblada →042: mismas tablas/datos/checksums, firmas, OID y ACL
   de todas las funciones existentes; sólo una función nueva, reejecución vacía.
 - Batería unitaria inicial completa: 114/114 aprobadas.
-- PostgreSQL completo, E2E escritorio/móvil, cierre/reinicio, CI y CodeQL: en curso,
-  no se declaran aprobados en este commit de avance.
+- PostgreSQL local completo: 418/418 aprobadas en la batería inicial más B2-10/11
+  dirigidas, 2/2. CI ejecutó 420/420 en Ubuntu/Windows con Node 22/24.
+- E2E B2 dirigidas: 3/3 por proyecto, escritorio y móvil; SIGINT y reinicio real
+  aprobados, incluyendo invalidación del ticket anterior.
+- CodeQL de la implementación inicial `77fc27b`: aprobado.
+- Primera matriz CI `42735726694`: los cuatro trabajos de dominio/PG aprobaron;
+  los trabajos web detectaron una petición antigua sin ticket en operations.
+  Se corrige exclusivamente la petición de prueba, conservando NO_CAPACITY/409
+  y todos los testigos de inventario, custodia y auditoría. No es sobreventa ni
+  se elimina el preflight B2. Se repite la batería web afectada y la matriz del
+  commit corregido; resultados finales en el informe de verificación del PR #12.
 
 Pruebas nuevas: `tests/recovery-tickets.test.mjs`,
 `tests/recovery-ticket-storage.test.mjs`, adiciones B2 a

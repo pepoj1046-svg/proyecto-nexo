@@ -4388,6 +4388,7 @@ test('B2-07: HTTP ticket/query require B1, CSRF, Origin and closed schema; forge
   assert.equal((await postJson(web.url,'/api/recovery/ticket',issue,{Origin:web.url})).status,401);
   assert.equal((await postJson(web.url,'/api/recovery/ticket',issue,{...h,'X-CSRF-Token':'wrong'})).status,403);assert.equal((await postJson(web.url,'/api/recovery/ticket',issue,{...h,Origin:'http://foreign.invalid'})).status,403);
   for(const body of[{...issue,key:key()},{...issue,family:'CARE'}, {...issue,createdAt:Date.now()}])assert.equal((await postJson(web.url,'/api/recovery/ticket',body,h)).status,400);
+  const unissued=await postJson(web.url,'/api/reservations',{}, {...h,'Idempotency-Key':key()});assert.equal(unissued.status,400);assert.deepEqual(unissued.body,{error:'INVALID_RECOVERY_TICKET'});
   const issued=await postJson(web.url,'/api/recovery/ticket',issue,h);assert.equal(issued.status,200);const ticket=issued.body;assert.equal(Object.keys(ticket).length,9);assert.equal(ticket.expiresAt-ticket.createdAt,1800000);assert.equal(issued.headers['cache-control'],'no-store');
   const missing=await postJson(web.url,'/api/recovery/receipt',{v:1,ticket},h);assert.equal(missing.status,200);assert.equal(missing.body.state,'NOT_OBSERVED');assert.equal(missing.body.receipt,undefined);
   for(const body of[{v:1,ticket:{...ticket,seal:'a'.repeat(43)}},{v:1,ticket:{...ticket,body:{secret:true}}},{v:1,ticket,key:ticket.key}])assert.equal((await postJson(web.url,'/api/recovery/receipt',body,h)).status,400);
