@@ -1,6 +1,8 @@
 # 5A.4-B2 — tickets firmados y consulta de recibos APP
 
-Estado: implementación de laboratorio en verificación; PR en borrador. B3 no iniciado.
+Estado: implementación de laboratorio para revisión; PR #12 en borrador. B3 no iniciado.
+Los resultados finales se publican en la conversación del PR #12, ligados al SHA
+verificado: este documento conserva el contrato y el historial de validación.
 Base exacta: `49ff4ed4897f15986dfc2083f22d2f1a7ebc60d1` (B1 y auditoría nativa).
 Rama: `desarrollo/etapa-5a4-b2`, hacia `desarrollo/etapa-5a4-b1`.
 Contrato de referencia: `docs/ETAPA_5_RECUPERACION_TRAS_RECARGA.md`, revisión
@@ -106,7 +108,7 @@ CSRF y sesión SQL. No se promete seguridad universal de navegadores, recuperaci
 tras cierre/destrucción del entorno ni restauración de reservas a los treinta
 minutos. No usar en producción.
 
-## Pruebas y evidencias (se actualiza al completar)
+## Pruebas y evidencias: historial de validación
 
 - 26 pruebas dirigidas unitarias aprobadas: firma, alteraciones, vencimiento exacto,
   anomalías de reloj, almacenamiento mínimo/bloqueado/lleno, preflight, cuerpo
@@ -139,11 +141,23 @@ sin credenciales ni trazas completas. No publicar `.local` entero.
 Incidencias de desarrollo: se ajustaron fixtures de split/FIFO al contrato vigente,
 el login después de recarga a la pantalla existente, y el selector de error al
 `role=alert` real. No se elevaron tiempos ni se debilitaron aserciones de integridad.
+Una ejecución dirigida local coincidió por error con la batería web y ambas
+compartieron `.local/web-test-results`: Playwright falló con ENOENT al guardar
+trazas. No se cuenta como aprobada. Se corrigió la coordinación ejecutándolas
+en secuencia, sin cambiar la aplicación ni ocultar el fallo. La reproducción
+dirigida del competidor ganador aprobó después en escritorio y móvil, con
+consultas sin reenvío, un único ROAD_ASSIGN, mismos contratos y finalización real.
 Se reprodujo además un defecto de presentación nuevo: consultar el listado tras
 un almacenamiento fallido cambiaba a «incierto» aunque no se hubiera enviado nada.
 Se conserva REFERENCE_REQUIRED después de esa lectura, con cero POST y el mismo
 ticket, comprobado por regresión unitaria y E2E. La validación web intermedia
 se detuvo para estabilizar esta corrección antes de la ejecución final.
+CI detectó también la rama competidora de una carrera antigua de rescate:
+si el POST de interfaz recibe STALE_OPERATION/409, el contrato de 5A.3 conserva
+la intención y bloquea la actualización general. La prueba esperaba pulsar ese
+botón bloqueado. Se conserva la carrera real y se verifica la consulta manual
+existente sin reenvío para esa rama; un orden de laboratorio reproducible fuerza
+el competidor ganador sin sleeps/retries. No se modifica rescate ni use-command.
 Una espera real sobre actions demostró clasificación genérica tras revocación:
 la revalidación inmediatamente después de leer actions ahora exige sesión vigente.
 

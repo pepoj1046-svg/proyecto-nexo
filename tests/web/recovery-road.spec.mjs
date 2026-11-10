@@ -23,12 +23,19 @@ test('rescate en carretera: tres roles, terminal autorizada, dos asignaciones co
   let finish;const raced=new Promise(resolve=>{finish=resolve;});let once=true;
   await a.route('**/api/recovery/command',async route=>{
    if(once&&route.request().postDataJSON().kind==='ASSIGN_ROAD'){
-    once=false;const [original,competitor]=await Promise.all([route.fetch(),api(a,'/api/recovery/command',route.request().postDataJSON(),randomUUID())]);
+    once=false;// Default remains a real simultaneous race. The optional laboratory order
+    // reproduces the competing winner deterministically without sleeps/retries.
+    const competing=()=>api(a,'/api/recovery/command',route.request().postDataJSON(),randomUUID());
+    let original,competitor;if(process.env.NEXO_WEB_TEST_LOCAL==='1'&&process.env.NEXO_ROAD_RACE_ORDER==='COMPETITOR'){competitor=await competing();original=await route.fetch();}else [original,competitor]=await Promise.all([route.fetch(),competing()]);
     const result={statuses:[original.status(),competitor.status()],errors:[await original.json(),await competitor.json()]};await route.fulfill({response:original});finish(result);
    }else await route.continue();
   });
   await a.getByLabel('Confirmo la asignación autorizada').check();await a.getByRole('button',{name:'Asignar vehículo de rescate',exact:true}).click();const race=await raced;expect([...race.statuses].sort()).toEqual([200,409]);expect(race.errors.some(x=>x.error==='STALE_OPERATION')).toBe(true);await a.unroute('**/api/recovery/command');
-  await updateConsole(a);await expect(a.locator('.recovery-detail')).toContainText('traslado seguro pendiente');
+  if(race.statuses[0]===409){
+   const panel=a.locator('.recovery-console .command-recovery');await expect(panel).toContainText('Resultado incierto');await expect(a.getByRole('button',{name:'Actualizar incidencias',exact:true})).toBeDisabled();
+   const writes=[];const track=r=>{if(new URL(r.url()).pathname==='/api/recovery/command')writes.push(r);};a.on('request',track);
+   const read=a.waitForResponse(r=>r.url().endsWith('/api/recovery/detail'));await panel.getByRole('button',{name:'Consultar estado sin repetir actuación',exact:true}).click();expect((await read).status()).toBe(200);await expect(a.getByRole('alert').filter({hasText:'el resultado de la actuación sigue incierto'})).toBeVisible();expect(writes).toHaveLength(0);a.off('request',track);
+  }else await updateConsole(a);await expect(a.locator('.recovery-detail')).toContainText('traslado seguro pendiente');
   let s=await audit.read(tripId);expect(s.trip.vehicle).toBe('FICTICIO-RESCATE-DESTINO');expect(s.incidents[0].road_phase).toBe('ASSIGNED');expect(s.journey.filter(e=>e.kind==='ROAD_ASSIGN')).toHaveLength(1);expect(bookingContract(s)).toEqual(bookingContract(before));expect((await audit.read(target)).trip.status).toBe('WITHDRAWN');
   await recordEvidence('carretera',info.project.name,'asignado',{state:s,race},a);
   await d.getByRole('button',{name:'Actualizar operación',exact:true}).click();await d.getByRole('button',{name:'Consultar incidencias',exact:true}).click();await expect(d.locator('.driver-incident')).toContainText('Ya no conduces este servicio');await expect(d.getByRole('button',{name:'Asignar vehículo de rescate',exact:true})).toHaveCount(0);
