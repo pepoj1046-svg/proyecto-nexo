@@ -9,7 +9,7 @@ const receipt=()=>({storage:'EPHEMERAL_LAB',moneyProcessed:false,bookings:[{book
 const page=()=>({bookings:[{bookingId,status:'CONFIRMED'}],total:1,nextCursor:null});
 function fixture(overrides={}){
  let view,locked=false;const writes=[],auth=[];
- const deps={session:async()=>({authenticated:true,accountRef:'original',csrf:'fresh'}),write:async(a,s)=>{writes.push({a,s});return receipt();},read:async()=>page(),changed:v=>{view=v;},protect:p=>{locked=p;},authenticate:a=>auth.push(a),frozen:()=>{},...overrides};
+ const deps={issue:async s=>({v:1,app:'proyecto-nexo/lab',environmentId:s.environmentId,accountRef:s.accountRef,family:'RESERVATION_APP',key:crypto.randomUUID(),createdAt:1000,expiresAt:1801000,seal:'x'.repeat(43)}),persist:()=>{},retire:()=>{},session:async()=>({authenticated:true,accountRef:'original',csrf:'fresh'}),write:async(a,s)=>{writes.push({a,s});return receipt();},read:async()=>page(),changed:v=>{view=v;},protect:p=>{locked=p;},authenticate:a=>auth.push(a),frozen:()=>{},...overrides};
  return{machine:new ReservationAttempt(deps),deps,writes,auth,get view(){return view;},get locked(){return locked;}};
 }
 test('lost post-COMMIT reply retains frozen body/account/key; manual replay cannot recalculate intent',async()=>{
@@ -54,7 +54,7 @@ test('malformed HTTP 200 and HTTP errors cannot prove rollback or retire the unc
  }
 });
 test('network loss during the identity check retains a known receipt privately for read-only recovery',async()=>{
- const f=fixture();let sessions=0;f.deps.session=async()=>{if(++sessions===2||sessions===3)throw Error('Network unavailable');return{authenticated:true,accountRef:'original',csrf:'fresh'};};
+ const f=fixture();let failures=0;f.deps.session=async()=>{if(f.writes.length>0&&failures++<2)throw Error('Network unavailable');return{authenticated:true,accountRef:'original',csrf:'fresh'};};
  await f.machine.submit('original',()=>({seats:2}));assert.equal(f.view.phase,'REFRESH_FAILED');assert.equal(f.view.receipt,null);assert.equal(f.machine.hasReceipt,true);
  await f.machine.consult();assert.equal(f.writes.length,1);assert.equal(f.view.phase,'UPDATED');
 });
@@ -77,4 +77,12 @@ test('explicit session 401 keeps the original intent and requires its account in
  f.deps.session=async()=>{if(expired)throw Object.assign(new Error('AUTHENTICATION_REQUIRED'),{status:401});return{authenticated:true,accountRef:'original',csrf:'fresh'};};
  f.deps.write=async()=>{expired=true;throw Error('Lost response');};
  await f.machine.submit('original',()=>({seats:1}));assert.equal(f.view.phase,'AUTH_REQUIRED');assert.equal(f.machine.pending,true);assert.equal(f.locked,true);assert.deepEqual(f.auth,['original']);
+});
+test('a failed ticket/storage preflight never sends a reservation and keeps the same issued key on manual retry',async()=>{
+ const f=fixture();let issues=0,blocked=true;const issue=f.deps.issue;f.deps.issue=async s=>{issues++;return issue(s);};f.deps.persist=()=>{if(blocked)throw Error('STORAGE_UNAVAILABLE');};
+ await f.machine.submit('original',()=>({seats:2}));assert.equal(f.writes.length,0);assert.equal(f.view.phase,'REFERENCE_REQUIRED');assert.equal(f.machine.pending,true);assert.equal(issues,1);
+ blocked=false;await f.machine.submit('original',()=>{throw Error('MUST_NOT_REBUILD');});assert.equal(f.view.phase,'UPDATED');assert.equal(issues,1);assert.equal(f.writes.length,1);
+});
+test('late ticket emission for another account cannot dispatch a frozen intention',async()=>{
+ const f=fixture();f.deps.issue=async s=>({...await fixture().deps.issue(s),accountRef:'different'});await f.machine.submit('original',()=>({seats:2}));assert.equal(f.writes.length,0);assert.equal(f.view.phase,'REFERENCE_REQUIRED');
 });

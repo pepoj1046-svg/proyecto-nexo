@@ -5,8 +5,8 @@ const denied=()=>Object.assign(new Error('AUTHENTICATION_REQUIRED'),{status:401,
 const csrfError=()=>Object.assign(new Error('CSRF_REQUIRED'),{status:403,code:'CSRF_REQUIRED'});
 // The cookie selects a container, NEVER an actor. Document capabilities live only
 // in RAM; selecting a document cannot retrieve its proof or reset its authority.
-export function createWebSessions({identity,business,clock=Date.now,max=256}){
- const browsers=new Map(),documents=new Map(),environmentId=randomUUID();
+export function createWebSessions({identity,business,clock=Date.now,max=256,environmentId=randomUUID()}){
+ const browsers=new Map(),documents=new Map();
  const prune=()=>{for(const[k,v]of documents)if(v.expires<=clock()||!browsers.has(v.browser))documents.delete(k);for(const[k,v]of browsers)if(v.expires<=clock())browsers.delete(k);};
  function live(c){if(!c?.entry||documents.get(c.id)!==c.entry||browsers.get(c.key)!==c.browser||c.entry.expires<=clock()||c.browser.expires<=clock())throw denied();return c.entry;}
  function get(req,name){

@@ -1,3 +1,5 @@
+import{createRecoveryTickets}from'./recovery-tickets.mjs';
+import{createWebAppReceiptService}from'../db/web-app-receipt-service.mjs';
 import{createWebRouteConfigService}from'../db/web-route-config-service.mjs';
 import {createWebFleetAdminService} from '../db/web-fleet-admin-service.mjs';
 import {createWebPlatformAdminService} from '../db/web-platform-admin-service.mjs';
@@ -44,7 +46,12 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   const driverAdmin=identityPool?createWebDriverAdminService(pool):null;
   const directory=identityPool?createWebDirectoryService(pool):null;
   const management=identityPool?createWebManagementService(pool):null;
-  const sessions=identityPool?createWebSessions({identity:createIdentity(identityPool),business}):null;
+  const databaseMarker=async()=>JSON.stringify((await pool.query("SELECT extract(epoch FROM pg_postmaster_start_time())::text AS boot,(SELECT oid FROM pg_database WHERE datname=current_database())AS database")).rows[0]);
+  const databaseEpoch=identityPool?await databaseMarker():null;
+  const environmentId=randomUUID();let tickets;
+  const recoveryDatabase=async()=>{try{if(await databaseMarker()!==databaseEpoch){tickets.invalidate();throw denial(410,'ENVIRONMENT_CHANGED');}}catch(e){tickets.invalidate();if(e.status)throw e;throw denial(503,'RECOVERY_UNAVAILABLE');}};
+  const appReceipts=identityPool?createWebAppReceiptService(pool):null;
+  const sessions=identityPool?createWebSessions({identity:createIdentity(identityPool),business,environmentId}):null;
   // Fixed handler tables: every private POST is constructed with the CSRF gate.
   // Request paths select a handler, never whether its security check is executed.
   const secured=handler=>async(context,req,b,setCookie)=>{
@@ -56,6 +63,10 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
     const result=await handler(context.entry.token,req.headers['idempotency-key'],b);
     await sessions.actor(context);return result;
   });
+  const recoveryGuard=handler=>async(context,req,b)=>{
+    try{if(!context?.entry?.token)throw denial(401,'REAUTHENTICATION_REQUIRED');sessions.csrf(context,req.headers['x-csrf-token']);return await handler(context,req,b);}
+    catch(e){if(e.code==='57P01'||String(e.code??'').startsWith('08')||/connection.*(terminated|closed|reset)/i.test(e.message))tickets.invalidate();if(e.status===401||e.message==='UNAUTHENTICATED')throw denial(401,'REAUTHENTICATION_REQUIRED');if(e.message==='RECOVERY_UNAVAILABLE')throw denial(403,'RECOVERY_UNAVAILABLE');throw e;}
+  };
   const publicHandlers=new Map([
     ['/api/localities',(_context,_req,b)=>service.localities(b)],
     ['/api/availability',(_context,_req,b)=>service.availability(b)],
@@ -98,7 +109,20 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
     ['/api/management/detail',authenticated((token,_key,b)=>management.detail(token,b))],
     ['/api/management/command',authenticated((token,key,b)=>management.command(token,key,b))],
     ['/api/reservations/quote',authenticated((token,_key,b)=>business.quote(token,b))],
-    ['/api/reservations',authenticated((token,key,b)=>business.reserve(token,key,b))],
+    ['/api/reservations',secured(async(context,req,b)=>{
+      await recoveryDatabase();const actor=await sessions.actor(context);tickets.header(req.headers['x-nexo-recovery-ticket'],actor.accountRef,req.headers['idempotency-key']);
+      const result=await business.reserve(context.entry.token,req.headers['idempotency-key'],b);await sessions.actor(context);return result;
+    })],
+    ['/api/recovery/ticket',recoveryGuard(async(context,_req,b)=>{
+      if(Object.keys(b).length!==2||b.v!==1||b.family!=='RESERVATION_APP')throw denial(400,'INVALID_REQUEST');
+      await recoveryDatabase();const actor=await sessions.actor(context),ticket=tickets.issue(actor.accountRef);await sessions.actor(context);tickets.verify(ticket,actor.accountRef);return ticket;
+    })],
+    ['/api/recovery/receipt',recoveryGuard(async(context,_req,b)=>{
+      if(Object.keys(b).length!==2||b.v!==1||!b.ticket)throw denial(400,'INVALID_RECOVERY_TICKET');
+      await recoveryDatabase();const actor=await sessions.actor(context),ticket=tickets.verify(b.ticket,actor.accountRef);
+      const result=await appReceipts.read(context.entry.token,ticket.key);await sessions.actor(context);await recoveryDatabase();tickets.verify(ticket,actor.accountRef);
+      return{...result,family:'RESERVATION_APP',key:ticket.key,environmentId,observedAt:tickets.observedAt()};
+    })],
     ['/api/operator/accept',authenticated((token,key,b)=>business.accept(token,key,b))],
     ['/api/operations/overview',authenticated((token,_key,b)=>operations.overview(token,b))],
     ['/api/operations/snapshot',authenticated((token,_key,b)=>operations.snapshot(token,b))],
@@ -166,10 +190,14 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
       const asset=/^\/(app-[A-Z0-9]+\.(js|css))$/.exec(req.url);
       if(asset){let data;try{data=await readFile(resolve(root,asset[1]));}catch{throw denial(404,'NOT_FOUND');}return send(200,data,asset[2]==='js'?'text/javascript; charset=utf-8':'text/css; charset=utf-8');}
       throw denial(404,'NOT_FOUND');
-    }catch(e){const known=/^(INVALID_[A-Z_]+|UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|NO_CAPACITY|CAPACITY_EXCEEDED|FARE_CHANGED|FARE_UNRESOLVED|ROUTE_NOT_ELIGIBLE|TRIP_NOT_QUEUED|TRIP_NOT_IN_TRANSIT|PICKUP_PASSED|PICKUP_PASSED_OR_INCOMPATIBLE|QUOTE_CHANGED|OPERATION_BLOCKED|IDEMPOTENCY_CONFLICT|OFFER_EXPIRED|NOT_DRIVER|FORBIDDEN_SCOPE|STALE_ASSIGNMENT|STALE_OPERATION|NOT_FULL|UNACCEPTED_OFFERS|PICKUPS_PENDING|QUEUE_ORDER|INCOMPATIBLE_TRIP|INDIVIDUAL_HISTORY_ONLY|AGGREGATE_HISTORY_ONLY|OBSERVED_CAPACITY_EXCEEDED|UNSUPPORTED_URBAN_MANIFEST|OUTSIDE_URBAN_SCOPE|OUTSIDE_ROAD_SCOPE|ROUTE_CONDITION_BLOCKED|CONDITION_ACCEPTANCE_REQUIRED|MINOR_REVIEW_REQUIRED|COMPANION_REQUIRED|NO_COMPATIBLE_TRANSFER|NO_FREE_REPLACEMENT|ADMIN_TERMINAL_CHOICE_REQUIRED|REPLACEMENT_AVAILABLE|ADMIN_REVIEW_REQUIRED|SAFE_TRANSFER_REQUIRED|STALE_CONSENT|CONSENT_USED|PRESENCE_REQUIRED|TERMINAL_RESERVATION_BINDING|TRANSFER_CONDITIONS_CHANGED|VEHICLE_OUT_OF_SERVICE|PASSENGERS_ONBOARD|TRIP_ALREADY_STARTED|NOT_AVAILABLE|ALREADY_ACTIVE|STALE_PREVIOUS_TRIP|PAGE_CHANGED|DECISION_CONFLICT|CONDITION_REJECTED|STALE_CONDITION|ASSIGNMENT_NOT_DECLINABLE|NO_DRIVER_DECISION_REQUIRED|HANDOFF_PENDING|RECEIVER_DRIVER_REQUIRED|STALE_HANDOFF|RECEPTION_INCOMPLETE|ALREADY_RECEIVED|HANDOFF_ALREADY_COMPLETED|MANAGED_RESPONSIBILITY_REQUIRED|STALE_RESPONSIBILITY|RESPONSIBLE_ALREADY_REGISTERED|RESPONSIBLE_REVIEW_REQUIRED|NO_LINKED_ACCOUNT|ACCOUNT_ALREADY_LINKED|BOARDING_HISTORY_REVIEW_REQUIRED|NO_ABSENCE_CANDIDATES|LEGAL_POLICY_REVIEW_REQUIRED|MINOR_LINK_REVIEW_REQUIRED|PHYSICAL_REVIEW_REQUIRED|STALE_REVIEW|CUSTODY_REVIEW_REQUIRED|RESPONSIBILITY_CONSENT_REVIEW_REQUIRED|FRESH_RESPONSIBLE_DECISION_REQUIRED|STALE_DRIVER_ACCESS|DRIVER_SERVICE_REVIEW_REQUIRED|LAST_ADMIN_PROTECTED|LAST_PLATFORM_ADMIN_PROTECTED|STALE_PLATFORM_STATE|ADMIN_SCOPE_REVIEW_REQUIRED|ADMIN_DECISION_CONFLICT|ASSOCIATION_CODE_CONFLICT|CONFIG_BUSY|STALE_CONFIG|STALE_CONFIG_VALIDATION|CONFIG_STATE_CONFLICT|CONFIG_VALIDATION_REQUIRED|CONFIG_ROUTE_CONFLICT|CONFIG_ROUTE_RETIRED|CONFIG_FARE_OVERLAP|CONFIG_FARE_PREDECESSOR_CHANGED|FLEET_ADMIN_BUSY|STALE_FLEET_STATE|FLEET_IDENTITY_CONFLICT|FLEET_VEHICLE_CONFLICT|FLEET_DECISION_CONFLICT|FLEET_ASSIGNMENT_CONFLICT|FLEET_IDENTITY_REVIEW_REQUIRED|FLEET_OPERATION_REVIEW_REQUIRED)$/;const message=known.test(e.message)?e.message:null;const status=e.status??((message==='FLEET_ADMIN_BUSY'||message==='CONFIG_BUSY')?503:message==='INVALID_CREDENTIALS'||message==='UNAUTHENTICATED'?401:message==='FORBIDDEN'||message==='FORBIDDEN_SCOPE'||message==='NOT_DRIVER'||message==='RECEIVER_DRIVER_REQUIRED'?403:message==='NOT_FOUND'?404:message?.startsWith('INVALID_')?400:message?409:503);send(status,{error:e.status?e.code??'REQUEST_REJECTED':message??(req.url.startsWith('/api/local')||req.url==='/api/availability'?'CATALOG_UNAVAILABLE':'SERVICE_UNAVAILABLE')});req.resume();}
+    }catch(e){const known=/^(INVALID_[A-Z_]+|UNAUTHENTICATED|FORBIDDEN|NOT_FOUND|NO_CAPACITY|CAPACITY_EXCEEDED|FARE_CHANGED|FARE_UNRESOLVED|ROUTE_NOT_ELIGIBLE|TRIP_NOT_QUEUED|TRIP_NOT_IN_TRANSIT|PICKUP_PASSED|PICKUP_PASSED_OR_INCOMPATIBLE|QUOTE_CHANGED|OPERATION_BLOCKED|IDEMPOTENCY_CONFLICT|OFFER_EXPIRED|NOT_DRIVER|FORBIDDEN_SCOPE|STALE_ASSIGNMENT|STALE_OPERATION|NOT_FULL|UNACCEPTED_OFFERS|PICKUPS_PENDING|QUEUE_ORDER|INCOMPATIBLE_TRIP|INDIVIDUAL_HISTORY_ONLY|AGGREGATE_HISTORY_ONLY|OBSERVED_CAPACITY_EXCEEDED|UNSUPPORTED_URBAN_MANIFEST|OUTSIDE_URBAN_SCOPE|OUTSIDE_ROAD_SCOPE|ROUTE_CONDITION_BLOCKED|CONDITION_ACCEPTANCE_REQUIRED|MINOR_REVIEW_REQUIRED|COMPANION_REQUIRED|NO_COMPATIBLE_TRANSFER|NO_FREE_REPLACEMENT|ADMIN_TERMINAL_CHOICE_REQUIRED|REPLACEMENT_AVAILABLE|ADMIN_REVIEW_REQUIRED|SAFE_TRANSFER_REQUIRED|STALE_CONSENT|CONSENT_USED|PRESENCE_REQUIRED|TERMINAL_RESERVATION_BINDING|TRANSFER_CONDITIONS_CHANGED|VEHICLE_OUT_OF_SERVICE|PASSENGERS_ONBOARD|TRIP_ALREADY_STARTED|NOT_AVAILABLE|ALREADY_ACTIVE|STALE_PREVIOUS_TRIP|PAGE_CHANGED|DECISION_CONFLICT|CONDITION_REJECTED|STALE_CONDITION|ASSIGNMENT_NOT_DECLINABLE|NO_DRIVER_DECISION_REQUIRED|HANDOFF_PENDING|RECEIVER_DRIVER_REQUIRED|STALE_HANDOFF|RECEPTION_INCOMPLETE|ALREADY_RECEIVED|HANDOFF_ALREADY_COMPLETED|MANAGED_RESPONSIBILITY_REQUIRED|STALE_RESPONSIBILITY|RESPONSIBLE_ALREADY_REGISTERED|RESPONSIBLE_REVIEW_REQUIRED|NO_LINKED_ACCOUNT|ACCOUNT_ALREADY_LINKED|BOARDING_HISTORY_REVIEW_REQUIRED|NO_ABSENCE_CANDIDATES|LEGAL_POLICY_REVIEW_REQUIRED|MINOR_LINK_REVIEW_REQUIRED|PHYSICAL_REVIEW_REQUIRED|STALE_REVIEW|CUSTODY_REVIEW_REQUIRED|RESPONSIBILITY_CONSENT_REVIEW_REQUIRED|FRESH_RESPONSIBLE_DECISION_REQUIRED|STALE_DRIVER_ACCESS|DRIVER_SERVICE_REVIEW_REQUIRED|LAST_ADMIN_PROTECTED|LAST_PLATFORM_ADMIN_PROTECTED|STALE_PLATFORM_STATE|ADMIN_SCOPE_REVIEW_REQUIRED|ADMIN_DECISION_CONFLICT|ASSOCIATION_CODE_CONFLICT|CONFIG_BUSY|STALE_CONFIG|STALE_CONFIG_VALIDATION|CONFIG_STATE_CONFLICT|CONFIG_VALIDATION_REQUIRED|CONFIG_ROUTE_CONFLICT|CONFIG_ROUTE_RETIRED|CONFIG_FARE_OVERLAP|CONFIG_FARE_PREDECESSOR_CHANGED|FLEET_ADMIN_BUSY|STALE_FLEET_STATE|FLEET_IDENTITY_CONFLICT|FLEET_VEHICLE_CONFLICT|FLEET_DECISION_CONFLICT|FLEET_ASSIGNMENT_CONFLICT|FLEET_IDENTITY_REVIEW_REQUIRED|FLEET_OPERATION_REVIEW_REQUIRED)$/;const message=known.test(e.message)?e.message:null;const status=e.status??((message==='FLEET_ADMIN_BUSY'||message==='CONFIG_BUSY')?503:message==='INVALID_CREDENTIALS'||message==='UNAUTHENTICATED'?401:message==='FORBIDDEN'||message==='FORBIDDEN_SCOPE'||message==='NOT_DRIVER'||message==='RECEIVER_DRIVER_REQUIRED'?403:message==='NOT_FOUND'?404:message?.startsWith('INVALID_')?400:message?409:503);send(status,{error:((req.url==='/api/recovery/ticket'||req.url==='/api/recovery/receipt')&&status===401)?'REAUTHENTICATION_REQUIRED':e.status?e.code??'REQUEST_REJECTED':message??(req.url.startsWith('/api/local')||req.url==='/api/availability'?'CATALOG_UNAVAILABLE':'SERVICE_UNAVAILABLE')});req.resume();}
     finally{if(entered)inflight--;}
   });
   server.maxConnections=32;server.maxHeadersCount=32;server.on('clientError',(_error,socket)=>{if(socket.writable)socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');});
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
-  return {url:`http://127.0.0.1:${server.address().port}`,close:()=>{sessions?.clear();return new Promise((resolve,reject)=>{server.close(e=>e?reject(e):resolve());server.closeAllConnections();});}};
+  tickets=createRecoveryTickets({environmentId,origin:`http://127.0.0.1:${server.address().port}`});
+  // Pool failures make receipt availability/epoch uncertain; never silently
+  // accept tickets after a lost database connection. Native operations retain their contracts.
+  const invalidateRecovery=()=>tickets.invalidate();pool?.on?.('error',invalidateRecovery);identityPool?.on?.('error',invalidateRecovery);
+  return {url:`http://127.0.0.1:${server.address().port}`,close:()=>{tickets.invalidate();pool?.off?.('error',invalidateRecovery);identityPool?.off?.('error',invalidateRecovery);sessions?.clear();return new Promise((resolve,reject)=>{server.close(e=>e?reject(e):resolve());server.closeAllConnections();});}};
 }
