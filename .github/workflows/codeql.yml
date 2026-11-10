@@ -16,6 +16,7 @@ on:
       - '.github/workflows/etapa-1-tests.yml'
   pull_request:
     branches:
+      - desarrollo/etapa-5a4-b1
       - desarrollo/etapa-5a3
       - desarrollo/etapa-5a2
       - desarrollo/etapa-3

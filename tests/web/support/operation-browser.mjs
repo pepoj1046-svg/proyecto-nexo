@@ -36,7 +36,7 @@ export async function operational(page,label,path,vehicle='FICTICIO-OPERATIVO'){
 // POSTs below use the real cookies/CSRF of each independent browser context.
 // These adversarial requests deliberately bypass disabled UI controls, never SQL.
 const csrf=new WeakMap();
-export async function api(page,path,body,key){
- return page.request.post(path,{headers:{Origin:new URL(page.url()).origin,'Content-Type':'application/json',...proofHeaders(page),...(key?{'Idempotency-Key':key}:{})},data:body});
+export async function api(page,path,body,key,ticket){
+ return page.request.post(path,{headers:{Origin:new URL(page.url()).origin,'Content-Type':'application/json',...proofHeaders(page),...(key?{'Idempotency-Key':key}:{}),...(ticket?{'X-Nexo-Recovery-Ticket':JSON.stringify(ticket)}:{})},data:body});
 }
 export async function rejected(page,path,body,error,status=403){const r=await api(page,path,body,randomUUID());expect(await r.json()).toEqual({error});expect(r.status()).toBe(status);}
