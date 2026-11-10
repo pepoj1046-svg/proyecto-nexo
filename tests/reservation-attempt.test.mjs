@@ -81,6 +81,7 @@ test('explicit session 401 keeps the original intent and requires its account in
 test('a failed ticket/storage preflight never sends a reservation and keeps the same issued key on manual retry',async()=>{
  const f=fixture();let issues=0,blocked=true;const issue=f.deps.issue;f.deps.issue=async s=>{issues++;return issue(s);};f.deps.persist=()=>{if(blocked)throw Error('STORAGE_UNAVAILABLE');};
  await f.machine.submit('original',()=>({seats:2}));assert.equal(f.writes.length,0);assert.equal(f.view.phase,'REFERENCE_REQUIRED');assert.equal(f.machine.pending,true);assert.equal(issues,1);
+ await f.machine.consult();assert.equal(f.view.phase,'REFERENCE_REQUIRED');assert.equal(f.writes.length,0);
  blocked=false;await f.machine.submit('original',()=>{throw Error('MUST_NOT_REBUILD');});assert.equal(f.view.phase,'UPDATED');assert.equal(issues,1);assert.equal(f.writes.length,1);
 });
 test('late ticket emission for another account cannot dispatch a frozen intention',async()=>{

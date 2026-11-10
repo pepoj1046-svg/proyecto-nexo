@@ -63,7 +63,7 @@ export class ReservationAttempt{
   const current=await this.deps.read(s);
   if(!current||!Array.isArray(current.bookings)||!Number.isInteger(current.total)||current.total<current.bookings.length||current.bookings.some(b=>typeof b.bookingId!=='string'||typeof b.status!=='string'))throw Error('No se recibió una consulta válida. Actualiza la consulta sin reenviar la reserva.');
   await this.actor(); // A late response must never populate a different account.
-  this.update({phase:this.received?'UPDATED':'UNCERTAIN',current,receipt:this.received});
+  this.update({phase:this.received?'UPDATED':this.dispatched?'UNCERTAIN':'REFERENCE_REQUIRED',current,receipt:this.received});
   if(this.received){this.deps.protect(false);if(this.attempt?.ticket)this.deps.retire(this.attempt.ticket);}
  }
  private async failure(e:unknown){

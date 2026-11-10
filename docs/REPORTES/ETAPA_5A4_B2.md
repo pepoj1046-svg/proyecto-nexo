@@ -139,6 +139,11 @@ sin credenciales ni trazas completas. No publicar `.local` entero.
 Incidencias de desarrollo: se ajustaron fixtures de split/FIFO al contrato vigente,
 el login después de recarga a la pantalla existente, y el selector de error al
 `role=alert` real. No se elevaron tiempos ni se debilitaron aserciones de integridad.
+Se reprodujo además un defecto de presentación nuevo: consultar el listado tras
+un almacenamiento fallido cambiaba a «incierto» aunque no se hubiera enviado nada.
+Se conserva REFERENCE_REQUIRED después de esa lectura, con cero POST y el mismo
+ticket, comprobado por regresión unitaria y E2E. La validación web intermedia
+se detuvo para estabilizar esta corrección antes de la ejecución final.
 Una espera real sobre actions demostró clasificación genérica tras revocación:
 la revalidación inmediatamente después de leer actions ahora exige sesión vigente.
 
