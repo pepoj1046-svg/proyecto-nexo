@@ -4360,6 +4360,13 @@ test('B2-03: non APP, sensitive operation, malformed result, wrong group ownersh
  }
  await admin.query('UPDATE nexo.actions SET payload=$1,result=$2 WHERE actor_id=$3 AND action_key=$4',[payload,result,fixture.p,k]);await admin.query('UPDATE nexo.bookings SET passenger_id=$1 WHERE id=$2',[fixture.other,original.id]);await rejects(appReceipt().read(fixture.tokens.p,k),/RECOVERY_UNAVAILABLE/);
 });
+test('B2-03b: a booking ID from another group of the same passenger is never accepted as this receipt even when counts match',async()=>{
+ const k=key(),own=await hold(1,{source:'APP'}),other=await hold(1,{source:'APP'}),payload={op:'reserve',request:{source:'APP'}};
+ assert.notEqual(own.groupId,other.groupId);assert.equal((await admin.query('SELECT count(*)::int n FROM nexo.bookings WHERE group_id=$1',[own.groupId])).rows[0].n,1);
+ await admin.query('INSERT INTO nexo.actions VALUES($1,$2,$3,$4)',[fixture.p,k,payload,own]);assert.deepEqual((await appReceipt().read(fixture.tokens.p,k)).receipt.bookingIds,own.bookingIds);
+ // Same owner, APP source and group size: only the per-ID group binding (b.id=x.id) can reject it.
+ await admin.query('UPDATE nexo.actions SET result=$1 WHERE actor_id=$2 AND action_key=$3',[{...own,bookingIds:other.bookingIds},fixture.p,k]);await rejects(appReceipt().read(fixture.tokens.p,k),/RECOVERY_UNAVAILABLE/);
+});
 test('B2-04: try-only shared receipt lock observes uncertainty during a real native transaction, then COMMIT or ROLLBACK',async()=>{
  for(const commit of[false,true]){const c=await pool.connect(),k=key();try{
   await c.query('BEGIN');await c.query("SELECT set_config('nexo.session_token',$1,true)",[fixture.tokens.p]);const r=(await c.query('SELECT nexo.reserve($1,$2)r',[k,request(1,{source:'APP'})])).rows[0].r;

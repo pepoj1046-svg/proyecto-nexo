@@ -26,9 +26,10 @@ BEGIN
  END IF;
  IF cardinality(ids)<>(SELECT count(DISTINCT x)FROM unnest(ids)x)THEN RAISE EXCEPTION 'RECOVERY_UNAVAILABLE';END IF;
  -- Explicit owner checks: SECURITY DEFINER does not inherit caller RLS.
+ -- Qualify x.id: an unqualified id inside the subquery would resolve to b.id (tautology).
  SELECT count(*)INTO count_rows FROM nexo.bookings b WHERE b.group_id=gid;
- IF count_rows<>cardinality(ids) OR EXISTS(SELECT FROM unnest(ids)id WHERE NOT EXISTS(
-  SELECT FROM nexo.bookings b WHERE b.id=id AND b.group_id=gid AND b.source='APP'AND b.passenger_id=u AND b.created_by=u AND nexo.can_read_route(b.route_id)))
+ IF count_rows<>cardinality(ids) OR EXISTS(SELECT FROM unnest(ids)AS x(id)WHERE NOT EXISTS(
+  SELECT FROM nexo.bookings b WHERE b.id=x.id AND b.group_id=gid AND b.source='APP'AND b.passenger_id=u AND b.created_by=u AND nexo.can_read_route(b.route_id)))
  THEN RAISE EXCEPTION 'RECOVERY_UNAVAILABLE';END IF;
  IF nexo.actor()IS DISTINCT FROM u THEN RAISE EXCEPTION 'UNAUTHENTICATED';END IF;
  RETURN jsonb_build_object('state','RECORDED','receipt',jsonb_build_object('operation',op,'groupId',gid,'bookingIds',to_jsonb(ids),'originalStatus',original));
