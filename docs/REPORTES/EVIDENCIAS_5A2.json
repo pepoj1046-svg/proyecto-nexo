@@ -1,0 +1,62 @@
+{
+  "scope": "5A.2 fictitious loopback laboratory; review pending",
+  "base": "6b74f40e0cbe60355968ae9828560a2fa6b43d62",
+  "historicalMigrationsUnchanged": 41,
+  "newMigrations": 0,
+  "newEndpoints": 0,
+  "localAll": {
+    "exit": 0,
+    "unit": 86,
+    "postgres": 408,
+    "runnerFailureDetection": "expected exit 9 verified",
+    "localHttpAndBusinessShutdown": "passed"
+  },
+  "witnesses": [
+    {
+      "scenario": "desktop-actualizacion-fallida",
+      "receipts": 1,
+      "bookings": 1,
+      "observedMovements": 0,
+      "overCapacity": 0,
+      "bookingStates": [
+        "CONFIRMED"
+      ],
+      "fareVersions": [
+        1
+      ],
+      "departureRegistered": false,
+      "audits": 2
+    },
+    {
+      "scenario": "desktop-incierto",
+      "receipts": 1,
+      "bookings": 1,
+      "observedMovements": 0,
+      "overCapacity": 0,
+      "bookingStates": [
+        "CONFIRMED"
+      ],
+      "fareVersions": [
+        1
+      ],
+      "departureRegistered": false,
+      "audits": 2
+    },
+    {
+      "scenario": "desktop-recuperado",
+      "receipts": 1,
+      "bookings": 1,
+      "observedMovements": 0,
+      "overCapacity": 0,
+      "bookingStates": [
+        "CONFIRMED"
+      ],
+      "fareVersions": [
+        1
+      ],
+      "departureRegistered": false,
+      "audits": 2
+    }
+  ],
+  "webFinalAndCI": "See final ratification comment of implementation PR for exact SHA and executed results; not presumed passed by this manifest."
+}

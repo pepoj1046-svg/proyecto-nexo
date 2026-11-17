@@ -1,0 +1,246 @@
+{
+  "baseCommit": "0fcc8958dd14d5c502f9cbefa3d9f847378d0050",
+  "finalCommitAndCI": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6561718192",
+  "local": {
+    "unit": 62,
+    "postgres": 278,
+    "e2e": 82,
+    "desktop": 41,
+    "mobile": 41,
+    "total": 422,
+    "failures": 0,
+    "skipped": 0,
+    "closedWebLabs": 38,
+    "shutdown": "SIGINT real",
+    "restart": true,
+    "environment": {
+      "os": "Debian 13",
+      "node": "24.19.0",
+      "postgres": "18.4",
+      "playwright": "1.64.1",
+      "chromium": "154"
+    }
+  },
+  "preservedMigrations": [
+    {
+      "file": "database/migrations/001_core.sql",
+      "sha256": "9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059"
+    },
+    {
+      "file": "database/migrations/002_operations.sql",
+      "sha256": "787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4"
+    },
+    {
+      "file": "database/migrations/003_queue.sql",
+      "sha256": "4fe53741452e3008a82690838d3f86e8308d3ddda322896ba723e94a7f4dd620"
+    },
+    {
+      "file": "database/migrations/004_isolation_guard.sql",
+      "sha256": "2ecd12ef4230f29a94a6bc915f8be31f2f3d5e2e1b395cc3c15555442951d401"
+    },
+    {
+      "file": "database/migrations/005_geography_authorizations.sql",
+      "sha256": "42e93efbfc8a70cbff8cadc0620216830b6b7e05e354335db4ddd752773e8fd5"
+    },
+    {
+      "file": "database/migrations/006_search_authorization_functions.sql",
+      "sha256": "e156c33c62f08e6c9bb2a9c0605fc6a841ca888fca0476f5424b99fa62d4d4de"
+    },
+    {
+      "file": "database/migrations/007_eligibility_rls.sql",
+      "sha256": "3fef73dc7ec20fce98505206bdc61426ba2cba321aaf83ea2fecd0b789105b03"
+    },
+    {
+      "file": "database/migrations/008_locality_lookup.sql",
+      "sha256": "ab3e82713198f078fbda5e424239900c41ecfa73a400aa923ead457e64e884b5"
+    },
+    {
+      "file": "database/migrations/009_identity_and_provisioning.sql",
+      "sha256": "e0401515ae8f564cb2d17561e960a56e6472e67085ab82fec34e41ffae41a4b6"
+    },
+    {
+      "file": "database/migrations/010_security_and_abuse.sql",
+      "sha256": "dace616e2de098a700035e4b61beb6d45ce722678729cb3255c92ca8c0268067"
+    },
+    {
+      "file": "database/migrations/011_identity_maintenance.sql",
+      "sha256": "d1c11a95fd5fec0dbb2136c13a2d6b915473ec0ea02013f2698ece0df2e4187d"
+    },
+    {
+      "file": "database/migrations/012_business_operations.sql",
+      "sha256": "080065cf039ddb2971f68a787a96abb4d6382f538d3ead829181ebd3d3280649"
+    },
+    {
+      "file": "database/migrations/013_individual_operations.sql",
+      "sha256": "e111f11211fb8153d08cc96ebe45fbc7b628efed9bf5ac5d8a48ce1ca94d92b5"
+    },
+    {
+      "file": "database/migrations/014_terminal_operations.sql",
+      "sha256": "e3b1ef1322638547e97c89ec709bbdcd0bbd1110947266c330c95c916103796b"
+    },
+    {
+      "file": "database/migrations/015_assignment_recovery.sql",
+      "sha256": "a897f5b2e7d47dbab7e701acf16db294e097d9b20483c378f1c383a17bd53dbe"
+    },
+    {
+      "file": "database/migrations/016_terminal_boarding.sql",
+      "sha256": "be49599eb2c11ceb5cd0c7f6dda633082eba328053611987c4a067bb2c988f35"
+    },
+    {
+      "file": "database/migrations/017_urban_replacement.sql",
+      "sha256": "25854b173b0154a11c013e94de2dae64f9083d4870b4f64e46cd34243fa4a3ee"
+    },
+    {
+      "file": "database/migrations/018_operating_contracts.sql",
+      "sha256": "77757bf35956270f6c4ba52a7140383e8cc623ec9a5bf10a6a70370d276f870e"
+    },
+    {
+      "file": "database/migrations/019_journey_recovery.sql",
+      "sha256": "96a311c568ed2471c354c06a3176f066cecbebedb0cecfb2abf3deb7e58f1164"
+    },
+    {
+      "file": "database/migrations/020_scoped_administration.sql",
+      "sha256": "643e0ba2417be17189d957e9f9562bd901c478dff0fcb0fd2fdfd24b00fcb4c6"
+    },
+    {
+      "file": "database/migrations/021_scope_read_boundaries.sql",
+      "sha256": "7bc4551a6283bf71f029ac0b99d2dc211af11b127ad60a1c1db889ab2b55e26f"
+    },
+    {
+      "file": "database/migrations/022_rescue_manifest_privacy.sql",
+      "sha256": "de2572bf53ee04116ba1e4da54aa3feed22385e31af024ea69fdfab44b3ed52b"
+    },
+    {
+      "file": "database/migrations/023_web_journeys.sql",
+      "sha256": "f446f0b0946056c6100b56f43c6ec71855dca636d37788fa69d17e3e9fddb212"
+    },
+    {
+      "file": "database/migrations/024_web_operations.sql",
+      "sha256": "08d0b3e0b18f6fbbe47b39c5233d29414419b276694bb02241f72d7f5916e2c3"
+    },
+    {
+      "file": "database/migrations/025_web_recovery_reads.sql",
+      "sha256": "dd132b36adb74f8fd371f5193c221637837bb30ce083c097c0123e1b35e79467"
+    },
+    {
+      "file": "database/migrations/026_web_queue_return.sql",
+      "sha256": "6b74d31a1bad7dd0e0dadb86d6e588d8d666a1e68aa2026670ab0aee6736ae73"
+    },
+    {
+      "file": "database/migrations/027_web_administration.sql",
+      "sha256": "0a2a1df1196aa63160e29c2a470677f058c6ba5a9f3b97af2f03c8be25f1d128"
+    },
+    {
+      "file": "database/migrations/028_web_route_decisions.sql",
+      "sha256": "d7ab3695bda2d148c4d5ec2f6b5d3e6637c411623ebe11370d3b8d80287727ec"
+    },
+    {
+      "file": "database/migrations/029_queue_assignment.sql",
+      "sha256": "46ac307f6ffe6a39452eb99204e092ed5bfd2b2d2c7925780d069e707c8ccd27"
+    },
+    {
+      "file": "database/migrations/030_safe_handoffs_and_reviews.sql",
+      "sha256": "7f9a139fd31a477b9fbde874d2ae6a5d57bed80e59a19b999ccce22b298b2e9a"
+    },
+    {
+      "file": "database/migrations/031_care_responsibilities.sql",
+      "sha256": "b91b4d43082ca13577eee9bd8cd695baf666f2de8acee57237208c0beb60ce58"
+    },
+    {
+      "file": "database/migrations/032_care_reviews_and_attendance.sql",
+      "sha256": "3750a0e69d8bff73237fe4df5c221aab29e0a64f74ab06e24bcebfe5b365ac3a"
+    }
+  ],
+  "newMigration": {
+    "path": "database/migrations/033_responsible_list_scope.sql",
+    "sha256": "44a36b53470906d187c4e24d5e2cbb284f33b01754fe3294b5e64fa57713bf23"
+  },
+  "privateLogFingerprints": [
+    {
+      "privateFile": ".local/cierre-final-all.log",
+      "sha256": "22f68fa5b54610accc0c6f15c442ad836b79cfb4df5dafcf96e42d1d148b7881",
+      "bytes": 42145
+    },
+    {
+      "privateFile": ".local/cierre-final-web.log",
+      "sha256": "bf7ac44ae96274f0bcf59f8caad57785b70ab68e418b0de6ce83b51462a88f45",
+      "bytes": 24856
+    },
+    {
+      "privateFile": ".local/cierre-directed-postgres.log",
+      "sha256": "982365bd199344b1622d02f8ffdda908378a1fc2da0ddc9d9eaddd625a68cbad",
+      "bytes": 754
+    },
+    {
+      "privateFile": ".local/cierre-web-after-desktop.log",
+      "sha256": "80a2e0c05f75b227bebc95144f733e63002560a27fde4d3d3963e99d4e5c8537",
+      "bytes": 1524
+    },
+    {
+      "privateFile": ".local/cierre-web-after-mobile.log",
+      "sha256": "4e1e227ce49cdfea7de277179ba9a0f7c19676c45cf7e4ea795ffd8c40bf181e",
+      "bytes": 1519
+    },
+    {
+      "privateFile": ".local/cierre-minor-before.log",
+      "sha256": "d6abf473098ff2a5ded3dde743ab395082c0af01f4084d2d34b6dcaccea765cb",
+      "bytes": 9446
+    },
+    {
+      "privateFile": ".local/cierre-code-before.log",
+      "sha256": "b4b1949fdf31cd8550ac4e3e3139551b7d6ac3e4fd98c49333d656425d2678e0",
+      "bytes": 10567
+    },
+    {
+      "privateFile": ".local/cierre-scope-before.log",
+      "sha256": "3efe8cd54b9b86960bdd2c203a5f89cffc890e0dcc69e83f6f8f2ae3c955bd16",
+      "bytes": 1021
+    },
+    {
+      "privateFile": ".local/cierre-runtime-dependencies.json",
+      "sha256": "e74b4e133a508e128cc1d622dfa3b01d25ec3af8620df88eff039a6797cc1702",
+      "bytes": 362
+    },
+    {
+      "privateFile": ".local/cierre-all-dependencies.json",
+      "sha256": "e74b4e133a508e128cc1d622dfa3b01d25ec3af8620df88eff039a6797cc1702",
+      "bytes": 362
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/REPORTES/evidencias/etapa-3-cierre/admin-menor-ausencia-desktop.png",
+      "sha256": "0d6b2a9efeb1e81d275fa57affde78cb69c8e2abf52ef1daf67a9302ca2614aa",
+      "device": "desktop",
+      "scenario": "admin-menor-ausencia",
+      "source": "batería final de cierre, no captura histórica 8B"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-3-cierre/admin-menor-ausencia-mobile.png",
+      "sha256": "f06ac6a9b86b50a886817396da9528b635af2509dfaa858f5e38c0cb4cf01e95",
+      "device": "mobile",
+      "scenario": "admin-menor-ausencia",
+      "source": "batería final de cierre, no captura histórica 8B"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-3-cierre/responsable-presencial-desktop.png",
+      "sha256": "2886ad8a0e5c44f8c515358b5e569ee9f7b4024427a5deebcb1e6c20323bc44f",
+      "device": "desktop",
+      "scenario": "responsable-presencial",
+      "source": "batería final de cierre, no captura histórica 8B"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-3-cierre/responsable-presencial-mobile.png",
+      "sha256": "ed44a0f8287da5fee1e0e69d96c3420c6185b2ede22e26ddf62180e3dfac46ca",
+      "device": "mobile",
+      "scenario": "responsable-presencial",
+      "source": "batería final de cierre, no captura histórica 8B"
+    }
+  ],
+  "limitations": [
+    "Solo laboratorio ficticio; no producción.",
+    "CI final se ratifica en el registro enlazado, sin reutilizar CI de 8B.",
+    "No se pudo enumerar alertas históricas CodeQL mediante el conector disponible.",
+    "Las imágenes muestran el final del caso; estados intermedios se verifican por SQL/UI."
+  ]
+}

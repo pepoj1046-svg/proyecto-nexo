@@ -1,0 +1,121 @@
+{
+  "increment": "4A.4",
+  "base": "b16844b9d4319001ba3d70e238f434b8c920874f",
+  "repository": "pepoj1046-svg/proyecto-nexo",
+  "branch": "desarrollo/etapa-4",
+  "final_commit_and_ci": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/5",
+  "screenshots": [
+    {
+      "file": "desktop-asignacion.png",
+      "sha256": "ebb85266b9a3a5ee5656f9fca49decab46d024ceea2afd86f8d9098e736723c5",
+      "bytes": 1651824,
+      "publication": "BLOCKED_BY_AUTOMATIC_REVIEW_LOCAL_ONLY"
+    },
+    {
+      "file": "desktop-chofer.png",
+      "sha256": "1b7e93d4123782439836747d08d74be8a8c3f47e841f25c5600a7087e993f923",
+      "bytes": 1812654,
+      "publication": "BLOCKED_BY_AUTOMATIC_REVIEW_LOCAL_ONLY"
+    },
+    {
+      "file": "desktop-historial.png",
+      "sha256": "126ab4eccd6960e9cb68b5dfe7b67a648059452a7ad287cfedf07456c169ffc1",
+      "bytes": 191899,
+      "publication": "BLOCKED_BY_AUTOMATIC_REVIEW_LOCAL_ONLY"
+    },
+    {
+      "file": "mobile-asignacion.png",
+      "sha256": "5981a5a345d73a320d125e0b55cb06a53b138fb415d8509cda05b22cae9c4e51",
+      "bytes": 1817335,
+      "publication": "BLOCKED_BY_AUTOMATIC_REVIEW_LOCAL_ONLY"
+    },
+    {
+      "file": "mobile-chofer.png",
+      "sha256": "39facdde05b0015b6184898752f89687b4374edb44d9e0eafc177c995e4e6351",
+      "bytes": 1881947,
+      "publication": "BLOCKED_BY_AUTOMATIC_REVIEW_LOCAL_ONLY"
+    },
+    {
+      "file": "mobile-historial.png",
+      "sha256": "662efa7450b3361ada321a97c4439551128fc5d3fc85308db576e5bb98a05c55",
+      "bytes": 198662,
+      "publication": "BLOCKED_BY_AUTOMATIC_REVIEW_LOCAL_ONLY"
+    }
+  ],
+  "local_archive_sha256": "43b2e1c3d829ee7609d7c7d5e285173c101a4c62e52bbb156e7796a27baaed94",
+  "changed_sources_sha256": {
+    "apps/web/src/Directory.tsx": "c99652dacb6a3f0b756b8564bd8aa761bd0bd499178d56574a17f6b37992450c",
+    "apps/web/src/FleetAdministration.tsx": "e7fb47b08cc6ff631f94d2c34fd425b8bc412f4e10efd79c7583320480d653fe",
+    "apps/web/src/private-api.ts": "ad042ce2c6c574f2c353c709de94a3715d229b749c7060651225aa0c251c37f1",
+    "database/migrations/038_fleet_administration.sql": "30dc26df591f2d406c641906765a90e811d0582b41467655d7750a2d1a07168a",
+    "scripts/seed-web-demo.mjs": "5f23108ff6229c8f0e91f04a2439e58de4eb10f0da7986fb583f5221118b1bf2",
+    "scripts/test-web.mjs": "ac2ec7458b0b315d55375e47e5a2a5881e92d55197f14802dd7c3b6e9d85f532",
+    "src/db/web-fleet-admin-service.mjs": "615d7a459454e49947721686e4744e2e89030caffc2202caf1dfe641341c347c",
+    "src/http/web-gateway.mjs": "404fc3c51af0da8feedb39066c3ecd77d43b867fb68ec93198362499b305b6ca",
+    "tests/fleet-admin.test.mjs": "c641a366e6da9238aa18337bd0032ec9b4948f875ed1d7a84a95e74b27f15af1",
+    "tests/integration/postgres.test.mjs": "933e04d498f21b1206e88aec41ae43886378dcb355dc56bce933828dc640f4f6",
+    "tests/web/fleet-admin-races.spec.mjs": "8d31cd5261a17af7d2096d15be1b279542da361d94ff1fd18e84355cff0192b0",
+    "tests/web/fleet-administration.spec.mjs": "1bfea9d932e288558ccd2215b44014851f74331e6fa0140b61592db537aa345a",
+    "tests/web/fleet-permissions.spec.mjs": "fdbb125848c9bf2df90d5c29d756a6e66c8d573b32e65a30c14f23f1197d04a4",
+    "tests/web/support/fleet-browser.mjs": "216161b1d1c106d41b69d4db5a36f29b072790ef08bda6bc607a9b47dc96b2ef",
+    "tests/web/support/fleet-evidence.mjs": "4a22b5e5893c05f744464a1479d7afb97ac352e5cd7d4b26960ec171f642fd21"
+  },
+  "preserved_migrations_sha256": {
+    "database/migrations/001_core.sql": "9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059",
+    "database/migrations/002_operations.sql": "787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4",
+    "database/migrations/003_queue.sql": "4fe53741452e3008a82690838d3f86e8308d3ddda322896ba723e94a7f4dd620",
+    "database/migrations/004_isolation_guard.sql": "2ecd12ef4230f29a94a6bc915f8be31f2f3d5e2e1b395cc3c15555442951d401",
+    "database/migrations/005_geography_authorizations.sql": "42e93efbfc8a70cbff8cadc0620216830b6b7e05e354335db4ddd752773e8fd5",
+    "database/migrations/006_search_authorization_functions.sql": "e156c33c62f08e6c9bb2a9c0605fc6a841ca888fca0476f5424b99fa62d4d4de",
+    "database/migrations/007_eligibility_rls.sql": "3fef73dc7ec20fce98505206bdc61426ba2cba321aaf83ea2fecd0b789105b03",
+    "database/migrations/008_locality_lookup.sql": "ab3e82713198f078fbda5e424239900c41ecfa73a400aa923ead457e64e884b5",
+    "database/migrations/009_identity_and_provisioning.sql": "e0401515ae8f564cb2d17561e960a56e6472e67085ab82fec34e41ffae41a4b6",
+    "database/migrations/010_security_and_abuse.sql": "dace616e2de098a700035e4b61beb6d45ce722678729cb3255c92ca8c0268067",
+    "database/migrations/011_identity_maintenance.sql": "d1c11a95fd5fec0dbb2136c13a2d6b915473ec0ea02013f2698ece0df2e4187d",
+    "database/migrations/012_business_operations.sql": "080065cf039ddb2971f68a787a96abb4d6382f538d3ead829181ebd3d3280649",
+    "database/migrations/013_individual_operations.sql": "e111f11211fb8153d08cc96ebe45fbc7b628efed9bf5ac5d8a48ce1ca94d92b5",
+    "database/migrations/014_terminal_operations.sql": "e3b1ef1322638547e97c89ec709bbdcd0bbd1110947266c330c95c916103796b",
+    "database/migrations/015_assignment_recovery.sql": "a897f5b2e7d47dbab7e701acf16db294e097d9b20483c378f1c383a17bd53dbe",
+    "database/migrations/016_terminal_boarding.sql": "be49599eb2c11ceb5cd0c7f6dda633082eba328053611987c4a067bb2c988f35",
+    "database/migrations/017_urban_replacement.sql": "25854b173b0154a11c013e94de2dae64f9083d4870b4f64e46cd34243fa4a3ee",
+    "database/migrations/018_operating_contracts.sql": "77757bf35956270f6c4ba52a7140383e8cc623ec9a5bf10a6a70370d276f870e",
+    "database/migrations/019_journey_recovery.sql": "96a311c568ed2471c354c06a3176f066cecbebedb0cecfb2abf3deb7e58f1164",
+    "database/migrations/020_scoped_administration.sql": "643e0ba2417be17189d957e9f9562bd901c478dff0fcb0fd2fdfd24b00fcb4c6",
+    "database/migrations/021_scope_read_boundaries.sql": "7bc4551a6283bf71f029ac0b99d2dc211af11b127ad60a1c1db889ab2b55e26f",
+    "database/migrations/022_rescue_manifest_privacy.sql": "de2572bf53ee04116ba1e4da54aa3feed22385e31af024ea69fdfab44b3ed52b",
+    "database/migrations/023_web_journeys.sql": "f446f0b0946056c6100b56f43c6ec71855dca636d37788fa69d17e3e9fddb212",
+    "database/migrations/024_web_operations.sql": "08d0b3e0b18f6fbbe47b39c5233d29414419b276694bb02241f72d7f5916e2c3",
+    "database/migrations/025_web_recovery_reads.sql": "dd132b36adb74f8fd371f5193c221637837bb30ce083c097c0123e1b35e79467",
+    "database/migrations/026_web_queue_return.sql": "6b74d31a1bad7dd0e0dadb86d6e588d8d666a1e68aa2026670ab0aee6736ae73",
+    "database/migrations/027_web_administration.sql": "0a2a1df1196aa63160e29c2a470677f058c6ba5a9f3b97af2f03c8be25f1d128",
+    "database/migrations/028_web_route_decisions.sql": "d7ab3695bda2d148c4d5ec2f6b5d3e6637c411623ebe11370d3b8d80287727ec",
+    "database/migrations/029_queue_assignment.sql": "46ac307f6ffe6a39452eb99204e092ed5bfd2b2d2c7925780d069e707c8ccd27",
+    "database/migrations/030_safe_handoffs_and_reviews.sql": "7f9a139fd31a477b9fbde874d2ae6a5d57bed80e59a19b999ccce22b298b2e9a",
+    "database/migrations/031_care_responsibilities.sql": "b91b4d43082ca13577eee9bd8cd695baf666f2de8acee57237208c0beb60ce58",
+    "database/migrations/032_care_reviews_and_attendance.sql": "3750a0e69d8bff73237fe4df5c221aab29e0a64f74ab06e24bcebfe5b365ac3a",
+    "database/migrations/033_responsible_list_scope.sql": "44a36b53470906d187c4e24d5e2cbb284f33b01754fe3294b5e64fa57713bf23",
+    "database/migrations/034_admin_directory.sql": "63d9bebd6f3de2218d861aea7fc02e042b2b0ace62e48fea1fcca4c3ba8e8ef7",
+    "database/migrations/035_existing_driver_administration.sql": "ee5e1a05d71f9b761daf6a69a3082ed4f663b082eefa2f3d26bc16231ea048b5",
+    "database/migrations/036_platform_administration.sql": "8eb34201e24aed8e8acd85f4806899273e8d30d234f37026a364546d2a602fae",
+    "database/migrations/037_platform_identity_intents.sql": "929eaca987498883275f0097d2af4c4af05523afd4e256196ccbd1e2d328bbe1"
+  },
+  "publication_note": "One attempt to create the exact mobile-historial.png blob was rejected by automatic review. No workaround or further image upload attempted. PNG/ZIP remain private local delivery; this public manifest contains only hashes and source paths.",
+  "changed_blobs_git_sha1": {
+    "AGENTS.md": "7029c352459909f36dd7bfcb51f5fbfcfd66a6e7",
+    "apps/web/src/Directory.tsx": "b5b50f5b37608b786400aed9ef8b226ceb386354",
+    "apps/web/src/FleetAdministration.tsx": "88091026d18d3a29113e991241ddda9a974be22b",
+    "apps/web/src/private-api.ts": "790c2ca365f0460791ab15a0e33937ae76db1eb1",
+    "database/migrations/038_fleet_administration.sql": "95dfc94b92c5309247977fa97c61cfb3fd50f8d9",
+    "scripts/seed-web-demo.mjs": "d621f9144cb80de5c3e817a8c5f287a45c20bf2c",
+    "scripts/test-web.mjs": "720ac9fb70bd66a8952837407ca5a988c996368e",
+    "src/db/web-fleet-admin-service.mjs": "c696ae7caf10b8f30e1943cc79816f62b640557a",
+    "src/http/web-gateway.mjs": "d331cc240bb1d68450be817dd4a3488378469e4c",
+    "tests/fleet-admin.test.mjs": "c84e9e99bab6f4cf2bad46558cf97337a736cafd",
+    "tests/integration/postgres.test.mjs": "e2155b3599e74c1b19e678d5ae52c9ed6092b78e",
+    "tests/web/fleet-admin-races.spec.mjs": "e0f928ec71563fbee94d6f70fb746a39a5467f3b",
+    "tests/web/fleet-administration.spec.mjs": "609edebb77fae559cf0a3c449344d4312b4ba795",
+    "tests/web/fleet-permissions.spec.mjs": "78d9ce6c9c0e45a0c77e751ae05b5a681385f595",
+    "tests/web/support/fleet-browser.mjs": "8523e54ecf9916e5e923015ac4da63be7c378225",
+    "tests/web/support/fleet-evidence.mjs": "0c061b30cba9fa170179dfade99ee2b92fbfdd4f"
+  }
+}
