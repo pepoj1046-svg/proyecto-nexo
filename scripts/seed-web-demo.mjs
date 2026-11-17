@@ -153,7 +153,7 @@ export async function seedWebDemo(db,pool) {
   // Revocation during an active service is forbidden by 035 and tested separately.
   if(process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1')await db.query("UPDATE nexo.trips SET status='COMPLETED',current_stop=3 WHERE id=$1",[operationalTrip.id]);
   const accounts={};
-  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1',...(process.env.NEXO_WEB_PLATFORM_FIXTURE==='1'?['platform','candidate1','candidate2','admin','reviewer']:process.env.NEXO_WEB_ADMIN_DIRECTORY_FIXTURE==='1'?['admin','reviewer']:process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1'?['admin']:[])]){
+  for(const label of [...Array.from({length:10},(_,i)=>'viajero'+i),...Array.from({length:8},(_,i)=>'driver'+i),'adminH','adminU','adminR','terminal0','operativo0','operativo1',...(process.env.NEXO_WEB_PLATFORM_FIXTURE==='1'?['platform','candidate1','candidate2','admin','reviewer']:process.env.NEXO_WEB_ADMIN_DIRECTORY_FIXTURE==='1'?['admin','reviewer']:(process.env.NEXO_WEB_CARE_ACCOUNTS_FIXTURE==='1'||process.env.NEXO_WEB_DRIVER_WALK_IN_FIXTURE==='1')?['admin']:[])]){
     const password=randomBytes(24).toString('base64url'),login='lab-'+label.toLowerCase();
     const user=users[label]?.id??randomUUID();if(!users[label])await db.query('INSERT INTO nexo.users VALUES($1,$2)',[user,'FICTICIO-WEB-'+label]);
     await db.query('INSERT INTO nexo.identity_accounts(user_id,login_key,password_hash)VALUES($1,$2,$3)',[user,login,await hashPassword(password)]);

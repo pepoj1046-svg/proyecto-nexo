@@ -107,19 +107,22 @@ END $$;
 
 -- Driver panel context: the server, not the browser, says whether the action applies.
 CREATE FUNCTION nexo.web_driver_walk_in_context(trip uuid)RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=pg_catalog,nexo,pg_temp AS $$
-DECLARE t nexo.trips;first_trip uuid;unstaffed boolean;terminal boolean;
+DECLARE t nexo.trips;first_trip uuid;unstaffed boolean;terminal integer;last_stop integer;
 BEGIN
  PERFORM nexo.require_actor();
  SELECT * INTO t FROM nexo.trips WHERE id=trip;
  IF t.id IS NULL OR NOT nexo.drives(t.id)THEN RAISE EXCEPTION 'FORBIDDEN';END IF;
+ SELECT min(m.stop_index)INTO terminal FROM nexo.web_point_profiles m JOIN nexo.stops s ON s.route_id=m.route_id AND s.stop_index=m.stop_index AND s.boarding_allowed WHERE m.route_id=t.route_id AND m.kind='TERMINAL';
+ SELECT stop_count-1 INTO last_stop FROM nexo.routes WHERE id=t.route_id;
+ -- Orientation only: a full earlier trip does not hold the turn for new sales. The
+ -- native core re-checks queue order for the exact segment and seats on register.
  SELECT tr.id INTO first_trip FROM nexo.trips tr JOIN nexo.memberships m ON m.association_id=tr.association_id AND m.user_id=tr.driver_id AND m.role='DRIVER' AND m.active
-  WHERE tr.route_id=t.route_id AND tr.status='QUEUED' ORDER BY tr.position_no,tr.id LIMIT 1;
+  WHERE tr.route_id=t.route_id AND tr.status='QUEUED' AND terminal IS NOT NULL AND tr.current_stop<=terminal AND nexo.fits(tr.id,terminal,last_stop,1)ORDER BY tr.position_no,tr.id LIMIT 1;
  unstaffed:=nexo.unstaffed_now(t.association_id);
- terminal:=EXISTS(SELECT FROM nexo.web_point_profiles m JOIN nexo.stops s ON s.route_id=m.route_id AND s.stop_index=m.stop_index AND s.boarding_allowed WHERE m.route_id=t.route_id AND m.kind='TERMINAL');
  RETURN jsonb_build_object('tripId',t.id,'routeId',t.route_id,'status',t.status,'inTurn',first_trip IS NOT DISTINCT FROM t.id AND t.status='QUEUED',
-  'unstaffedNow',unstaffed,'terminalPoint',terminal,'minorsAllowed',false,
-  'allowed',t.status='QUEUED' AND first_trip IS NOT DISTINCT FROM t.id AND unstaffed AND terminal,
-  'reason',CASE WHEN t.status<>'QUEUED' THEN 'NOT_QUEUED' WHEN first_trip IS DISTINCT FROM t.id THEN 'NOT_IN_TURN' WHEN NOT unstaffed THEN 'STAFFED_HOURS' WHEN NOT terminal THEN 'NO_TERMINAL_POINT' ELSE NULL END);
+  'unstaffedNow',unstaffed,'terminalPoint',terminal IS NOT NULL,'minorsAllowed',false,
+  'allowed',t.status='QUEUED' AND terminal IS NOT NULL AND first_trip IS NOT DISTINCT FROM t.id AND unstaffed,
+  'reason',CASE WHEN t.status<>'QUEUED' THEN 'NOT_QUEUED' WHEN terminal IS NULL THEN 'NO_TERMINAL_POINT' WHEN first_trip IS DISTINCT FROM t.id THEN 'NOT_IN_TURN' WHEN NOT unstaffed THEN 'STAFFED_HOURS' ELSE NULL END);
 END $$;
 
 -- Administrative traceability (H3 keeps admins able to sell): walk-ins created by the

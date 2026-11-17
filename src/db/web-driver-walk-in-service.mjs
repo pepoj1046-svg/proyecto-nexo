@@ -8,7 +8,7 @@ import {journeyRequest} from './web-reservation-service.mjs';
 // inventory transaction; this module only shapes requests and responses.
 const time=/^([01][0-9]|2[0-3]):[0-5][0-9]$/;
 export function validateSchedule(b){
-  object(b,['associationId','expectedRevision','windows']);id(b.associationId);
+  object(b,['associationId','expectedRevision','windows','confirmed']);id(b.associationId);
   if(!Number.isInteger(b.expectedRevision)||b.expectedRevision<0||b.expectedRevision>2147483647||!Array.isArray(b.windows)||b.windows.length>21)throw new Error('INVALID_SCHEDULE');
   const seen=new Set();
   const windows=b.windows.map(w=>{
@@ -17,6 +17,7 @@ export function validateSchedule(b){
     const k=w.weekday+':'+w.start;if(seen.has(k))throw new Error('INVALID_SCHEDULE');seen.add(k);
     return {weekday:w.weekday,start:w.start,end:w.end};
   });
+  if(b.confirmed!==true)throw new Error('INVALID_CONFIRMATION');
   return {associationId:b.associationId,expectedRevision:b.expectedRevision,windows};
 }
 export function validateDriverSale(b,quoted){
