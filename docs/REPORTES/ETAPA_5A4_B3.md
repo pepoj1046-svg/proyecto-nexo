@@ -243,3 +243,18 @@ con la cuenta original.
   alcance, §6 de la propuesta).
 - `AGENTS.md` sigue indicando B2 como último incremento ratificado; actualizarlo tras
   la ratificación de B3.
+
+## Ratificación del propietario (17-11-2026)
+
+El propietario ratifica B3 **solo para laboratorio**, tras la auditoría del PR #16
+(dictamen: aprobado con pendientes). El CI de `b5ebf13` dio 14/14 en verde: 137 unitarias
+y 424 de PostgreSQL por combinación, 111 E2E por trabajo web y CodeQL. No autoriza
+producción, despliegue ni el incremento 5A.5.
+
+Pendientes aceptados (decisión del propietario, no defectos):
+1. D3 se desbloquea con una sola consulta, aunque devuelva `NOT_OBSERVED`.
+2. D3 es una salvaguarda de interfaz por pestaña; el servidor no la impone.
+3. Regenerar la época obliga a reautenticar todos los documentos abiertos.
+4. Un reinicio de PostgreSQL (postmaster u OID distinto) sigue bloqueando las reservas APP
+   hasta reiniciar el gateway. Debe resolverse antes de cualquier piloto.
+5. Un ticket en `sessionStorage` no protege frente a XSS (heredado de B2).

@@ -294,3 +294,12 @@ mayor a un segundo. Hasta reiniciar el gateway se bloquean las reservas APP (la
 operación presencial continúa). Fallo seguro en laboratorio; resolver antes de
 cualquier piloto. Un ticket en sessionStorage no protege frente a XSS: HMAC no
 sustituye autenticación. [Informe B2](REPORTES/ETAPA_5A4_B2.md).
+
+## Etapa 5A.4-B3: consulta tras recarga y regeneración de época
+
+Ratificado solo en laboratorio el 17-11-2026 (PR #16). La regeneración controlada (D2-B)
+resuelve el bloqueo de B2 ante errores de pool, de conexión o de reloj. Siguen pendientes:
+un reinicio de PostgreSQL bloquea las reservas APP hasta reiniciar el gateway (resolver
+antes de cualquier piloto); D3 es solo de interfaz y por pestaña, y se desbloquea con una
+consulta `NOT_OBSERVED`; regenerar la época obliga a reautenticar los documentos abiertos;
+y el riesgo de XSS heredado. [Informe B3](REPORTES/ETAPA_5A4_B3.md).
