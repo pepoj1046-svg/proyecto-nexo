@@ -185,3 +185,44 @@ un testigo SQL independiente de sólo lectura.
 No declarar cerrado B2 hasta completar las verificaciones del commit final y la
 revisión del propietario. B3 y etapas posteriores no autorizadas. Ningún PR previo
 se modifica o fusiona; la API sigue exclusivamente local, sin gastos ni datos reales.
+
+## Corrección posterior a la auditoría (16-11-2026)
+
+**Defecto.** En `042_app_reservation_receipt.sql`, la comprobación por identificador
+usaba `unnest(ids)id ... WHERE b.id=id`. Dentro de la subconsulta, `id` sin
+calificar se resuelve como `b.id`, de modo que la condición era siempre verdadera:
+un `bookingId` de otro grupo del mismo pasajero pasaba la verificación si el
+número de reservas del grupo coincidía. No era explotable desde el cliente (los
+identificadores provienen del resultado escrito por el propio servidor), pero la
+defensa en profundidad descrita en este informe no se cumplía.
+
+**Corrección.** `unnest(ids)AS x(id) ... WHERE b.id=x.id`. Sin otros cambios de
+lógica, privilegios, `search_path` ni firma. Migraciones 001–041 intactas.
+
+**Prueba.** `B2-03b` en `tests/integration/postgres.test.mjs`: mismo pasajero,
+origen APP y tamaño de grupo, con el `bookingId` de otro grupo; exige
+`RECOVERY_UNAVAILABLE` y conserva un control positivo con el identificador propio.
+Reproducción adicional fuera de la batería: las 42 migraciones aplicadas en
+PostgreSQL 16 local; la versión de `932828b` devuelve `RECORDED` con el id ajeno y
+la corregida lo rechaza. La batería completa queda a cargo del CI de este PR.
+
+**Efecto operativo.** El checksum de 042 cambia. Una base de laboratorio que ya
+hubiera aplicado la versión anterior obtendría `MIGRATION_CHECKSUM_MISMATCH`; las
+bases del laboratorio son efímeras y deben recrearse.
+
+## Ratificación del propietario (16-11-2026)
+
+El propietario ratifica B2 **solo para laboratorio**, con la corrección de 042
+(PR #13, CI verde en `49d1fbf`: 114 unitarias y 421 PostgreSQL por combinación,
+101 E2E por trabajo web y CodeQL). No autoriza producción, despliegue ni fusión en
+`main`. B3 sigue sin autorización de implementación.
+
+**Pendiente formal aceptado: invalidación permanente de la época de tickets.**
+Un error de pool, un error de conexión durante la recuperación, un fallo del
+marcador de base o una divergencia de reloj superior a un segundo invalidan la
+época hasta reiniciar el gateway. Como `/api/reservations` exige ticket válido,
+durante ese intervalo **no se pueden registrar reservas APP**; la operación
+presencial no se ve afectada. Es un fallo seguro (bloquea, no duplica ni pierde
+reservas) y aceptable en laboratorio efímero. Se decidirá en el diseño de B3
+(regeneración controlada de época sin reinicio) y debe resolverse antes de
+cualquier piloto u operación real.

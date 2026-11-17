@@ -284,3 +284,13 @@ su contrato previo por UUID/confirmación ficticia. El flujo web gestionado exig
 código del titular; no se presentan ambas fronteras como equivalentes. Unificar o
 retirar esa compatibilidad y acordar verificación de identidad antes de piloto.
 [Dictamen, pruebas actuales y límites](REPORTES/ETAPA_3_AUDITORIA_Y_CIERRE.md).
+
+## Etapa 5A.4-B2: tickets de recuperación APP
+
+Ratificado solo en laboratorio el 16-11-2026, con la corrección de 042 (PR #13).
+Pendiente aceptado: la época de tickets se invalida de forma permanente ante
+errores de pool o conexión, fallo del marcador de base o divergencia de reloj
+mayor a un segundo. Hasta reiniciar el gateway se bloquean las reservas APP (la
+operación presencial continúa). Fallo seguro en laboratorio; resolver antes de
+cualquier piloto. Un ticket en sessionStorage no protege frente a XSS: HMAC no
+sustituye autenticación. [Informe B2](REPORTES/ETAPA_5A4_B2.md).
