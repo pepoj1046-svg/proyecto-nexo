@@ -1,6 +1,7 @@
 # 4B.1 — Propuesta: registro presencial por el chofer en turno fuera del horario con personal
 
-Estado: **propuesta para revisión del propietario; nada implementado ni autorizado**.
+Estado: **autorizada por el propietario el 17-11-2026, solo laboratorio, con las recomendaciones
+(M1, H1–H3)**. Implementación y desviaciones en [ETAPA_4B1](REPORTES/ETAPA_4B1.md).
 Fecha: 17 de noviembre de 2026. Base: `main` en `89ec522`.
 Decisión de origen: [DECISION_REGISTRO_PRESENCIAL_CHOFER.md](DECISION_REGISTRO_PRESENCIAL_CHOFER.md)
 (respuestas del propietario del 17-11-2026, §4.1).
