@@ -93,7 +93,7 @@ Definidas en este incremento:
 | --- | --- | --- |
 | Unitarias | `tests/web-driver-walk-in.test.mjs` | 4B1-U1, 4B1-U2 |
 | PostgreSQL real | `tests/integration/postgres.test.mjs` | 4B1-01 a 4B1-09 |
-| E2E | `tests/web/driver-walk-in.spec.mjs` | 4B1-E1, 4B1-E2 (escritorio y móvil) |
+| E2E | `tests/web/driver-walk-in.spec.mjs` | 4B1-E1 (pasos E1a–E1d en serie) y 4B1-E2, escritorio y móvil |
 
 Cobertura principal: autoridad del horario (completo, restringido, otra asociación, chofer,
 pasajero), revisión obsoleta, validación en JS y en SQL, idempotencia, auditoría inmutable;
@@ -122,7 +122,7 @@ PostgreSQL 16 del sistema, Playwright 1.59 con Google Chrome del sistema y **sin
   `test:runner` y `test:local-api` aprobados.
 - `web:check` (TypeScript 6 local, con `--noUncheckedSideEffectImports false` para igualar la
   semántica de TypeScript 5.9 del proyecto): sin errores.
-- E2E `driver-walk-in.spec.mjs`: escritorio **2/2**, móvil **2/2** (móvil a 320 px, sin
+- E2E `driver-walk-in.spec.mjs`: escritorio **5/5**, móvil **5/5** (móvil a 320 px, sin
   desbordamiento horizontal).
 - E2E de otras suites en local, una por una: aprobadas las que se ejecutaron. Las que fallan
   aquí también fallan en `main` (`89ec522`) con este navegador local (por ejemplo
