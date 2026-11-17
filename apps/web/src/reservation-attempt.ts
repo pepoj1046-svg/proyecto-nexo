@@ -1,14 +1,18 @@
 import type {WebSession} from './private-api';
+import type {RecoveryTicket}from'./recovery-ticket';
 
-export type ReservationPhase='IDLE'|'SENDING'|'UNCERTAIN'|'AUTH_REQUIRED'|'RECEIVED'|'REFRESH_FAILED'|'UPDATED';
+export type ReservationPhase='IDLE'|'SENDING'|'UNCERTAIN'|'AUTH_REQUIRED'|'RECEIVED'|'REFRESH_FAILED'|'UPDATED'|'REFERENCE_REQUIRED';
 export interface ReservationReceipt{storage:'EPHEMERAL_LAB';moneyProcessed:false;bookings:{bookingId:string;tripId:string;status:string;effectiveStatus:string;seats:number;priceBOB:string}[]}
 export interface ReservationPage{bookings:{bookingId:string;status:string;effectiveStatus?:string;assignmentState?:string}[];total:number;nextCursor:unknown}
 export interface AttemptView{phase:ReservationPhase;busy:boolean;error:string;receipt:ReservationReceipt|null;current:ReservationPage|null}
 type Body=Record<string,unknown>;
-interface Attempt{readonly account:string;readonly key:string;readonly body:Body}
+interface Attempt{readonly account:string;readonly key?:string;readonly ticket?:RecoveryTicket;readonly body:Body}
 interface Dependencies{
  session:()=>Promise<WebSession>;
- write:(a:Attempt,s:WebSession)=>Promise<unknown>;
+ issue:(s:WebSession)=>Promise<RecoveryTicket>;
+ persist:(t:RecoveryTicket,s:WebSession)=>void;
+ retire:(t:RecoveryTicket)=>void;
+ write:(a:Attempt&{key:string;ticket:RecoveryTicket},s:WebSession)=>Promise<unknown>;
  read:(s:WebSession)=>Promise<ReservationPage>;
  changed:(view:AttemptView)=>void;
  protect:(pending:boolean)=>void;
@@ -32,6 +36,7 @@ export class ReservationAttempt{
  private received:ReservationReceipt|null=null;
  private running=false;
  private disposed=false;
+ private dispatched=false;
  private view:AttemptView={phase:'IDLE',busy:false,error:'',receipt:null,current:null};
  constructor(private readonly deps:Dependencies){}
  get pending(){return this.attempt!==null;}
@@ -54,17 +59,17 @@ export class ReservationAttempt{
  }
  private async refresh(){
   const s=await this.actor();
-  this.update({phase:this.received?'RECEIVED':'UNCERTAIN',current:null});
+  this.update({phase:this.received?'RECEIVED':this.dispatched?'UNCERTAIN':'REFERENCE_REQUIRED',current:null});
   const current=await this.deps.read(s);
   if(!current||!Array.isArray(current.bookings)||!Number.isInteger(current.total)||current.total<current.bookings.length||current.bookings.some(b=>typeof b.bookingId!=='string'||typeof b.status!=='string'))throw Error('No se recibió una consulta válida. Actualiza la consulta sin reenviar la reserva.');
   await this.actor(); // A late response must never populate a different account.
-  this.update({phase:this.received?'UPDATED':'UNCERTAIN',current,receipt:this.received});
-  if(this.received)this.deps.protect(false);
+  this.update({phase:this.received?'UPDATED':this.dispatched?'UNCERTAIN':'REFERENCE_REQUIRED',current,receipt:this.received});
+  if(this.received){this.deps.protect(false);if(this.attempt?.ticket)this.deps.retire(this.attempt.ticket);}
  }
  private async failure(e:unknown){
   if(this.disposed)return;
-  if(this.attempt){try{await this.actor();}catch{this.update({phase:this.view.phase==='AUTH_REQUIRED'?'AUTH_REQUIRED':this.received?'REFRESH_FAILED':'UNCERTAIN',receipt:null,current:null,error:message(e)});return;}}
-  this.update({phase:this.received?'REFRESH_FAILED':this.attempt?'UNCERTAIN':this.view.phase==='AUTH_REQUIRED'?'AUTH_REQUIRED':'IDLE',error:message(e),receipt:this.received,current:null});
+  if(this.attempt){try{await this.actor();}catch{this.update({phase:this.view.phase==='AUTH_REQUIRED'?'AUTH_REQUIRED':this.received?'REFRESH_FAILED':this.dispatched?'UNCERTAIN':'REFERENCE_REQUIRED',receipt:null,current:null,error:message(e)});return;}}
+  this.update({phase:this.received?'REFRESH_FAILED':this.attempt?(this.dispatched?'UNCERTAIN':'REFERENCE_REQUIRED'):this.view.phase==='AUTH_REQUIRED'?'AUTH_REQUIRED':'IDLE',error:message(e),receipt:this.received,current:null});
  }
  async submit(account:string,makeBody:()=>Body){
   if(this.running||this.disposed||this.received)return;
@@ -72,10 +77,20 @@ export class ReservationAttempt{
   try{
    if(!this.attempt){
     if(!account)throw Error('Revisa la solicitud con la cuenta original antes de registrar.');
-    this.attempt=freeze({account,key:crypto.randomUUID(),body:structuredClone(makeBody())});this.deps.frozen();
+    this.attempt=freeze({account,body:structuredClone(makeBody())});this.deps.frozen();
    }
-   const s=await this.actor();
-   this.received=receipt(await this.deps.write(this.attempt,s));
+   let s=await this.actor();
+   if(!this.attempt.ticket){
+    const t=await this.deps.issue(s);s=await this.actor();
+    if(this.disposed)throw Error('La vista ya no está activa.');
+    if(t.accountRef!==this.attempt.account||t.environmentId!==s.environmentId)throw Error('Referencia de otra cuenta o ejecución.');
+    this.attempt=freeze({...this.attempt,key:t.key,ticket:t});
+   }
+   const ticket=this.attempt.ticket!;
+   this.deps.persist(ticket,s);s=await this.actor();
+   if(this.disposed)throw Error('La vista ya no está activa.');
+   this.dispatched=true;
+   this.received=receipt(await this.deps.write(this.attempt as Attempt&{key:string;ticket:RecoveryTicket},s));
    await this.refresh();
   }catch(e){await this.failure(e);}
   finally{this.running=false;if(!this.attempt)this.deps.protect(false);this.update({busy:false});}

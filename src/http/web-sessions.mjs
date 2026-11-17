@@ -5,8 +5,8 @@ const denied=()=>Object.assign(new Error('AUTHENTICATION_REQUIRED'),{status:401,
 const csrfError=()=>Object.assign(new Error('CSRF_REQUIRED'),{status:403,code:'CSRF_REQUIRED'});
 // The cookie selects a container, NEVER an actor. Document capabilities live only
 // in RAM; selecting a document cannot retrieve its proof or reset its authority.
-export function createWebSessions({identity,business,clock=Date.now,max=256}){
- const browsers=new Map(),documents=new Map(),environmentId=randomUUID();
+export function createWebSessions({identity,business,clock=Date.now,max=256,environmentId=randomUUID()}){
+ const browsers=new Map(),documents=new Map();
  const prune=()=>{for(const[k,v]of documents)if(v.expires<=clock()||!browsers.has(v.browser))documents.delete(k);for(const[k,v]of browsers)if(v.expires<=clock())browsers.delete(k);};
  function live(c){if(!c?.entry||documents.get(c.id)!==c.entry||browsers.get(c.key)!==c.browser||c.entry.expires<=clock()||c.browser.expires<=clock())throw denied();return c.entry;}
  function get(req,name){
@@ -19,7 +19,7 @@ export function createWebSessions({identity,business,clock=Date.now,max=256}){
  }
  function csrf(c,value){if(!c?.entry)throw csrfError();live(c);if(typeof value!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(value)||!timingSafeEqual(Buffer.from(c.entry.csrf),Buffer.from(value)))throw csrfError();}
  async function actor(c){const entry=live(c);if(!entry.token)throw denied();try{const me=await business.me(entry.token);live(c);return me;}catch(e){if(/UNAUTHENTICATED|SESSION|INACTIVE/.test(e.message)){if(documents.get(c.id)===entry)documents.delete(c.id);throw denied();}throw e;}}
- const body=(c,me=null)=>({authenticated:!!me,...me,documentId:c.id,generation:c.entry.generation,csrf:c.entry.csrf,environmentId,mode:'LOCAL_LAB',storage:'EPHEMERAL_LAB'});
+ const body=(c,me=null)=>({authenticated:!!me,...me,documentId:c.id,generation:c.entry.generation,csrf:c.entry.csrf,environmentId:typeof environmentId==='function'?environmentId():environmentId,mode:'LOCAL_LAB',storage:'EPHEMERAL_LAB'});
  return Object.freeze({get,csrf,actor,live,
   session:async(c,proof)=>{
    if(c?.entry){csrf(c,proof);const me=c.entry.token?await actor(c):null;live(c);return{body:body(c,me)};}
