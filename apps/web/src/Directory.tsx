@@ -1,5 +1,6 @@
 import{RouteConfiguration}from'./RouteConfiguration';
 import{FleetAdministration}from'./FleetAdministration';
+import{UnstaffedHours}from'./DriverWalkIn';
 import {DriverAdministration} from './DriverAdministration';
 import {useEffect,useRef,useState} from 'react';
 import {privateApi} from './private-api';
@@ -45,6 +46,7 @@ export function AdministrativeDirectory(){
      {section==='POINTS'&&<><p>{i.route} · Sentido {i.direction} · Punto {i.index} · {states[i.kind??'']??'Perfil no registrado'}.</p><p>Localidad: {i.locality??'No registrada'}. Subida {i.boardingAllowed?'habilitada':'no habilitada'}; descenso {i.alightingAllowed?'habilitado':'no habilitado'}.</p></>}
      {section==='FARES'&&<><p>{i.route} · Sentido {i.direction} · {i.boarding} → {i.alighting} (segmento {i.from}–{i.to}).</p><p>{i.express?'Expreso':'Ordinaria'} · {i.amountBOB?money(i.amountBOB):'Importe no registrado'} · Versión {i.version} · {states[i.validity??'']??'Vigencia no determinada'}.</p><p>Selección nueva: desde {date(i.validFrom)} · hasta {date(i.validUntil)}. Vigencia original hasta {date(i.originalValidUntil)}. Consulta de configuración; no cambia importes pactados ni confirma reservas.</p></>}
     </li>)}</ul>}
+    {association&&<UnstaffedHours key={'unstaffed-'+association} associationId={association}/>}
     {association&&configRoute!==undefined&&<RouteConfiguration key={association+':'+(configRoute??'ALL')} associationId={association} initialRouteId={configRoute} onBusy={setAdminBusy}/>}
     {association&&fleetOpen&&<FleetAdministration key={association} associationId={association} onBusy={setAdminBusy}/>}
     {association&&adminUser!==undefined&&<DriverAdministration key={association+':'+(adminUser??'CONTACT')} associationId={association} userRef={adminUser} onBusy={setAdminBusy} onMember={(id,active)=>setData(d=>d?{...d,items:d.items.map(i=>i.id===id?{...i,membershipActive:active}:i)}:d)}/>}
