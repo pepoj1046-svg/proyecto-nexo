@@ -124,25 +124,30 @@ PostgreSQL 16 del sistema, Playwright 1.59 con Google Chrome del sistema y **sin
   semántica de TypeScript 5.9 del proyecto): sin errores.
 - E2E `driver-walk-in.spec.mjs`: escritorio **5/5**, móvil **5/5** (móvil a 320 px, sin
   desbordamiento horizontal).
-- E2E de otras suites en local, una por una: aprobadas las que se ejecutaron. Las que fallan
-  aquí también fallan en `main` (`89ec522`) con este navegador local (por ejemplo
-  `late-bfcache-native.spec.mjs`, que depende del bfcache nativo de Chromium de Playwright). La
-  referencia válida para la batería web completa es el CI.
+- Resto de las suites E2E en local, una por una, con el lanzador real: 59 aprobadas. Las cuatro
+  suites `*-bfcache-native` también fallan en `main` (`89ec522`) con este navegador local: dependen
+  del bfcache nativo del Chromium de Playwright. `recovery-panel-late` falló una vez mientras
+  corría otra prueba en paralelo y después pasó 3 de 3 veces. La referencia para la batería web
+  completa es el CI.
 
 ### CI de GitHub Actions
 
-Ejecutado por GitHub sobre `fce63c7` (código y pruebas de este informe; el commit siguiente
-solo añade documentación y vuelve a pasar por el CI):
+Ejecutado por GitHub sobre `fce831c`, el último commit con código o pruebas. El commit
+siguiente solo cambia este informe, y el PR registra su propio CI.
 
 | Trabajo | Resultado |
 | --- | --- |
 | Dominio y PostgreSQL 18.4 — Ubuntu y Windows, Node 22 y 24 (4 trabajos) | unitarias **139/139** y PostgreSQL **433/433** en cada uno |
-| Web escritorio y móvil — Ubuntu y Windows, Node 22 y 24 (8 trabajos) | **113** E2E aprobados por trabajo, 0 fallidos; incluye `driver-walk-in.spec.mjs` con axe-core real |
+| Web escritorio y móvil — Ubuntu y Windows, Node 22 y 24 (8 trabajos) | **116** E2E aprobados por trabajo, 0 fallidos; incluye `driver-walk-in.spec.mjs` con axe-core real |
 | CodeQL (2 comprobaciones) | sin alertas |
 
-Referencia anterior (ratificación de B3, `b5ebf13`): 137 unitarias, 424 PostgreSQL y 111 E2E
-por trabajo. La diferencia corresponde exactamente a las pruebas nuevas de 4B.1 (2 + 9 + 2).
-El primer commit funcional (`5caa134`, sin interfaz) también dio 14/14.
+Referencia anterior (ratificación de B3, `b5ebf13`): 137 unitarias, 424 de PostgreSQL y 111 E2E
+por trabajo. La diferencia corresponde exactamente a las pruebas nuevas de 4B.1 (2 + 9 + 5).
+
+Historial del PR: `5caa134` (SQL y servicio) 14/14; `fce63c7` (interfaz) 14/14 con 113 E2E;
+`2170b43` 13/14: en un trabajo web de escritorio, la prueba E2E larga de 4B.1 superó los 30 s
+en su último paso, después de que el registro ya se hubiera confirmado. Se dividió en los pasos
+E1a–E1d sin ampliar tiempos ni reintentos (`fce831c`).
 
 ## Riesgos y límites
 
