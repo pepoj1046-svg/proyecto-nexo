@@ -19,7 +19,7 @@ export function createWebSessions({identity,business,clock=Date.now,max=256,envi
  }
  function csrf(c,value){if(!c?.entry)throw csrfError();live(c);if(typeof value!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(value)||!timingSafeEqual(Buffer.from(c.entry.csrf),Buffer.from(value)))throw csrfError();}
  async function actor(c){const entry=live(c);if(!entry.token)throw denied();try{const me=await business.me(entry.token);live(c);return me;}catch(e){if(/UNAUTHENTICATED|SESSION|INACTIVE/.test(e.message)){if(documents.get(c.id)===entry)documents.delete(c.id);throw denied();}throw e;}}
- const body=(c,me=null)=>({authenticated:!!me,...me,documentId:c.id,generation:c.entry.generation,csrf:c.entry.csrf,environmentId,mode:'LOCAL_LAB',storage:'EPHEMERAL_LAB'});
+ const body=(c,me=null)=>({authenticated:!!me,...me,documentId:c.id,generation:c.entry.generation,csrf:c.entry.csrf,environmentId:typeof environmentId==='function'?environmentId():environmentId,mode:'LOCAL_LAB',storage:'EPHEMERAL_LAB'});
  return Object.freeze({get,csrf,actor,live,
   session:async(c,proof)=>{
    if(c?.entry){csrf(c,proof);const me=c.entry.token?await actor(c):null;live(c);return{body:body(c,me)};}

@@ -48,8 +48,12 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   const management=identityPool?createWebManagementService(pool):null;
   const databaseMarker=async()=>JSON.stringify((await pool.query("SELECT extract(epoch FROM pg_postmaster_start_time())::text AS boot,(SELECT oid FROM pg_database WHERE datname=current_database())AS database")).rows[0]);
   const databaseEpoch=identityPool?await databaseMarker():null;
-  const environmentId=randomUUID();let tickets;
-  const recoveryDatabase=async()=>{try{if(await databaseMarker()!==databaseEpoch){tickets.invalidate();throw denial(410,'ENVIRONMENT_CHANGED');}}catch(e){tickets.invalidate();if(e.status)throw e;throw denial(503,'RECOVERY_UNAVAILABLE');}};
+  let tickets,regenerating=null;const environmentId=()=>tickets?.environmentId??initialEnvironment,initialEnvironment=randomUUID();
+  // D2-B (5A.4-B3): an invalidated epoch is replaced by a NEW one only on the next
+  // request and only after the original database marker verifies again. Concurrent
+  // requests share one check; a changed postmaster/OID keeps the epoch blocked.
+  const regenerate=()=>regenerating??=(async()=>{try{if(await databaseMarker()===databaseEpoch&&tickets.invalid)tickets.regenerate();}catch{}finally{regenerating=null;}})();
+  const recoveryDatabase=async()=>{if(tickets.invalid)await regenerate();try{if(await databaseMarker()!==databaseEpoch){tickets.invalidate();throw denial(410,'ENVIRONMENT_CHANGED');}}catch(e){tickets.invalidate();if(e.status)throw e;throw denial(503,'RECOVERY_UNAVAILABLE');}};
   const appReceipts=identityPool?createWebAppReceiptService(pool):null;
   const sessions=identityPool?createWebSessions({identity:createIdentity(identityPool),business,environmentId}):null;
   // Fixed handler tables: every private POST is constructed with the CSRF gate.
@@ -121,7 +125,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
       if(Object.keys(b).length!==2||b.v!==1||!b.ticket)throw denial(400,'INVALID_RECOVERY_TICKET');
       await recoveryDatabase();const actor=await sessions.actor(context),ticket=tickets.verify(b.ticket,actor.accountRef);
       const result=await appReceipts.read(context.entry.token,ticket.key);await sessions.actor(context);await recoveryDatabase();tickets.verify(ticket,actor.accountRef);
-      return{...result,family:'RESERVATION_APP',key:ticket.key,environmentId,observedAt:tickets.observedAt()};
+      return{...result,family:'RESERVATION_APP',key:ticket.key,environmentId:ticket.environmentId,observedAt:tickets.observedAt()};
     })],
     ['/api/operator/accept',authenticated((token,key,b)=>business.accept(token,key,b))],
     ['/api/operations/overview',authenticated((token,_key,b)=>operations.overview(token,b))],
@@ -195,7 +199,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   });
   server.maxConnections=32;server.maxHeadersCount=32;server.on('clientError',(_error,socket)=>{if(socket.writable)socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');});
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
-  tickets=createRecoveryTickets({environmentId,origin:`http://127.0.0.1:${server.address().port}`});
+  tickets=createRecoveryTickets({environmentId:initialEnvironment,origin:`http://127.0.0.1:${server.address().port}`});
   // Pool failures make receipt availability/epoch uncertain; never silently
   // accept tickets after a lost database connection. Native operations retain their contracts.
   const invalidateRecovery=()=>tickets.invalidate();pool?.on?.('error',invalidateRecovery);identityPool?.on?.('error',invalidateRecovery);
