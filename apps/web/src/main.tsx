@@ -1,7 +1,8 @@
 import {Login} from './Login';
-import {adminIntentPending,useAdminIntent,useAdminRecovery,completeAdminAuthentication} from './admin-intent';
+import {documentLock,subscribeDocument,suspendDocument,unlockDocument} from './private-api';
+import {adminIntentPending,reservationIntentPending,useAdminIntent,useAdminRecovery,completeAdminAuthentication} from './admin-intent';
 import{PlatformAdministration}from'./PlatformAdministration';
-import {StrictMode,useEffect,useRef,useState} from 'react';
+import {StrictMode,useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Icon} from './icons';
 import {LocalityField} from './LocalityField';
@@ -11,13 +12,20 @@ import type {Availability,Locality,Segment,Selection,Service} from './model';
 import './styles.css';
 import{OperationalPanel}from'./Operations';
 import{Checkout,PointPicker,PrivateReservations}from'./Functional';
+import{RecoveryPanel}from'./RecoveryPanel';
 
 const navItems=[['/','Buscar viaje'],['/pasajero','Mis reservas'],['/administracion','Administración'],['/chofer','Chofer'],['/plataforma','Plataforma']] as const;
+// Hide synchronously before a page can enter bfcache. The retained React tree
+// (and its RAM attempts) stays mounted but cannot expose private content.
+window.addEventListener('pagehide',()=>{document.getElementById('document-content')?.setAttribute('hidden','');suspendDocument();});
+window.addEventListener('pageshow',event=>{if(event.persisted){document.getElementById('document-content')?.setAttribute('hidden','');suspendDocument();}});
 function App(){
+ const documentGate=useSyncExternalStore(subscribeDocument,documentLock,()=>null);
+ const[documentView,setDocumentView]=useState(0);
  const [path,setPath]=useState(location.pathname),[menu,setMenu]=useState(false),[selection,setSelection]=useState<Selection|null>(null);
- const heading=useRef<HTMLElement>(null),first=useRef(true),currentPath=useRef(path);
+ const heading=useRef<HTMLElement>(null),menuButton=useRef<HTMLButtonElement>(null),first=useRef(true),currentPath=useRef(path);
  const recoveryAccount=useAdminRecovery(),protectedIntent=useAdminIntent(),[navigationError,setNavigationError]=useState('');
- const blockNavigation=()=>{if(!adminIntentPending())return false;setNavigationError('Resuelve el intento administrativo pendiente: consulta su estado y reintenta la misma actuación antes de salir.');return true;};
+ const blockNavigation=()=>{if(!adminIntentPending())return false;setNavigationError(reservationIntentPending()?'Resuelve la solicitud de reserva pendiente: consulta el servidor o reintenta la misma solicitud antes de salir.':'Resuelve el intento administrativo pendiente: consulta su estado y reintenta la misma actuación antes de salir.');return true;};
  const go=(href:string)=>{if(blockNavigation()){setMenu(false);return;}currentPath.current=href;setNavigationError('');if(location.pathname!==href)history.pushState({},'',href);setPath(href);setMenu(false);};
  useEffect(()=>{const pop=()=>{if(blockNavigation()){history.pushState({},'',currentPath.current);return;}currentPath.current=location.pathname;setPath(location.pathname);setMenu(false);};window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop);},[]);
  useEffect(()=>{document.title=`${path==='/'?'Busca tu próximo viaje':path==='/reservar'?'Solicitud de reserva':navItems.find(x=>x[0]===path)?.[1]??'Página no encontrada'} · Trufis Bolivia`;if(first.current)first.current=false;else{heading.current?.focus();window.scrollTo({top:0,behavior:'instant'});}},[path]);
@@ -26,16 +34,18 @@ function App(){
  return <>
   <a className="skip-link" href="#contenido">Saltar al contenido</a>
   <div className="lab-bar"><div className="container"><span><Icon name="lab" size={15}/><strong>Laboratorio local</strong><span className="lab-divider">·</span> Datos ficticios, sin servicios reales</span><span className="lab-desktop">Administración · Etapa 4</span></div></div>
-  <header className="site-header"><div className="container header-inner"><a href="/" className="brand" aria-label="Trufis Bolivia, inicio" onClick={e=>{e.preventDefault();go('/');}}><span className="brand-mark"><Icon name="route" size={28}/></span><span>Trufis <strong>Bolivia</strong><small>Más cerca de tu destino</small></span></a>
-   <button type="button" className="menu-button" aria-label={menu?'Cerrar navegación':'Abrir navegación'} aria-expanded={menu} aria-controls="main-navigation" onClick={()=>setMenu(!menu)}><Icon name={menu?'close':'menu'} size={24}/></button>
+  <header className="site-header"><div className="container header-inner" onKeyDown={e=>{if(e.key==='Escape'&&menu){e.preventDefault();setMenu(false);menuButton.current?.focus();}}}><a href="/" className="brand" aria-label="Trufis Bolivia, inicio" onClick={e=>{e.preventDefault();go('/');}}><span className="brand-mark"><Icon name="route" size={28}/></span><span>Trufis <strong>Bolivia</strong><small>Más cerca de tu destino</small></span></a>
+   <button ref={menuButton} type="button" className="menu-button" aria-label={menu?'Cerrar navegación':'Abrir navegación'} aria-expanded={menu} aria-controls="main-navigation" onClick={()=>setMenu(!menu)}><Icon name={menu?'close':'menu'} size={24}/></button>
    <nav id="main-navigation" aria-label="Navegación principal" className={menu?'open':''}>{navItems.map(([href,text])=><a key={href} href={href} aria-current={path===href?'page':undefined} onClick={e=>{e.preventDefault();go(href);}}>{text}</a>)}<span className="nav-local"><span/>Solo pruebas</span></nav>
   </div></header>
   <main id="contenido" ref={heading} tabIndex={-1}>
    {navigationError&&<p className="container message error" role="alert">{navigationError}</p>}
-   {recoveryAccount&&<section className="container panel-page" aria-label="Recuperar intento administrativo"><h2>Volver a autenticar la cuenta original</h2><p>El intento y su clave siguen en memoria. Inicia sesión con la misma cuenta; otra cuenta no puede recuperar esta actuación.</p><Login onSession={session=>{if(session.accountRef===recoveryAccount){completeAdminAuthentication(recoveryAccount);setNavigationError('');}else setNavigationError('Esta cuenta no corresponde al intento pendiente. Inicia sesión con la cuenta original.');}}/></section>}
-   <div hidden={!!recoveryAccount}>
+   {documentGate&&<section className="container panel-page" aria-label="Reautenticación tras restaurar la página"><h2>Vuelve a autenticar esta página</h2><p>Los datos permanecen ocultos. No se reenviaron operaciones. Si había un intento, utiliza la cuenta original.</p><Login onSession={s=>{if(!unlockDocument(s))setNavigationError('Autentica la cuenta original de esta página.');else{if(s.accountRef)completeAdminAuthentication(s.accountRef);if(!adminIntentPending())setDocumentView(v=>v+1);setNavigationError('');}}}/></section>}
+   {!documentGate&&recoveryAccount&&<section className="container panel-page" aria-label={reservationIntentPending()?'Recuperar solicitud de reserva':'Recuperar intento administrativo'}><h2>Volver a autenticar la cuenta original</h2><p>El intento y su clave siguen en memoria. Inicia sesión con la misma cuenta; otra cuenta no puede recuperar esta actuación.</p><Login onSession={session=>{if(session.accountRef===recoveryAccount){completeAdminAuthentication(recoveryAccount);setNavigationError('');}else setNavigationError('Esta cuenta no corresponde al intento pendiente. Inicia sesión con la cuenta original.');}}/></section>}
+   <div key={documentView} id="document-content" hidden={!!recoveryAccount||!!documentGate}>
    <div hidden={path!=='/'}><Search onChoose={value=>{setSelection(value);go('/reservar');}}/></div>
    {path==='/plataforma'&&<PlatformAdministration/>}
+   {path==='/reservar'&&<div className="container"><RecoveryPanel/></div>}
    {path==='/reservar'&&<Reservation selection={selection} back={()=>go('/')} />}
    {path==='/operador'&&<section className="container panel-page"><h1>Ofertas del chofer de laboratorio</h1><PrivateReservations operator/></section>}
    {['/pasajero','/administracion','/chofer'].includes(path)&&<Panel path={path} link={link}/>}
@@ -109,7 +119,7 @@ function Reservation({selection,back}:{selection:Selection|null;back:()=>void}){
 function Panel({path,link}:{path:string;link:(href:string,text:string,className?:string)=>React.ReactNode}){
  const kind=path==='/pasajero'?'passenger':path==='/administracion'?'admin':'driver';
  const info={passenger:{title:'Tus viajes, en un solo lugar.',label:'ESPACIO DEL PASAJERO',icon:'users',features:[['Mis reservas','Recorrido, plazas e importe pactado.'],['Estado del vehículo','Asignación y estado del viaje.'],['Historial','Reservas y movimientos propios.'],['Ya llegué','Declaración de llegada y verificación administrativa.']]},admin:{title:'Una operación mejor organizada.',label:'ESPACIO ADMINISTRATIVO',icon:'shield',features:[['Ámbito autorizado','Consulta según los permisos de cada encargado.'],['Vehículos, filas y reservas','Capacidad por tramo, orden y reservas presenciales.'],['Llegadas y abordajes','Verificación y observaciones de pasajeros.'],['Incidencias','Reasignaciones y rescates supervisados.']]},driver:{title:'Tu recorrido, con claridad.',label:'ESPACIO DEL CHOFER',icon:'bus',features:[['Viajes asignados','Vehículo y servicio autorizado.'],['Puntos de recogida','Paradas y pasajeros esperados.'],['Registro de progreso','Avance solo en el recorrido autorizado.'],['Salida y llegada','Operaciones del chofer asignado.']]}}[kind];
- if(kind==='passenger')return <section className="container panel-page"><p className="eyebrow">{info.label}</p><h1>{info.title}</h1><PrivateReservations/><div className="panel-feature-grid">{info.features.map(([title,description],i)=><article key={title}><Icon name="users" size={24}/><span className="pending-tag">{i===3?'Presencia de laboratorio':'Consulta de laboratorio'}</span><h3>{title}</h3><p>{description}</p></article>)}</div>{link('/','Volver a buscar viajes','button quiet')}</section>;
+ if(kind==='passenger')return <section className="container panel-page"><p className="eyebrow">{info.label}</p><h1>{info.title}</h1><RecoveryPanel/><PrivateReservations/><div className="panel-feature-grid">{info.features.map(([title,description],i)=><article key={title}><Icon name="users" size={24}/><span className="pending-tag">{i===3?'Presencia de laboratorio':'Consulta de laboratorio'}</span><h3>{title}</h3><p>{description}</p></article>)}</div>{link('/','Volver a buscar viajes','button quiet')}</section>;
  return <section className="container panel-page"><p className="eyebrow">{info.label}</p><h1>{info.title}</h1><OperationalPanel key={kind} view={kind==='admin'?'ADMIN':'DRIVER'}><div className="panel-feature-grid">{info.features.map(([title,description])=><article key={title}><Icon name={info.icon} size={24}/><span className="pending-tag">Sesión requerida</span><h3>{title}</h3><p>{description}</p></article>)}</div></OperationalPanel>{link('/','Volver a buscar viajes','button quiet')}</section>;
 }
 
