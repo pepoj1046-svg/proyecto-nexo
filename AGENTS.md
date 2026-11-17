@@ -5,13 +5,19 @@ Trabaja **solo** en este repositorio, `pepoj1046-svg/proyecto-nexo`. Nunca uses,
 
 ## Flujo de desarrollo
 - Rama principal protegida por convención: no hacer push ni merge directo a `main`.
-- Etapa 1 de laboratorio aceptada por el propietario; trabajar en **Etapa 2**,
-  rama `desarrollo/etapa-2` desde el último commit de `desarrollo/etapa-1`.
-- PR independiente hacia `desarrollo/etapa-1`; no fusionar ni cerrar PR #1.
-- Solo datos ficticios y entorno local. No iniciar Etapa 3, aplicaciones móviles,
-  integraciones bancarias, GPS real ni despliegues.
-- Conservar 001–017 intactas; este cierre añade 018–022. Futuras migraciones desde 023. Reutilizar el núcleo
-  transaccional probado y documentar decisiones de negocio pendientes por separado.
+- Estas instrucciones aplican a cualquier agente (Codex, Claude u otro) que trabaje en el repositorio.
+- Etapas 1–3 cerradas técnicamente en laboratorio y Etapa 4A con cierre técnico de laboratorio (PR #5), sin habilitación productiva.
+- Etapa 5 en curso por incrementos encadenados (PR #7–#12). Último ratificado por el propietario, solo para laboratorio:
+  5A.4-B2 en `desarrollo/etapa-5a4-b2` (PR #12, incluye la corrección 042 del PR #13).
+- **Autorización por incremento:** cada incremento requiere autorización expresa del propietario y nombrada; terminar uno
+  no autoriza el siguiente. 5A.4-B3, 5A.5–5A.8 y etapas 6–10 no están autorizadas salvo encargo explícito posterior.
+- Cada incremento parte del SHA ratificado del anterior, en rama propia, con PR en borrador hacia la rama del incremento
+  anterior; nunca desde una `main` antigua. No fusionar, cerrar ni modificar PRs ajenos al encargo sin autorización.
+- Si una rama nueva será base de PR, añadirla a `pull_request.branches` de `etapa-1-tests.yml` y `codeql.yml`.
+- Solo web adaptable, PostgreSQL local y datos ficticios; sin aplicaciones nativas,
+  bancos, GPS real, comunicaciones externas ni despliegues.
+- Conservar 001–042 intactas; nuevas migraciones desde 043, aditivas y exclusivas de su incremento. Sin privilegios
+  operativos globales ni otro inventario. Reutilizar el núcleo transaccional y documentar decisiones pendientes.
 - Antes de editar, leer `docs/REQUISITOS_INICIALES.md`, `docs/ARQUITECTURA.md`, `docs/MODELO_DE_DATOS.md`, `docs/SEGURIDAD_PENDIENTE.md` y `docs/PRUEBAS_ETAPA_1.md`.
 - Implementar incrementos pequeños con pruebas automatizadas reproducibles. Documentar cómo ejecutar cada prueba y su salida.
 - Si detectas una inconsistencia en los requisitos, deja propuesta/nota y detén solo esa parte; no cambies decisiones comerciales por tu cuenta.

@@ -16,6 +16,13 @@ urbanas de recorridos intermunicipales/provinciales/departamentales autorizados 
 se conservan. Búsqueda exclusivamente por origen y destino, sin selector de categoría.
 No se implementan Google OAuth, pantallas, navegación, GPS ni mensajería externos.
 
+La decisión posterior autorizada de 8A/8B prevalece sobre la asignación mixta
+del antecedente: nuevas reservas terminales/expreso se confirman directamente por
+turno, sin aceptación ficticia; recogidas fuera de terminal e históricas conservan
+su contrato. Menores/responsables y revisión están implementados técnicamente sin
+verificación legal. Ver [contratos vigentes](ETAPA_2_CONTRATOS.md) y
+[auditoría de Etapa 3](REPORTES/ETAPA_3_AUDITORIA_Y_CIERRE.md).
+
 ## 1. Propósito y alcance
 Plataforma SaaS multi-asociación de cobertura nacional para trufis y vagonetas en Bolivia. Lanzamiento progresivo **intermunicipal → interprovincial → interdepartamental**, con las tres categorías admitidas desde el modelo. Primera prueba: Yacuiba ↔ Villamontes, con asociaciones, cuentas y viajes ficticios. La integración con minibuses queda para después. Cuatro roles: pasajero, chofer, administrador de asociación y administrador general. Cada asociación controla sus datos, choferes, vehículos, filas, rutas, paradas y tarifas, separados de los de otras asociaciones.
 

@@ -1,0 +1,146 @@
+{
+  "scope": "LOCAL_FICTITIOUS_LAB_ONLY",
+  "baseCommit": "697cf3d8923440e75bdefeed948b0111ba4dcd12",
+  "codeCommit": "c57d59d566354d815cb7c21e46dac45312ef1b67",
+  "results": {
+    "unit": 53,
+    "postgres": 229,
+    "chromium": 66,
+    "total": 348,
+    "previousCasesPreserved": 329
+  },
+  "records": [
+    {
+      "project": "desktop",
+      "manifestCount": 69,
+      "uniqueManifestCount": 69,
+      "ownReservations": 67,
+      "rawPaginationSHA256": "04bf5cc65d7465c7fc31e38604a1c958fe2d09e2ece2b8283090b9d88b6eb5d5",
+      "rawCancellationSHA256": "3d93dfb294683b837f01a6ff2811fe95a26de27c46cd97ee77acadb74a33a30a",
+      "cancelledGroup": {
+        "bookingId": "c0c8c577-0abd-45b3-a2ce-dfb80151b847",
+        "parts": [
+          {
+            "seats": 1,
+            "status": "CANCELLED",
+            "tripId": "3f699314-fed7-4905-a9f2-38c1d700f140",
+            "onboard": 0,
+            "vehicle": "FICTICIO-WEB-0-0",
+            "priceBOB": "35.00",
+            "bookingId": "c0c8c577-0abd-45b3-a2ce-dfb80151b847",
+            "tripStatus": "QUEUED"
+          }
+        ],
+        "audit": [
+          {
+            "action": "ADMIN_CANCELLED:WRONG_RESERVATION",
+            "createdAt": "2026-10-30T22:30:01.118952+00:00"
+          }
+        ],
+        "conditionReviewRecorded": true,
+        "moneyProcessed": false
+      },
+      "finalInventory": [
+        {
+          "stop_index": 0,
+          "confirmed": 4,
+          "reserved": 4
+        },
+        {
+          "stop_index": 1,
+          "confirmed": 4,
+          "reserved": 4
+        },
+        {
+          "stop_index": 2,
+          "confirmed": 4,
+          "reserved": 4
+        }
+      ],
+      "onboard": 0,
+      "departedAt": null,
+      "postgres": "18.4",
+      "readOnlyWitness": "on"
+    },
+    {
+      "project": "mobile",
+      "manifestCount": 69,
+      "uniqueManifestCount": 69,
+      "ownReservations": 67,
+      "rawPaginationSHA256": "2324934ae41bce70b1282f085a28361848638388cdfaee61d6f8ffc33d90bf43",
+      "rawCancellationSHA256": "71420736d978cd55fe75be8c996e72a8886faf46cf06385aebea6077cef09b60",
+      "cancelledGroup": {
+        "bookingId": "2a5c66bc-a016-466d-b895-62f64c6d2fe6",
+        "parts": [
+          {
+            "seats": 1,
+            "status": "CANCELLED",
+            "tripId": "f89a7e21-32e7-425b-8f5d-d3df8df99edc",
+            "onboard": 0,
+            "vehicle": "FICTICIO-WEB-0-0",
+            "priceBOB": "35.00",
+            "bookingId": "2a5c66bc-a016-466d-b895-62f64c6d2fe6",
+            "tripStatus": "QUEUED"
+          }
+        ],
+        "audit": [
+          {
+            "action": "ADMIN_CANCELLED:WRONG_RESERVATION",
+            "createdAt": "2026-10-30T22:33:25.757108+00:00"
+          }
+        ],
+        "conditionReviewRecorded": true,
+        "moneyProcessed": false
+      },
+      "finalInventory": [
+        {
+          "stop_index": 0,
+          "confirmed": 4,
+          "reserved": 4
+        },
+        {
+          "stop_index": 1,
+          "confirmed": 4,
+          "reserved": 4
+        },
+        {
+          "stop_index": 2,
+          "confirmed": 4,
+          "reserved": 4
+        }
+      ],
+      "onboard": 0,
+      "departedAt": null,
+      "postgres": "18.4",
+      "readOnlyWitness": "on"
+    }
+  ],
+  "captures": [
+    {
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-6-navegacion-desktop.png",
+      "sha256": "8db0f6c342a400d23e33117e799254f041a785583ecf623b01344494ce7a9fd7"
+    },
+    {
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-6-cancelacion-desktop.png",
+      "sha256": "a3ccaec3f6b6be283e39d76ed3069452837e53edd1e79dc99f51d167572644a6"
+    },
+    {
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-6-navegacion-mobile.png",
+      "sha256": "4cb2e6c8f3a5736b8e5d32de02c4d0082faca28ef826ad66ed642189c2e9fec4"
+    },
+    {
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-6-cancelacion-mobile.png",
+      "sha256": "5f407d58562927e3e83776cab689294f8d3e957285dc2995240f9b1a4d200daf"
+    }
+  ],
+  "notes": [
+    "SQL witness uses READ ONLY and data exclusively fictitious.",
+    "Raw SQL configuration, sessions, credentials and private traces excluded.",
+    "Cursors detect changed collections; they are not identity credentials."
+  ],
+  "verificationRecord": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6534810824",
+  "localFinalLogs": {
+    "i6-release-all.log": "dc1741d8abcf1a5625f09a4e37b7300cc5e23db03e3040831715f5803da941cb",
+    "i6-final-diagnostic-web.log": "2db4afafd8132e4ce67168a5202e11f246bc775efcc642b398eab375db939eed"
+  }
+}

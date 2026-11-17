@@ -1,0 +1,89 @@
+{
+  "base": "91dad4d837b9ef9df60f8d7138670e64f3b7bb2b",
+  "branch": "desarrollo/etapa-3",
+  "fictitiousOnly": true,
+  "unit": 57,
+  "postgres": 239,
+  "web": 74,
+  "total": 370,
+  "retained": 348,
+  "closedLabs": 30,
+  "exitCode": 0,
+  "verificationRecord": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6546058579",
+  "captures": [
+    {
+      "phase": "7a",
+      "stage": "proposal",
+      "device": "desktop",
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-7a-proposal-desktop.png",
+      "bytes": 75038,
+      "sha256": "a18c9895d34600ade897ff65b457515e3c03d4b789d618a436af29297ba3ccd8"
+    },
+    {
+      "phase": "7a",
+      "stage": "proposal",
+      "device": "mobile",
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-7a-proposal-mobile.png",
+      "bytes": 81231,
+      "sha256": "394fe176f91a11247325865518a194067a3b095db8c905c860d6f026ecdd7e29"
+    },
+    {
+      "phase": "7a",
+      "stage": "express",
+      "device": "desktop",
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-7a-express-desktop.png",
+      "bytes": 47405,
+      "sha256": "d8b35e2671b3a8af2e3389d057670be0bb13b206e91d8df4dd1127fa7a84c0dd"
+    },
+    {
+      "phase": "7a",
+      "stage": "express",
+      "device": "mobile",
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-7a-express-mobile.png",
+      "bytes": 51207,
+      "sha256": "e1a5a5e873399f8b92392409ae610a79fea6738d71a97b19cf59b5b8e3369058"
+    },
+    {
+      "phase": "7b",
+      "stage": "accept",
+      "device": "desktop",
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-7b-accept-desktop.png",
+      "bytes": 72556,
+      "sha256": "7c5e450601fef91dc83d887f7eaac842d382b541023c64aeb395142e5224cd64"
+    },
+    {
+      "phase": "7b",
+      "stage": "accept",
+      "device": "mobile",
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-7b-accept-mobile.png",
+      "bytes": 74829,
+      "sha256": "428df4e17a3e7b7e7931026131af660a536ea45f5977c60f46f6211ff0ff20f1"
+    },
+    {
+      "phase": "7b",
+      "stage": "request",
+      "device": "desktop",
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-7b-request-desktop.png",
+      "bytes": 100239,
+      "sha256": "e323dd6e3dd85e85c03d525e1481cb9743b5709b2669027fdd60ebbaeafba085"
+    },
+    {
+      "phase": "7b",
+      "stage": "request",
+      "device": "mobile",
+      "path": "docs/REPORTES/capturas/etapa-3-incremento-7b-request-mobile.png",
+      "bytes": 103463,
+      "sha256": "d7236a68e380dad3b9950688a1e83c00eb2af92b845b64809a9597c974d7d173"
+    }
+  ],
+  "localLogs": [
+    {
+      "path": ".local/i7-final-all-2.log",
+      "sha256": "afc57a53a8ebd19f43e273d3224b255cbb7d83f6c03c6472786ef3fdbb2768c6"
+    },
+    {
+      "path": ".local/i7-final-web.log",
+      "sha256": "78637b8b14c65694d9c6e2810f2d1961b047e5a4306b173a10e94df6a7f65bc0"
+    }
+  ]
+}
