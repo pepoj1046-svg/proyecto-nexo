@@ -57,6 +57,10 @@ test('B3 machine (T14): a group outside the first page follows the authorized cu
  assert.deepEqual(seen,[null,'c1','c2']);assert.equal(h.view(t.key).phase,'ACTUALIZADA');
  const t2=ticket(2);let n=0;const g=harness({receipt:()=>recorded(t2),page:()=>page([booking(50+n++)],'more')});g.store.sync(sA,restored([t2]));await g.store.consult(t2.key);
  assert.equal(g.calls.page,MAX_CURRENT_PAGES);assert.equal(g.view(t2.key).phase,'LECTURA_PENDIENTE');assert.deepEqual(g.calls.retire,[]);
+ // Not found after the bounded walk: receipt kept, ticket kept, wording never implies cancellation or rollback.
+ const w=g.view(t2.key);assert.equal(w.receipt.groupId,id(90));assert.equal(w.consulted,true);assert.equal(w.busy,false);assert.equal(g.store.blocksNewReservation(A),false);
+ assert.match(w.error,/no incluyó todas las reservas del registro/);assert.doesNotMatch(w.error,/cancel|anul|revert|rollback|fall[óo]|liber|no se (registr|realiz)/i);
+ await g.store.consult(t2.key);assert.equal(g.calls.receipt,2,'the same ticket can be consulted again manually');assert.deepEqual(g.calls.retire,[]);
 });
 test('B3 machine: 401 → Autenticar (gate), 403 → Revisión, 410/400 → Inválida with local cleanup, 429/503/transport stay uncertain and keep D3',async()=>{
  const cases=[[fail(401,'REAUTHENTICATION_REQUIRED'),'AUTENTICAR',false],[fail(403,'RECOVERY_UNAVAILABLE'),'REVISION',true],[fail(410,'RECOVERY_TICKET_EXPIRED'),'INVALIDA',true],[fail(410,'ENVIRONMENT_CHANGED'),'INVALIDA',true],[fail(400,'INVALID_RECOVERY_TICKET'),'INVALIDA',true],[fail(429,'RATE_LIMITED'),'INCIERTA',false],[fail(503,'RECOVERY_UNAVAILABLE'),'INCIERTA',false],[new TypeError('Failed to fetch'),'INCIERTA',false],[Object.assign(Error('aborted'),{name:'AbortError'}),'INCIERTA',false]];
