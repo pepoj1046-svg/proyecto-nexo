@@ -1,0 +1,65 @@
+name: Laboratorio - dominio y PostgreSQL
+on:
+  push:
+    branches: [desarrollo/etapa-1, desarrollo/etapa-2, desarrollo/etapa-3, desarrollo/etapa-4]
+  pull_request:
+    branches: [main, desarrollo/etapa-1, desarrollo/etapa-2, planificacion/etapa-4a, desarrollo/etapa-4, desarrollo/etapa-5a2, desarrollo/etapa-5a3, desarrollo/etapa-5a4-b1, desarrollo/etapa-5a4-b2, desarrollo/etapa-5a4-b3]
+permissions:
+  contents: read
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['22', '24']
+    name: dominio y PostgreSQL (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    # 4A.5: keep the existing 30-minute budget. Domain/PG and each browser
+    # project run independently; the combined Windows job reached 30 minutes
+    # after 116 E2E executions, without an assertion or transport failure.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Instalar dependencias fijadas
+        run: npm ci --no-fund
+      - name: Dominio y PostgreSQL local aislado
+        run: npm run test:all
+  web:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['22', '24']
+        project: [desktop, mobile]
+    name: web ${{ matrix.project }} (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Instalar dependencias fijadas
+        run: npm ci --no-fund
+      - name: Instalar Chromium de pruebas
+        run: npx --no-install playwright install chromium
+      - name: Interfaz web local - proyecto completo
+        run: node scripts/test-web.mjs --project=${{ matrix.project }}
+      - name: Evidencias ficticias de accesibilidad y recuperación 5A.3
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 5a3-${{ matrix.os }}-node${{ matrix.node }}-${{ matrix.project }}
+          path: |
+            .local/5a3-evidence/
+            .local/5a4-b1-evidence/
+            .local/5a4-b2-evidence/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
