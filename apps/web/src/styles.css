@@ -65,3 +65,4 @@
 .command-recovery{min-width:0;max-width:100%;margin:1rem 0;padding:1rem;border:2px solid #627451;border-radius:10px;background:#f4f6ed;overflow-wrap:anywhere}
 .command-recovery .button{max-width:100%;min-height:44px;white-space:normal;overflow-wrap:anywhere}
 .operational-controls{border:0;padding:0;margin:0;min-width:0}
+.previous-operation{margin-bottom:1.25rem}.previous-operation>h2{font-size:20px;color:var(--green);margin:0 0 .5rem}.previous-operation>p{font-size:13px;line-height:1.7;color:#566351}.previous-reference{border-top:1px solid #d5dfd5;padding:1rem 0 .25rem;overflow-wrap:anywhere}.previous-reference h3{font-size:15px;color:#2b4938;margin:0 0 .5rem}.previous-reference h3 small{font-weight:400;color:#5b6159}.previous-reference p,.previous-reference li{font-size:13px;line-height:1.7}.previous-reference .session-actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.6rem}.previous-reference [role=group]{flex-direction:column}
