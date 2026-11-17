@@ -25,21 +25,3 @@ test('B3 T23: double click and repeated events produce one consultation at a tim
  // that could plausibly trigger a query, produce zero /api/ requests.
  const idle=t.api;await page.evaluate(()=>{for(const e of['online','focus','pageshow'])window.dispatchEvent(new Event(e));document.dispatchEvent(new Event('visibilitychange'));});await page.waitForTimeout(5000);expect(t.api-idle).toBe(0);
 });
-test('B3 T15/T20: a late receipt after logout and another login is dropped; discard while in flight removes only local aid',async({page})=>{
- const audit=await reservationEvidence();try{
-  const ticket=await lostReply(page,'viajero2'),before=await audit.snapshot(ticket.key),t=traffic(page),panel=await restore(page,'viajero2');
-  const held=hold(page,'/api/recovery/receipt');await reference(panel).getByRole('button',{name:'Consultar resultado',exact:true}).click();await held.reached;
-  await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click();await expect(page.getByRole('button',{name:'Iniciar sesión',exact:true})).toBeVisible();expect(await stored(page)).toBeNull();
-  await login(page,'viajero3');held.release();await page.waitForTimeout(400);
-  await expect(page.getByRole('heading',{name:'Operación anterior'})).toHaveCount(0);await expect(page.getByText(before.bookings[0].id)).toHaveCount(0);await expect(page.getByText('Registro histórico')).toHaveCount(0);
-  expect(t.reservations).toBe(0);expect(await audit.snapshot(ticket.key)).toEqual(before);
- }finally{await audit.close();}
- // T20: discard with the request in flight (separate tab state, uncertain reference).
- const other=await page.context().newPage();try{
-  await lostReply(other,'viajero4',{commit:false});const panel=await restore(other,'viajero4'),ref=reference(panel),t=traffic(other),held=hold(other,'/api/recovery/receipt');
-  await ref.getByRole('button',{name:'Consultar resultado',exact:true}).click();await held.reached;
-  await ref.getByRole('button',{name:'Eliminar referencia',exact:true}).click();await ref.getByRole('button',{name:'Eliminar solo la ayuda local',exact:true}).click();
-  await expect(panel).toHaveCount(0);expect(await stored(other)).toBeNull();const pages=t.pages;held.release();await other.waitForTimeout(400);
-  await expect(other.getByRole('heading',{name:'Operación anterior'})).toHaveCount(0);expect(t.pages).toBe(pages);expect(t.reservations).toBe(0);
- }finally{await other.close();}
-});

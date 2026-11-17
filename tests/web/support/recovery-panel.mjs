@@ -30,9 +30,9 @@ export function mark(page,label){logs.get(page.context())?.push({at:Date.now(),m
 export function measureRequests(test){
  test.beforeEach(({context})=>{const log=[];logs.set(context,log);context.on('request',r=>{const p=new URL(r.url()).pathname;if(p.startsWith('/api/'))log.push({at:Date.now(),path:p});});});
  test.afterEach(async({context},info)=>{const log=logs.get(context)??[],reqs=log.filter(x=>x.path),byPath={};for(const r of reqs)byPath[r.path]=(byPath[r.path]??0)+1;
-  const phases={};let phase='setup';for(const x of log){if(x.mark){phase=x.mark;continue;}phases[phase]=(phases[phase]??0)+1;}
+  const phases={},phasePaths={};let phase='setup';for(const x of log){if(x.mark){phase=x.mark;continue;}phases[phase]=(phases[phase]??0)+1;(phasePaths[phase]??=[]).push(x.path);}
   const start=reqs[0]?.at??Date.now(),end=reqs.at(-1)?.at??start;
-  const summary={suite:basename(info.file),title:info.title,project:info.project.name,status:info.status,total:reqs.length,durationMs:end-start,byPath,phases,first:start,last:end};
+  const summary={suite:basename(info.file),title:info.title,project:info.project.name,status:info.status,total:reqs.length,durationMs:end-start,byPath,phases,phasePaths,first:start,last:end};
   await mkdir('.local/5a4-b3-evidence/requests',{recursive:true});await writeFile(`.local/5a4-b3-evidence/requests/${info.project.name}-${info.testId}.json`,JSON.stringify(summary,null,2));
   info.annotations.push({type:'api-requests',description:JSON.stringify({total:summary.total,phases})});});
 }
