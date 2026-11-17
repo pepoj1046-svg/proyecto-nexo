@@ -133,7 +133,7 @@ export function createBusinessService(pool) {
       return transaction(token,async c=>{
         if(!(await c.query('SELECT nexo.can_search_route($1) AS allowed',[q.routeId])).rows[0].allowed)
           throw new Error('ROUTE_NOT_ELIGIBLE');
-        const {rows}=await c.query(`SELECT id,version,amount_bob FROM nexo.fares WHERE route_id=$1 AND from_stop=$2 AND to_stop=$3
+        const {rows}=await c.query(`SELECT id,version,amount_bob FROM nexo.new_request_fares WHERE route_id=$1 AND from_stop=$2 AND to_stop=$3
           AND express=$4 AND valid_from<=clock_timestamp() AND (valid_until IS NULL OR valid_until>clock_timestamp())`,[q.routeId,q.from,q.to,q.express]);
         if(rows.length!==1)throw new Error('FARE_UNRESOLVED');
         const f=rows[0];

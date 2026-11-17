@@ -4,7 +4,7 @@ import{mkdir}from'node:fs/promises';
 import{operationEvidence}from'./support/operation-evidence.mjs';
 import{operational,api,rejected,deviceContext,commandClick}from'./support/recovery-browser.mjs';
 
-test('8B: administrador global revoca y restaura un permiso existente; la sesión abierta del chofer pierde operaciones',async({page,browser,baseURL},info)=>{
+test('8B: administrador con alcance completo revoca y restaura un permiso existente; la sesión abierta del chofer pierde operaciones',async({page,browser,baseURL},info)=>{
  const audit=await operationEvidence(info.project.name),context=await browser.newContext(deviceContext(page,baseURL,info));
  try{
   await operational(page,'admin','/administracion');const d=await context.newPage();await operational(d,'driver5','/chofer');const tripId=await page.getByLabel('Vehículo autorizado',{exact:true}).inputValue(),before=await audit.read(tripId),own=before.bookings[0].id;
