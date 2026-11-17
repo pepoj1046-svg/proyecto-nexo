@@ -30,7 +30,8 @@ export function RecoveryPanel(){
 }
 function Reference({view:v,index,onClosed}:{view:ConsultView;index:number;onClosed:()=>void}){
  const[confirming,setConfirming]=useState(false),root=useRef<HTMLElement>(null),heading=useRef<HTMLHeadingElement>(null),confirmButton=useRef<HTMLButtonElement>(null),focused=useRef(false);
- const consultable=['LISTA','INCIERTA','LECTURA_PENDIENTE','AUTENTICAR'].includes(v.phase),closable=v.phase==='ACTUALIZADA'||v.phase==='INVALIDA';
+ // The consult button stays mounted (aria-disabled) while the request runs, so focus is kept.
+ const consultable=['LISTA','INCIERTA','LECTURA_PENDIENTE','AUTENTICAR','CONSULTANDO','RECIBO'].includes(v.phase),closable=v.phase==='ACTUALIZADA'||v.phase==='INVALIDA';
  // Keep focus inside this reference when its buttons change; never steal it otherwise.
  useEffect(()=>{if(focused.current&&root.current&&!root.current.contains(document.activeElement))heading.current?.focus();},[v.phase,v.busy,confirming]);
  useEffect(()=>{if(confirming)confirmButton.current?.focus();},[confirming]);
@@ -43,7 +44,7 @@ function Reference({view:v,index,onClosed}:{view:ConsultView;index:number;onClos
   {v.current&&v.current.length>0&&<section aria-label="Estado actual autorizado"><h4>Estado actual</h4><ul>{v.current.map(b=><li key={b.bookingId}><span className="directory-id">{b.bookingId}</span> · {bookingState(b.assignmentState??b.effectiveStatus??b.status)}</li>)}</ul><p>Puede haber cambiado desde esta consulta. No confirma salida ni abordaje.</p></section>}
   {v.phase==='INVALIDA'&&<p>Consulta «Mis reservas» con tu cuenta para ver tus reservas actuales.</p>}
   {!confirming&&<div className="session-actions">
-   {consultable&&<button type="button" className="button primary" disabled={v.busy} onClick={()=>void recoveryStore.consult(v.key)}>{v.busy?'Consultando…':'Consultar resultado'}</button>}
+   {consultable&&<button type="button" className="button primary" aria-disabled={v.busy} onClick={()=>{if(!v.busy)void recoveryStore.consult(v.key);}}>{v.busy?'Consultando…':'Consultar resultado'}</button>}
    {closable?<button type="button" className="button quiet" onClick={()=>{recoveryStore.discard(v.key);onClosed();}}>Cerrar</button>
     :<button type="button" className="button quiet" onClick={()=>setConfirming(true)}>Eliminar referencia</button>}
   </div>}
