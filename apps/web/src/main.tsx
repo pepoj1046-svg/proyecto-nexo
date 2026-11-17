@@ -12,6 +12,7 @@ import type {Availability,Locality,Segment,Selection,Service} from './model';
 import './styles.css';
 import{OperationalPanel}from'./Operations';
 import{Checkout,PointPicker,PrivateReservations}from'./Functional';
+import{RecoveryPanel}from'./RecoveryPanel';
 
 const navItems=[['/','Buscar viaje'],['/pasajero','Mis reservas'],['/administracion','Administración'],['/chofer','Chofer'],['/plataforma','Plataforma']] as const;
 // Hide synchronously before a page can enter bfcache. The retained React tree
@@ -44,6 +45,7 @@ function App(){
    <div key={documentView} id="document-content" hidden={!!recoveryAccount||!!documentGate}>
    <div hidden={path!=='/'}><Search onChoose={value=>{setSelection(value);go('/reservar');}}/></div>
    {path==='/plataforma'&&<PlatformAdministration/>}
+   {path==='/reservar'&&<div className="container"><RecoveryPanel/></div>}
    {path==='/reservar'&&<Reservation selection={selection} back={()=>go('/')} />}
    {path==='/operador'&&<section className="container panel-page"><h1>Ofertas del chofer de laboratorio</h1><PrivateReservations operator/></section>}
    {['/pasajero','/administracion','/chofer'].includes(path)&&<Panel path={path} link={link}/>}
@@ -117,7 +119,7 @@ function Reservation({selection,back}:{selection:Selection|null;back:()=>void}){
 function Panel({path,link}:{path:string;link:(href:string,text:string,className?:string)=>React.ReactNode}){
  const kind=path==='/pasajero'?'passenger':path==='/administracion'?'admin':'driver';
  const info={passenger:{title:'Tus viajes, en un solo lugar.',label:'ESPACIO DEL PASAJERO',icon:'users',features:[['Mis reservas','Recorrido, plazas e importe pactado.'],['Estado del vehículo','Asignación y estado del viaje.'],['Historial','Reservas y movimientos propios.'],['Ya llegué','Declaración de llegada y verificación administrativa.']]},admin:{title:'Una operación mejor organizada.',label:'ESPACIO ADMINISTRATIVO',icon:'shield',features:[['Ámbito autorizado','Consulta según los permisos de cada encargado.'],['Vehículos, filas y reservas','Capacidad por tramo, orden y reservas presenciales.'],['Llegadas y abordajes','Verificación y observaciones de pasajeros.'],['Incidencias','Reasignaciones y rescates supervisados.']]},driver:{title:'Tu recorrido, con claridad.',label:'ESPACIO DEL CHOFER',icon:'bus',features:[['Viajes asignados','Vehículo y servicio autorizado.'],['Puntos de recogida','Paradas y pasajeros esperados.'],['Registro de progreso','Avance solo en el recorrido autorizado.'],['Salida y llegada','Operaciones del chofer asignado.']]}}[kind];
- if(kind==='passenger')return <section className="container panel-page"><p className="eyebrow">{info.label}</p><h1>{info.title}</h1><PrivateReservations/><div className="panel-feature-grid">{info.features.map(([title,description],i)=><article key={title}><Icon name="users" size={24}/><span className="pending-tag">{i===3?'Presencia de laboratorio':'Consulta de laboratorio'}</span><h3>{title}</h3><p>{description}</p></article>)}</div>{link('/','Volver a buscar viajes','button quiet')}</section>;
+ if(kind==='passenger')return <section className="container panel-page"><p className="eyebrow">{info.label}</p><h1>{info.title}</h1><RecoveryPanel/><PrivateReservations/><div className="panel-feature-grid">{info.features.map(([title,description],i)=><article key={title}><Icon name="users" size={24}/><span className="pending-tag">{i===3?'Presencia de laboratorio':'Consulta de laboratorio'}</span><h3>{title}</h3><p>{description}</p></article>)}</div>{link('/','Volver a buscar viajes','button quiet')}</section>;
  return <section className="container panel-page"><p className="eyebrow">{info.label}</p><h1>{info.title}</h1><OperationalPanel key={kind} view={kind==='admin'?'ADMIN':'DRIVER'}><div className="panel-feature-grid">{info.features.map(([title,description])=><article key={title}><Icon name={info.icon} size={24}/><span className="pending-tag">Sesión requerida</span><h3>{title}</h3><p>{description}</p></article>)}</div></OperationalPanel>{link('/','Volver a buscar viajes','button quiet')}</section>;
 }
 

@@ -6,17 +6,22 @@ const messages:Record<string,string>={CONFIG_BUSY:'Otra operación ocupa la conf
 // broadcast. Cookies alone can only bootstrap a new anonymous document.
 let capability:WebSession|null=null,revision=0,lastAccount:string|null=null;
 let lock:{account:string|null}|null=null;
-const listeners=new Set<()=>void>();
+const listeners=new Set<()=>void>(),sessionListeners=new Set<()=>void>();
 export const subscribeDocument=(f:()=>void)=>{listeners.add(f);return()=>{listeners.delete(f);};};
+// B3: the restored-reference panel follows this document's capability. It never reads
+// tickets while the document is anonymous, locked or between authorities.
+export const subscribeSession=(f:()=>void)=>{sessionListeners.add(f);return()=>{sessionListeners.delete(f);};};
+export const currentSession=():WebSession|null=>lock?null:capability;
+const sessionChanged=()=>{for(const f of sessionListeners)f();};
 export const documentLock=()=>lock;
 export function suspendDocument(){
  if(!lock)lock={account:capability?.accountRef??lastAccount};
  capability=null;revision++;sessionRead=null;
- for(const f of listeners)f();
+ for(const f of listeners)f();sessionChanged();
 }
 export function unlockDocument(s:WebSession){
  if(!s.authenticated||lock?.account&&s.accountRef!==lock.account)return false;
- lock=null;for(const f of listeners)f();return true;
+ lock=null;for(const f of listeners)f();sessionChanged();return true;
 }
 const stale=()=>new PrivateApiError('El contexto cambió. Autentica la cuenta original antes de consultar de nuevo.',401,'AUTHENTICATION_REQUIRED');
 function validSession(value:WebSession){return typeof value.documentId==='string'&&/^[0-9a-f-]{36}$/.test(value.documentId)&&Number.isSafeInteger(value.generation)&&typeof value.csrf==='string'&&/^[A-Za-z0-9_-]{43}$/.test(value.csrf)&&typeof value.environmentId==='string';}
@@ -32,10 +37,13 @@ async function request<T>(path:string,body?:unknown,csrf?:string,key?:string,tic
   if(!r.ok)throw new PrivateApiError(messages[data.error]??`La operación no pudo completarse (${data.error??'error del servicio'}).`,r.status,typeof data.error==='string'?data.error:'REQUEST_REJECTED');
   if(path==='/api/session'||path==='/api/login'){
    if(!validSession(data))throw stale();
-   if(path==='/api/session'&&proof&&(data.documentId!==proof.documentId||data.generation!==proof.generation||data.csrf!==proof.csrf||data.environmentId!==proof.environmentId))throw stale();
-   if(path==='/api/login'){revision++;capability=data;lastAccount=data.accountRef??null;cleanRecoveryStorage(data.accountRef??null,data.environmentId);}
-   else if(!proof)capability=data;
-  }else if(path==='/api/logout'){revision++;capability=null;lastAccount=null;cleanRecoveryStorage(null);}
+   if(path==='/api/session'&&proof&&(data.documentId!==proof.documentId||data.generation!==proof.generation||data.csrf!==proof.csrf))throw stale();
+   // D2-B: the gateway replaced its ticket epoch. Lock this document so it boots again
+   // with the original account; nothing is resent and no old ticket becomes valid.
+   if(path==='/api/session'&&proof&&data.environmentId!==proof.environmentId){suspendDocument();throw stale();}
+   if(path==='/api/login'){revision++;capability=data;lastAccount=data.accountRef??null;cleanRecoveryStorage(data.accountRef??null,data.environmentId);sessionChanged();}
+   else if(!proof){capability=data;sessionChanged();}
+  }else if(path==='/api/logout'){revision++;capability=null;lastAccount=null;cleanRecoveryStorage(null);sessionChanged();}
   return data;
  }finally{clearTimeout(timer);}
 }
@@ -49,7 +57,7 @@ function sharedSession<T>():Promise<T>{
 export async function prepareLogin():Promise<WebSession>{
  try{return await privateApi<WebSession>('/api/session');}catch(e){
   if(!(e instanceof PrivateApiError)||![401,403].includes(e.status))throw e;
-  capability=null;revision++;return privateApi<WebSession>('/api/session');
+  capability=null;revision++;sessionChanged();return privateApi<WebSession>('/api/session');
  }
 }
 export function privateApi<T>(path:string,body?:unknown,csrf?:string,key?:string,ticket?:unknown):Promise<T>{

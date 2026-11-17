@@ -4431,3 +4431,40 @@ test('B2-11: emission shares the unchanged global rate limit and produces no res
  const web=await startWebGateway({pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{const a=await browserLogin(web,'b2.rate'),before=await directorySnapshot();let limited=false;for(let i=0;i<121;i++){const r=await postJson(web.url,'/api/recovery/ticket',{v:1,family:'RESERVATION_APP'},recoveryHeaders(web,a));if(r.status===429){assert.deepEqual(r.body,{error:'RATE_LIMITED'});limited=true;break;}assert.equal(r.status,200);}assert.equal(limited,true);assert.deepEqual(await directorySnapshot(),before);
  }finally{await web.close();}
 });
+
+// 5A.4-B3 (D2-B): controlled ticket-epoch regeneration. Only the marker query can be
+// tampered with through this proxy; every other query reaches the real database.
+function markerPool(){const state={tamper:false};return{state,pool:new Proxy(pool,{get(t,p){if(p==='query')return(q,...a)=>state.tamper&&typeof q==='string'&&q.includes('pg_postmaster_start_time')?Promise.resolve({rows:[{boot:'0',database:'0'}]}):t.query(q,...a);const v=t[p];return typeof v==='function'?v.bind(t):v;}})};}
+const lostConnection=()=>Object.assign(new Error('lab: idle client terminated'),{code:'57P01'});
+const sessionOf=async(web,a)=>(await fetch(web.url+'/api/session',{headers:{Cookie:a.cookie,...documentHeaders(a),'X-CSRF-Token':a.csrf}})).json();
+test('B3-01: after a pool error the next request regenerates the epoch; old tickets stay 410 and a new APP reservation succeeds',async()=>{
+ const m=markerPool(),web=await startWebGateway({pool:m.pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
+  const a=await browserLogin(web,'b3.epoch.a'),h=recoveryHeaders(web,a),issue={v:1,family:'RESERVATION_APP'},e0=(await sessionOf(web,a)).environmentId,old=(await postJson(web.url,'/api/recovery/ticket',issue,h)).body;assert.equal(old.environmentId,e0);
+  m.pool.emit('error',lostConnection());const before=await directorySnapshot();
+  const stale=await postJson(web.url,'/api/recovery/receipt',{v:1,ticket:old},h);assert.equal(stale.status,410);assert.deepEqual(stale.body,{error:'ENVIRONMENT_CHANGED'});
+  const e1=(await sessionOf(web,a)).environmentId;assert.notEqual(e1,e0);assert.deepEqual(await directorySnapshot(),before,'regeneration and rejection write nothing');
+  const q=await postJson(web.url,'/api/reservations/quote',webJourney(1),h);assert.equal(q.status,200);const body={...webJourney(1),confirmed:true,quote:{fareId:q.body.fareId,fareVersion:q.body.fareVersion,totalBOB:q.body.totalBOB}};
+  const oldWrite=await postJson(web.url,'/api/reservations',body,{...h,'Idempotency-Key':old.key,'X-Nexo-Recovery-Ticket':JSON.stringify(old)});assert.equal(oldWrite.status,410);assert.deepEqual(await directorySnapshot(),before,'an old-epoch ticket cannot write');
+  const fresh=(await postJson(web.url,'/api/recovery/ticket',issue,h)).body;assert.equal(fresh.environmentId,e1);
+  const written=await postJson(web.url,'/api/reservations',body,{...h,'Idempotency-Key':fresh.key,'X-Nexo-Recovery-Ticket':JSON.stringify(fresh)});assert.equal(written.status,200);
+  const receipt=await postJson(web.url,'/api/recovery/receipt',{v:1,ticket:fresh},h);assert.equal(receipt.status,200);assert.equal(receipt.body.state,'RECORDED');assert.equal(receipt.body.environmentId,e1);assert.deepEqual(receipt.body.receipt.bookingIds,written.body.bookings.map(b=>b.bookingId));
+  assert.equal((await postJson(web.url,'/api/recovery/receipt',{v:1,ticket:old},h)).status,410,'old epoch never becomes valid again');assert.ok((await occupancy()).every(x=>x.used<=6));
+  await admin.query("UPDATE nexo.bookings SET status='CANCELLED'WHERE group_id=$1",[written.body.groupId]);
+ }finally{await web.close();}
+});
+test('B3-02: a changed database marker keeps the epoch blocked; it regenerates only once the original marker verifies again',async()=>{
+ const m=markerPool(),web=await startWebGateway({pool:m.pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
+  const a=await browserLogin(web,'b3.epoch.b'),h=recoveryHeaders(web,a),issue={v:1,family:'RESERVATION_APP'},e0=(await sessionOf(web,a)).environmentId,before=await directorySnapshot();
+  m.state.tamper=true;m.pool.emit('error',lostConnection());
+  for(let i=0;i<3;i++){const r=await postJson(web.url,'/api/recovery/ticket',issue,h);assert.equal(r.status,410);assert.deepEqual(r.body,{error:'ENVIRONMENT_CHANGED'});assert.equal((await sessionOf(web,a)).environmentId,e0,'no regeneration against another database');}
+  m.state.tamper=false;const r=await postJson(web.url,'/api/recovery/ticket',issue,h);assert.equal(r.status,200);assert.notEqual(r.body.environmentId,e0);assert.equal((await sessionOf(web,a)).environmentId,r.body.environmentId);assert.deepEqual(await directorySnapshot(),before);
+ }finally{await web.close();}
+});
+test('B3-03: concurrent requests after invalidation share a single regeneration and never loop',async()=>{
+ const m=markerPool(),web=await startWebGateway({pool:m.pool,identityPool,catalogToken:fixture.tokens.other,localTest:true});try{
+  const a=await browserLogin(web,'b3.epoch.c'),h=recoveryHeaders(web,a),issue={v:1,family:'RESERVATION_APP'},e0=(await sessionOf(web,a)).environmentId;m.pool.emit('error',lostConnection());
+  const rs=await Promise.all(Array.from({length:5},()=>postJson(web.url,'/api/recovery/ticket',issue,h)));for(const r of rs)assert.equal(r.status,200);
+  const ids=new Set(rs.map(r=>r.body.environmentId));assert.equal(ids.size,1);assert.ok(!ids.has(e0));
+  const again=await postJson(web.url,'/api/recovery/ticket',issue,h);assert.equal(again.body.environmentId,rs[0].body.environmentId,'a valid epoch is not regenerated again');
+ }finally{await web.close();}
+});
