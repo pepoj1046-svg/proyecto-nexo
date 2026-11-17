@@ -1,0 +1,432 @@
+{
+  "planningBase": "42236753b6614e876c6d3bcf14067126d3b92f6b",
+  "finalCommitAndCI": "https://github.com/pepoj1046-svg/proyecto-nexo/pull/5#issuecomment-6565076483",
+  "local": {
+    "unit": 64,
+    "postgres": 291,
+    "e2eUniqueApproved": 88,
+    "desktop": 44,
+    "mobile": 44,
+    "uniqueApprovedTotal": 443,
+    "e2eRuns": [
+      {
+        "log": "4a1-final-web.log",
+        "exit": 1,
+        "passed": 74,
+        "failed": 1,
+        "closedLabs": 32,
+        "shutdown": false,
+        "restart": false
+      },
+      {
+        "log": "4a1-final-web-continuation.log",
+        "exit": 0,
+        "passed": 14,
+        "failed": 0,
+        "closedLabs": 9,
+        "shutdown": true,
+        "restart": true
+      }
+    ],
+    "limitations": [
+      "La primera pasada E2E no fue verde: un login falló con ERR_EMPTY_RESPONSE, sin causa demostrada.",
+      "La continuación solo ejecutó el afectado y las suites restantes; no cambió código ni tiempos.",
+      "Las dirigidas y repeticiones no se suman como casos únicos."
+    ],
+    "environment": {
+      "os": "Debian13",
+      "node": "24.19.0",
+      "postgres": "18.4",
+      "playwright": "1.64.1",
+      "chromium": "154.0.8037.57"
+    }
+  },
+  "preservedMigrations": [
+    {
+      "path": "database/migrations/001_core.sql",
+      "sha256": "9552c0fad137a0f7d0669dd2cdef7d137a0dd7382d79468f71fb413865f5d059"
+    },
+    {
+      "path": "database/migrations/002_operations.sql",
+      "sha256": "787a76dc49b5359cefd23917ddca7009fd334ab44688f7e6602d36b7b93343c4"
+    },
+    {
+      "path": "database/migrations/003_queue.sql",
+      "sha256": "4fe53741452e3008a82690838d3f86e8308d3ddda322896ba723e94a7f4dd620"
+    },
+    {
+      "path": "database/migrations/004_isolation_guard.sql",
+      "sha256": "2ecd12ef4230f29a94a6bc915f8be31f2f3d5e2e1b395cc3c15555442951d401"
+    },
+    {
+      "path": "database/migrations/005_geography_authorizations.sql",
+      "sha256": "42e93efbfc8a70cbff8cadc0620216830b6b7e05e354335db4ddd752773e8fd5"
+    },
+    {
+      "path": "database/migrations/006_search_authorization_functions.sql",
+      "sha256": "e156c33c62f08e6c9bb2a9c0605fc6a841ca888fca0476f5424b99fa62d4d4de"
+    },
+    {
+      "path": "database/migrations/007_eligibility_rls.sql",
+      "sha256": "3fef73dc7ec20fce98505206bdc61426ba2cba321aaf83ea2fecd0b789105b03"
+    },
+    {
+      "path": "database/migrations/008_locality_lookup.sql",
+      "sha256": "ab3e82713198f078fbda5e424239900c41ecfa73a400aa923ead457e64e884b5"
+    },
+    {
+      "path": "database/migrations/009_identity_and_provisioning.sql",
+      "sha256": "e0401515ae8f564cb2d17561e960a56e6472e67085ab82fec34e41ffae41a4b6"
+    },
+    {
+      "path": "database/migrations/010_security_and_abuse.sql",
+      "sha256": "dace616e2de098a700035e4b61beb6d45ce722678729cb3255c92ca8c0268067"
+    },
+    {
+      "path": "database/migrations/011_identity_maintenance.sql",
+      "sha256": "d1c11a95fd5fec0dbb2136c13a2d6b915473ec0ea02013f2698ece0df2e4187d"
+    },
+    {
+      "path": "database/migrations/012_business_operations.sql",
+      "sha256": "080065cf039ddb2971f68a787a96abb4d6382f538d3ead829181ebd3d3280649"
+    },
+    {
+      "path": "database/migrations/013_individual_operations.sql",
+      "sha256": "e111f11211fb8153d08cc96ebe45fbc7b628efed9bf5ac5d8a48ce1ca94d92b5"
+    },
+    {
+      "path": "database/migrations/014_terminal_operations.sql",
+      "sha256": "e3b1ef1322638547e97c89ec709bbdcd0bbd1110947266c330c95c916103796b"
+    },
+    {
+      "path": "database/migrations/015_assignment_recovery.sql",
+      "sha256": "a897f5b2e7d47dbab7e701acf16db294e097d9b20483c378f1c383a17bd53dbe"
+    },
+    {
+      "path": "database/migrations/016_terminal_boarding.sql",
+      "sha256": "be49599eb2c11ceb5cd0c7f6dda633082eba328053611987c4a067bb2c988f35"
+    },
+    {
+      "path": "database/migrations/017_urban_replacement.sql",
+      "sha256": "25854b173b0154a11c013e94de2dae64f9083d4870b4f64e46cd34243fa4a3ee"
+    },
+    {
+      "path": "database/migrations/018_operating_contracts.sql",
+      "sha256": "77757bf35956270f6c4ba52a7140383e8cc623ec9a5bf10a6a70370d276f870e"
+    },
+    {
+      "path": "database/migrations/019_journey_recovery.sql",
+      "sha256": "96a311c568ed2471c354c06a3176f066cecbebedb0cecfb2abf3deb7e58f1164"
+    },
+    {
+      "path": "database/migrations/020_scoped_administration.sql",
+      "sha256": "643e0ba2417be17189d957e9f9562bd901c478dff0fcb0fd2fdfd24b00fcb4c6"
+    },
+    {
+      "path": "database/migrations/021_scope_read_boundaries.sql",
+      "sha256": "7bc4551a6283bf71f029ac0b99d2dc211af11b127ad60a1c1db889ab2b55e26f"
+    },
+    {
+      "path": "database/migrations/022_rescue_manifest_privacy.sql",
+      "sha256": "de2572bf53ee04116ba1e4da54aa3feed22385e31af024ea69fdfab44b3ed52b"
+    },
+    {
+      "path": "database/migrations/023_web_journeys.sql",
+      "sha256": "f446f0b0946056c6100b56f43c6ec71855dca636d37788fa69d17e3e9fddb212"
+    },
+    {
+      "path": "database/migrations/024_web_operations.sql",
+      "sha256": "08d0b3e0b18f6fbbe47b39c5233d29414419b276694bb02241f72d7f5916e2c3"
+    },
+    {
+      "path": "database/migrations/025_web_recovery_reads.sql",
+      "sha256": "dd132b36adb74f8fd371f5193c221637837bb30ce083c097c0123e1b35e79467"
+    },
+    {
+      "path": "database/migrations/026_web_queue_return.sql",
+      "sha256": "6b74d31a1bad7dd0e0dadb86d6e588d8d666a1e68aa2026670ab0aee6736ae73"
+    },
+    {
+      "path": "database/migrations/027_web_administration.sql",
+      "sha256": "0a2a1df1196aa63160e29c2a470677f058c6ba5a9f3b97af2f03c8be25f1d128"
+    },
+    {
+      "path": "database/migrations/028_web_route_decisions.sql",
+      "sha256": "d7ab3695bda2d148c4d5ec2f6b5d3e6637c411623ebe11370d3b8d80287727ec"
+    },
+    {
+      "path": "database/migrations/029_queue_assignment.sql",
+      "sha256": "46ac307f6ffe6a39452eb99204e092ed5bfd2b2d2c7925780d069e707c8ccd27"
+    },
+    {
+      "path": "database/migrations/030_safe_handoffs_and_reviews.sql",
+      "sha256": "7f9a139fd31a477b9fbde874d2ae6a5d57bed80e59a19b999ccce22b298b2e9a"
+    },
+    {
+      "path": "database/migrations/031_care_responsibilities.sql",
+      "sha256": "b91b4d43082ca13577eee9bd8cd695baf666f2de8acee57237208c0beb60ce58"
+    },
+    {
+      "path": "database/migrations/032_care_reviews_and_attendance.sql",
+      "sha256": "3750a0e69d8bff73237fe4df5c221aab29e0a64f74ab06e24bcebfe5b365ac3a"
+    },
+    {
+      "path": "database/migrations/033_responsible_list_scope.sql",
+      "sha256": "44a36b53470906d187c4e24d5e2cbb284f33b01754fe3294b5e64fa57713bf23"
+    }
+  ],
+  "newMigration": {
+    "path": "database/migrations/034_admin_directory.sql",
+    "sha256": "63d9bebd6f3de2218d861aea7fc02e042b2b0ace62e48fea1fcca4c3ba8e8ef7"
+  },
+  "businessWitness": {
+    "desktop": {
+      "businessTablesUnchanged": true,
+      "hashes": {
+        "absence_drafts": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "actions": "0aeb7947584106b096fbaf2eec75841d3b53c8dd53f66b7d8a89c739ede2b645",
+        "admin_limits": "a36baebf4d647d83e1c70a976ae7611bad8f0f6fa7c205caafd61071dfe08553",
+        "admin_route_grants": "10a2828619e191a5ae772481010b8622406341b9bd321d6d103d9701cb9d9c2f",
+        "arrival_contracts": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "assignment_episodes": "931fd532763c60f92b552b8afabc2f0ab5be9b594e018a16b5d6bae6289ed6f5",
+        "assignment_outcomes": "e54d5bc8225ac81de4627768b4dc07b5df34f1a00c8a5d323ddeb2c2f12a05d6",
+        "association_contacts": "a95fea6106ea81c8516613c2cf03f5fd96f4475aaef9c90cea2edb3a8b7f6aa2",
+        "associations": "fe99dea1b636850e6535d467d40a0e86f52add57b6e1f7d67b8fe1538fc83982",
+        "audit_events": "160f476a4ce959f39bdc9ab6c4960a29f88c03d320838b2ef873203dd19d9290",
+        "authorization_events": "b951a7fc4dc0daccb622068bb8c5c191033e1b478742abf65cba3298d1041e71",
+        "booking_assignment_rules": "9627c9bdee314ba45f75e778e196024d69ff50e7efb16393bfbcf84e9f7227bf",
+        "booking_contracts": "0d178418729502e76908dcb8203d4485df98d0366b7370ac25aa9d5f609e61fd",
+        "booking_members": "fb990fc894f63a1bdfc002c055ce0c94aed00bbcf5cd121b785adc3c7d64484a",
+        "booking_movements": "920a5984d0f50981c1abb8f848b773fbee1f2de55b1607475b8edb332b65efb2",
+        "bookings": "609469fb04cbbb5385d540374e8dc2272a449e0b036b2f33b8fbc2ad6de46242",
+        "care_absences": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_code_uses": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_condition_authorities": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_discrepancy_reviews": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_link_codes": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_parties": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_request_authorities": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_responsibilities": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "condition_decisions": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "condition_history": "cf351abcb1c102a6032dbe66d89a9a44d96142f6a4f7d992e409ac621c730cfc",
+        "consent_uses": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "departments": "3529c24b0ed6403f2911c89fc662ff2c24b720b207c2a22efb7c19bc0bd7286a",
+        "episode_terminal_events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "fares": "c4f829366abb394e3751b370017161b566aa584f68d277500adcaa0bb1470526",
+        "fleet_events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "fleet_incidents": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "geo_catalogs": "7e09eba70bc3f56ccbb982e075d9eee7c598119e373d360a1ac18f515e6a2c4c",
+        "group_consents": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "group_responsibles": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "journey_events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "late_replacements": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "localities": "a10bdeb8301a1be0333a016fb68e2b619fcfea4d175bc76cba7b1fc67fb8ad8f",
+        "member_movements": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "memberships": "fa79ea1c5f94745610887c3d07b68ffaeb14ab7bdd3f9337b6989a748e7579b9",
+        "minor_cases": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "minor_reviews": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "movement_corrections": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "municipalities": "4f90a9183c9ddd435cc51bd3957ad5d34d68fe89c0af914e7dafde8ce7738aef",
+        "operation_reviewers": "d886183de2013e4f145c9ffc344b4387c6dafe0411571d6694f3044769d28668",
+        "operational_notices": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "passenger_decisions": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "passenger_discrepancies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "provinces": "f29f6e6b8ac58ae518dc9e9fa9297de28300f2bd23ca1dfa9ba5b378720d4880",
+        "road_rescues": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "route_authorizations": "06e55252f73487ef0b3e64d4f9bcaf0328fbfce33762de1ca3463407923accd7",
+        "route_condition_estimates": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "route_conditions": "8164a8ed33b026ee40745acc4e03d52a4db70f727e0e3a481efb120cd53374d9",
+        "routes": "3147d08f1b796af46e0ccf8f899e704e16fcdaaec8da56455b596b3ccc3fc535",
+        "simulated_payments": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "stops": "5708f3f12f70a5649f53e619a3ea63aa07877b5659d022f73381b03cff9d6123",
+        "terminal_bindings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_config": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_config_changes": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_handoff_confirmations": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_handoff_members": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_handoff_receipts": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_handoffs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "trips": "5c661bef2f3c7f3ca55b658a340ec973bb58cec04f3a6f0cecddf54d267a3139",
+        "urban_runs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "users": "8b622f09f216630f0ba29e20f2c30cead0784ef258c488541f7e048d6bf33139",
+        "vehicle_blocks": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "vehicles": "42b7fe2d6db20ac20fb64c9f65f846c6c4e0752498741f9892d9dce42e0680b1",
+        "web_point_profiles": "28895456639884a35be50ccc1cb0a82d2648f2d97f2ed27cec090a0504d43ac6"
+      },
+      "collections": [
+        "DRIVERS",
+        "VEHICLES",
+        "ROUTES",
+        "POINTS",
+        "FARES"
+      ],
+      "source": "PostgreSQL READ ONLY witness"
+    },
+    "mobile": {
+      "businessTablesUnchanged": true,
+      "hashes": {
+        "absence_drafts": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "actions": "ecbf1043a6b497149cf30e436edb504a3cf957461fdc251a37fd892814f1e05d",
+        "admin_limits": "237b36c4715fd914578e909d4069b9f7fd7010e390ecbbf9218432ec2fe1b30c",
+        "admin_route_grants": "154558ddf121d99ebeaa0591b98ed5af3ed384a9710855093875b883ca3bade1",
+        "arrival_contracts": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "assignment_episodes": "b3cc6cec98e3bbdc818d11ed5733284e2f4ac75d0e3604c1eb56a67c22311fa0",
+        "assignment_outcomes": "2947062028b099ab8a579531d9ae6515f22dc9e5bf0d11c2a2903e0eb761ed6f",
+        "association_contacts": "ece34ab1e80c7488c2dcb797375225b734a6bff00f98d7c0cc65ff0cbd62bf22",
+        "associations": "ad92c69558e2aac3a4692cc8d5d741a841d333314aaf7f46865dfc4968e662e5",
+        "audit_events": "0e5dbf00eccf49c8f61442e4724822a261c71f92981098c1a46f8198caf15129",
+        "authorization_events": "87735cdc52cec4072e643fa2d4e91990de5335f81aff569e74d80caec2c276df",
+        "booking_assignment_rules": "10395f9f58e01258a898980153d67243f0fcf5f11f16a12167fce352605f6d07",
+        "booking_contracts": "e40a6bdebb6b5467ac5830bb0e01fcc85eccf52c66d53f3b5da9d9ed475c5a58",
+        "booking_members": "d30995b3fc9117530038a13f4f482d2484dcf07542cda3bd84eed3798ffd2d87",
+        "booking_movements": "368e08d17faff4f2cbbabfeee1b9f6b2eccc1e431f6b008ededc9c6528a07612",
+        "bookings": "dcddf554cbf04647eae0d826bf90d43e58dbd3fa1a07f3c62b59d56bde9cc618",
+        "care_absences": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_code_uses": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_condition_authorities": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_discrepancy_reviews": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_link_codes": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_parties": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_request_authorities": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "care_responsibilities": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "condition_decisions": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "condition_history": "001a6c93d6912f0930aab8c1f9421044f9261888803f900776b8f2ec46631893",
+        "consent_uses": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "departments": "e7c4bc2ac71d9399a1ab5ef4bd61aa18d7d11e5f6fa723e3cf4a24b2f72c8094",
+        "episode_terminal_events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "fares": "8f4f88682561317e99e94b428c2b663419c3e8d6db047b469cd7a9e9f11bf87d",
+        "fleet_events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "fleet_incidents": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "geo_catalogs": "af50ca06860b09af67b887c95117be41e01c584f0fc574810043c76918b8c02c",
+        "group_consents": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "group_responsibles": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "journey_events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "late_replacements": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "localities": "680f8f57b92ed3258dbe79502ecb9835cb06b77c21430a4d110ab27a2a4254bb",
+        "member_movements": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "memberships": "c4e3fdb01438ef99afa70978c936e868e3316aca952ab009b046792546891a29",
+        "minor_cases": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "minor_reviews": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "movement_corrections": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "municipalities": "8681bb53e1b9abab172916685651732c32dd72618b1c9baae1d9a8c0c8d0c32e",
+        "operation_reviewers": "bde619984248ac80cf0fd133a00710242ccf629d59acd1756e11857866dc74df",
+        "operational_notices": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "passenger_decisions": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "passenger_discrepancies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "provinces": "0c1473ae49f48fdfadf3def68b7a534b6bc7e462ca5258e1f52220a09459189f",
+        "road_rescues": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "route_authorizations": "8d0c2d87620c7c7e911751eed48a38d5021bed1c4e7724b665509cc6459c652e",
+        "route_condition_estimates": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "route_conditions": "3796680d9321b4ff541bb9be33711a3a864335f6f5e236b871ee073b7e1e47a4",
+        "routes": "739c9997b203b7b57c7fba21ce3ad34d606f6cfab4f973c6980965cc2f4d3024",
+        "simulated_payments": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "stops": "756e5d35a622a6545249253fb9af0678cc6ed2d7666191292d34bb4efea28b31",
+        "terminal_bindings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_config": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_config_changes": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_handoff_confirmations": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_handoff_members": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_handoff_receipts": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "terminal_handoffs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "trips": "382e56b0b4fde17a04d0c58b6b1a0931910b749b45f9a3ed13aad3b8c38fb837",
+        "urban_runs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "users": "8b1f3489310a578ac826ec0fdb697a58c442f1b6d247c8a696be7a0057a38a9c",
+        "vehicle_blocks": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "vehicles": "c9c3c17a862f7badb53190246160f5f3b044ce45cc4451fd0b9c84579b913701",
+        "web_point_profiles": "124b68fb7718b635e3a7574508147d20911807c6aea097d79143bcc849ce9637"
+      },
+      "collections": [
+        "DRIVERS",
+        "VEHICLES",
+        "ROUTES",
+        "POINTS",
+        "FARES"
+      ],
+      "source": "PostgreSQL READ ONLY witness"
+    }
+  },
+  "screenshots": [
+    {
+      "path": "docs/REPORTES/evidencias/etapa-4-4a1/vehiculos-desktop.png",
+      "sha256": "225caf7530ff4380cd99a9f4ba7c33916b2bbea4ebc6e9483ea18a83f73f8272",
+      "bytes": 196227,
+      "device": "desktop",
+      "source": "pasada integral escritorio"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-4-4a1/vehiculos-mobile.png",
+      "sha256": "7ad7764f5e8edd675d84bec77eaba72956772f045d016dd9b36e13d16ec97b97",
+      "bytes": 232393,
+      "device": "mobile",
+      "source": "continuación móvil documentada"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-4-4a1/vacio-desktop.png",
+      "sha256": "ff1a3d0dee6d34cda55783acdf4b24485b900e94005632e79a147557098bf7fe",
+      "bytes": 71545,
+      "device": "desktop",
+      "source": "pasada integral escritorio"
+    },
+    {
+      "path": "docs/REPORTES/evidencias/etapa-4-4a1/vacio-mobile.png",
+      "sha256": "604fe4e64028c82794b713081e421f014a6e20eb033012a3873a025cc79f8755",
+      "bytes": 83422,
+      "device": "mobile",
+      "source": "continuación móvil documentada"
+    }
+  ],
+  "privateLogFingerprints": [
+    {
+      "privateFile": ".local/4a1-unit.log",
+      "sha256": "3826613a0802a3dadeb46b0b1a381d33d300ba61a20cdeb0dd81dfc74b949577",
+      "bytes": 6837
+    },
+    {
+      "privateFile": ".local/4a1-pg-after.log",
+      "sha256": "a5cfb90e58f120b28e915bf6aa44be8d52c1cf333948cbbcda6d96314ba25ef0",
+      "bytes": 1687
+    },
+    {
+      "privateFile": ".local/4a1-e2e-desktop-after.log",
+      "sha256": "08d09b2a935615af95eda3f2351b377f86fc2573ae11d37151d64be242f0cdca",
+      "bytes": 1094
+    },
+    {
+      "privateFile": ".local/4a1-e2e-mobile.log",
+      "sha256": "4e66c12152d5a82f7bedcb9282089f165adc4e69a3b54af87e6d9c486b019c95",
+      "bytes": 1090
+    },
+    {
+      "privateFile": ".local/4a1-point-before.log",
+      "sha256": "7104f00f963ef4aa8f246dd11481acf54b01116e0718161d4d2d76fae4e86328",
+      "bytes": 1000
+    },
+    {
+      "privateFile": ".local/4a1-http-contract-after.log",
+      "sha256": "fbeb94729ecaec4fec8b3007e14fd57f44984d5b3678d3103eaf49ad23af298f",
+      "bytes": 374
+    },
+    {
+      "privateFile": ".local/4a1-final-all.log",
+      "sha256": "0602070c7a7f9a15bada97e6a732b479d378e677edea3948ba4c3b3c9ad7e7d4",
+      "bytes": 43947
+    },
+    {
+      "privateFile": ".local/4a1-final-all-after.log",
+      "sha256": "c7452b08c19b156748ca9ebbae81573fd6751d3dea349bdf4c6fbac87cb7edc8",
+      "bytes": 43881
+    },
+    {
+      "privateFile": ".local/4a1-final-web.log",
+      "sha256": "09f123874b19ccc5b7a97d6ba7138e5542aa4de8be4a5d0b130b7ad0b757dd31",
+      "bytes": 25996
+    },
+    {
+      "privateFile": ".local/4a1-final-web-continuation.log",
+      "sha256": "3293f308e71805b0d1f9921d38e4319af34f1b113ad9133cd3886b717d684332",
+      "bytes": 5442
+    }
+  ]
+}

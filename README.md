@@ -1,10 +1,59 @@
 # Trufis Bolivia — Proyecto Nexo
 
-Backend local de Trufis Bolivia con datos ficticios: PostgreSQL, aislamiento por
-asociación, reservas por segmentos, asignación por turno, recogidas y despacho. Etapa 3, auditoría y cierre técnico de laboratorio,
-en `desarrollo/etapa-3`, desde `820fd1f` de Etapa 2. PR de esta etapa hacia
-`desarrollo/etapa-2`; [PR #1](https://github.com/pepoj1046-svg/proyecto-nexo/pull/1)
-permanece abierto y sin fusionar. Sin producción, pagos, GPS ni Etapa 4.
+Laboratorio local de Trufis Bolivia: PostgreSQL, aislamiento por asociación,
+reservas por segmentos, turnos, recogidas, despacho y administración web adaptable.
+Etapas1–3 conservan sus cierres;4A.1–4A.5 están implementados y4A.6 audita su
+integración. Rama `desarrollo/etapa-4`, [PR #5](https://github.com/pepoj1046-svg/proyecto-nexo/pull/5)
+hacia `planificacion/etapa-4a`, sin fusionar. Solo datos ficticios: sin producción,
+pagos, GPS ni comunicaciones reales. Etapa5 no autorizada.
+
+Consultar [auditoría/cierre de Etapa4](docs/REPORTES/ETAPA_4_AUDITORIA_Y_CIERRE.md)
+y [guía administrativa](docs/ETAPA_4_GUIA_ADMINISTRACION.md), incluidas las
+**dependencias offline** de activación inicial y los reintentos con sesión caducada.
+No se afirma autonomía comercial completa. Versiones soportadas: Node22/24;
+matriz Ubuntu/Windows, núcleo y escritorio/móvil separados.
+
+## Etapa 4A.1: directorio administrativo de lectura
+
+Rama `desarrollo/etapa-4` desde planificación `4223675`. [PR #5](https://github.com/pepoj1046-svg/proyecto-nexo/pull/5)
+hacia `planificacion/etapa-4a`; PR #3 y etapas anteriores se conservan.
+En Administración, usar «Ir al directorio administrativo» y consultar asociación,
+choferes, vehículos, rutas/puntos y tarifas sin elegir un viaje. El módulo4A.1 es de lectura; altas y configuración se gestionan por los módulos4A.3–5.
+
+001–033 intactas; 034 añade solo proyecciones autorizadas. ADMIN limitado consulta
+rutas/puntos/tarifas de su ámbito; padrones completos DRIVER/vehículos requieren
+alcance completo. Las tarifas futuras/vencidas son configuración, no habilitación
+para vender. Sin viaje activo no significa vehículo apto ni inventario libre.
+
+Para el escenario ficticio completo en PowerShell:
+
+```powershell
+$env:NEXO_WEB_ADMIN_DIRECTORY_FIXTURE='1'
+npm run dev:web
+# Ctrl+C al terminar
+Remove-Item Env:NEXO_WEB_ADMIN_DIRECTORY_FIXTURE
+```
+
+Leer accesos generados en el archivo privado indicado por la terminal. La cuenta
+`admin` solo se publica en ese fixture local; `adminH` conserva su ámbito limitado.
+El fixture crea más de 50 entidades por colección antes de escuchar; la API no
+crea registros de respuesta. No compartir contraseñas ni archivos de `.local`.
+
+[Contrato](docs/ETAPA_4_DIRECTORIO_ADMINISTRATIVO.md) y
+[informe y resultados exactos](docs/REPORTES/ETAPA_4_INCREMENTO_4A1.md).
+El corte 4A.1 no incluyó escrituras. La autorización posterior 4A.2 se limita a los controles descritos a continuación; no declara completada toda la Etapa 4.
+
+## Etapa 4A.2: DRIVER existentes y contacto LAB
+
+Desde el directorio, sin elegir vehículo: «Choferes y membresías» → «Gestionar
+permiso» → «Consultar estado e historial administrativo». Exige motivo y
+confirmación. Bloquea servicio/fila y custodia pendiente; restaurar no rehabilita
+vehículos, sesiones revocadas o turnos. El contacto acepta solo códigos LAB.
+Historia privada paginada y reintento de respuesta incierta con la misma clave.
+
+[Contrato](docs/ETAPA_4_ADMINISTRACION_CHOFERES.md) ·
+[Informe, evidencias y Windows](docs/REPORTES/ETAPA_4_INCREMENTO_4A2.md).
+001–034 intactas; nueva035. Sin altas, identidad global, producción o 4A.3.
 
 ## Etapa 3: interfaz web local
 
@@ -101,8 +150,9 @@ correcciones de abordaje; 017 incorpora sustitución urbana exclusiva con fases
 distintas de recogida y viaje principal, sin GPS ni despacho real. 013 incluye integrantes técnicos, movimientos
 individuales, ofertas reforzadas y borradores de ausencia sin envío ni efectos
 sobre plazas. El núcleo de capacidad/fila/tarifas se reutiliza. Suite actual:
-**62 unitarias y 278 integraciones PostgreSQL real**. La batería web ampliada
-ejecuta 82 casos de escritorio/móvil (resultados y CI en el informe 8B),
+**66 unitarias y 311 integraciones PostgreSQL real**. La batería web ampliada
+comprende 96 casos de escritorio/móvil. Resultados efectivamente ejecutados e
+incidentes en el informe 4A.2; ratificación de CI en su registro del PR #5,
 probe del runner y smoke de ambos listeners. Node 22/24 en Ubuntu/Windows.
 
 ## Ejecutar
@@ -223,3 +273,9 @@ La validez del cierre de laboratorio depende del commit y checks aprobados del
 [registro final](https://github.com/pepoj1046-svg/proyecto-nexo/pull/3#issuecomment-6561718192).
 001–032 conservadas; 033 corrige el listado de responsables. No se autoriza producción,
 merge ni Etapa 4. Los contratos comerciales/jurídicos pendientes siguen explícitos.
+
+### Incremento4A.3 — administración general de laboratorio
+
+Consola `/plataforma`, bootstrap local único, atestaciones LAB, asociaciones inertes,
+delegaciones ADMIN y último administrador protegido. [Contrato e instrucciones Windows](docs/ETAPA_4_ADMINISTRACION_ASOCIACIONES.md)
+y [resultados](docs/REPORTES/ETAPA_4_INCREMENTO_4A3.md). Sin producción o4A.4.

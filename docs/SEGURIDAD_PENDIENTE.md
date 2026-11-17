@@ -1,5 +1,11 @@
 # Seguridad y límites del prototipo
 
+> Estado vigente4A.6: consultar [auditoría de Etapa4](REPORTES/ETAPA_4_AUDITORIA_Y_CIERRE.md)
+> y [guía administrativa](ETAPA_4_GUIA_ADMINISTRACION.md). Los pendientes de etapas
+> anteriores que siguen abajo son históricos; provisión limitada de cuentas,
+> DRIVER existentes y configuración ya tienen contratos4A.2–5. Esto no resuelve
+> identidad legal, retención, recuperación total de GENERAL_ADMIN ni producción.
+
 ## Implementado y probado localmente
 
 - RLS de lectura en tablas operativas; sin token válido no se obtienen datos privados.
@@ -278,3 +284,22 @@ su contrato previo por UUID/confirmación ficticia. El flujo web gestionado exig
 código del titular; no se presentan ambas fronteras como equivalentes. Unificar o
 retirar esa compatibilidad y acordar verificación de identidad antes de piloto.
 [Dictamen, pruebas actuales y límites](REPORTES/ETAPA_3_AUDITORIA_Y_CIERRE.md).
+
+## Etapa 5A.4-B2: tickets de recuperación APP
+
+Ratificado solo en laboratorio el 16-11-2026, con la corrección de 042 (PR #13).
+Pendiente aceptado: la época de tickets se invalida de forma permanente ante
+errores de pool o conexión, fallo del marcador de base o divergencia de reloj
+mayor a un segundo. Hasta reiniciar el gateway se bloquean las reservas APP (la
+operación presencial continúa). Fallo seguro en laboratorio; resolver antes de
+cualquier piloto. Un ticket en sessionStorage no protege frente a XSS: HMAC no
+sustituye autenticación. [Informe B2](REPORTES/ETAPA_5A4_B2.md).
+
+## Etapa 5A.4-B3: consulta tras recarga y regeneración de época
+
+Ratificado solo en laboratorio el 17-11-2026 (PR #16). La regeneración controlada (D2-B)
+resuelve el bloqueo de B2 ante errores de pool, de conexión o de reloj. Siguen pendientes:
+un reinicio de PostgreSQL bloquea las reservas APP hasta reiniciar el gateway (resolver
+antes de cualquier piloto); D3 es solo de interfaz y por pestaña, y se desbloquea con una
+consulta `NOT_OBSERVED`; regenerar la época obliga a reautenticar los documentos abiertos;
+y el riesgo de XSS heredado. [Informe B3](REPORTES/ETAPA_5A4_B3.md).
