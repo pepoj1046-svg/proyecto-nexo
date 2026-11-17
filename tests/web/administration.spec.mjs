@@ -1,3 +1,4 @@
+import{proofHeaders}from'./support/document-browser.mjs';
 import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -38,7 +39,7 @@ test('administración: revisión explícita, cancelación al final del manifiest
   const c=await browser.newContext(deviceContext(page,baseURL,info));contexts.push(c);const p=await c.newPage();await login(p,'terminal0','/pasajero');const own=p.locator('.saved-booking').filter({hasText:target.id});await expect(own).toContainText('Confirmada');
   const dc=await browser.newContext(deviceContext(page,baseURL,info));contexts.push(dc);const d=await dc.newPage();await operational(d,'driver0','/chofer','FICTICIO-WEB-0-0');
   const forged={kind:'ADMIN_CANCEL',bookingId:target.id,tripId,episode:0,reason:'WRONG_RESERVATION',confirmed:true};await rejected(p,'/api/management/command',forged,'FORBIDDEN');await rejected(d,'/api/management/command',forged,'FORBIDDEN');
-  const csrf=await page.request.post('/api/management/command',{headers:{Origin:baseURL,'Content-Type':'application/json','Idempotency-Key':randomUUID()},data:forged});expect(csrf.status()).toBe(403);
+  const csrf=await page.request.post('/api/management/command',{headers:{...proofHeaders(page),'X-CSRF-Token':'',Origin:baseURL,'Content-Type':'application/json','Idempotency-Key':randomUUID()},data:forged});expect(csrf.status()).toBe(403);
   await review.getByLabel('Motivo de cancelación',{exact:true}).selectOption('WRONG_RESERVATION');await review.getByLabel('Confirmo cancelar todas las partes').check();const cancelled=await commandClick(page,review.getByRole('button',{name:'Cancelar grupo administrativamente',exact:true}),'/api/management/command');expect(cancelled.result).toMatchObject({status:'CANCELLED',reason:'WRONG_RESERVATION',reasonRecorded:true,moneyProcessed:false});
   const repeated=await Promise.all([api(page,'/api/management/command',cancelled.body,cancelled.key),api(page,'/api/management/command',cancelled.body,cancelled.key)]);expect(repeated.map(r=>r.status())).toEqual([200,200]);
   const after=await audit.read(tripId);expect(after.bookings.find(b=>b.id===target.id)).toEqual({...target,status:'CANCELLED'});expect(after.segments.every(s=>s.reserved===4)).toBe(true);expect(after.movements).toHaveLength(0);expect(after.trip.departed_at).toBeNull();
