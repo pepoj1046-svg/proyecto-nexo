@@ -2,7 +2,9 @@ import{test,expect}from'@playwright/test';
 import{randomUUID}from'node:crypto';
 import{prepare,login}from'./support/reservation-browser.mjs';
 import{reservationEvidence}from'./support/reservation-evidence.mjs';
-import{namespace,stored,traffic,lostReply,reloadToGate,restore,reference,hold}from'./support/recovery-panel.mjs';
+import{namespace,stored,traffic,lostReply,reloadToGate,restore,reference,hold,measureRequests}from'./support/recovery-panel.mjs';
+measureRequests(test);
+
 // 5A.4-B3: uncertainty, sessions, late answers and local storage faults. Real gateway and
 // PostgreSQL; the only interventions are lost replies and held (then delivered) responses.
 // Split from recovery-panel-sessions.spec.mjs: each suite gets its own gateway, so the

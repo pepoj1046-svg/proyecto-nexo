@@ -3,7 +3,9 @@ import AxeBuilder from'@axe-core/playwright';
 import{mkdir,writeFile}from'node:fs/promises';
 import{prepare}from'./support/reservation-browser.mjs';
 import{reservationEvidence}from'./support/reservation-evidence.mjs';
-import{stored,traffic,lostReply,restore,reference}from'./support/recovery-panel.mjs';
+import{stored,traffic,lostReply,restore,reference,measureRequests}from'./support/recovery-panel.mjs';
+measureRequests(test);
+
 // 5A.4-B3: «Operación anterior» against the real gateway and PostgreSQL. The witness is an
 // independent read-only SQL connection; no gateway response is simulated except lost replies.
 const evidence=async(page,info,name,data)=>{await mkdir('.local/5a4-b3-evidence',{recursive:true});await page.screenshot({path:`.local/5a4-b3-evidence/${info.project.name}-${name}.png`,fullPage:true});if(data)await writeFile(`.local/5a4-b3-evidence/${info.project.name}-${name}.json`,JSON.stringify(data,null,2));};

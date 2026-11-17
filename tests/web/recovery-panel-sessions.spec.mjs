@@ -2,7 +2,9 @@ import{test,expect}from'@playwright/test';
 import{randomUUID}from'node:crypto';
 import{prepare,login}from'./support/reservation-browser.mjs';
 import{reservationEvidence}from'./support/reservation-evidence.mjs';
-import{namespace,stored,traffic,lostReply,reloadToGate,restore,reference,hold}from'./support/recovery-panel.mjs';
+import{namespace,stored,traffic,lostReply,reloadToGate,restore,reference,hold,measureRequests}from'./support/recovery-panel.mjs';
+measureRequests(test);
+
 // 5A.4-B3: uncertainty, sessions, late answers and local storage faults. Real gateway and
 // PostgreSQL; the only interventions are lost replies and held (then delivered) responses.
 test('B3 T13: reload after the ticket and before the send stays uncertain; nothing is rebuilt or sent',async({page})=>{
@@ -19,6 +21,9 @@ test('B3 T23: double click and repeated events produce one consultation at a tim
  await expect(ref).toHaveAttribute('aria-busy','true');await expect(ref.getByRole('button',{name:'Consultando…',exact:true})).toHaveAttribute('aria-disabled','true');
  await page.evaluate(()=>{for(let i=0;i<5;i++){window.dispatchEvent(new Event('online'));window.dispatchEvent(new Event('focus'));}});await page.waitForTimeout(300);expect(t.receipts).toBe(1);
  held.release();await expect(ref.getByRole('status')).toContainText('Todavía no se observó');expect(t.receipts).toBe(1);expect(t.reservations).toBe(0);
+ // No polling: five idle seconds with the reference still uncertain, plus every browser event
+ // that could plausibly trigger a query, produce zero /api/ requests.
+ const idle=t.api;await page.evaluate(()=>{for(const e of['online','focus','pageshow'])window.dispatchEvent(new Event(e));document.dispatchEvent(new Event('visibilitychange'));});await page.waitForTimeout(5000);expect(t.api-idle).toBe(0);
 });
 test('B3 T15/T20: a late receipt after logout and another login is dropped; discard while in flight removes only local aid',async({page})=>{
  const audit=await reservationEvidence();try{
