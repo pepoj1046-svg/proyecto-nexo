@@ -24,7 +24,7 @@ test('B3 read: only the authenticated account and environment; foreign accounts 
 }));
 test('B3 read: local expiry boundary at exactly thirty minutes; createdAt is not trusted against the client clock',()=>withStore(store([ticket(1),ticket(2,{createdAt:9e9,expiresAt:9e9+1800000})]),m=>{
  assert.deepEqual(m.readRecoveryTickets(sessionA,1800999).valid.map(t=>t.key),[ticket(1).key,ticket(2).key]);
- const r=m.readRecoveryTickets(sessionA,1801000);assert.deepEqual(r.expired,[ticket(1).key]);assert.deepEqual(r.valid.map(t=>t.key),[ticket(2).key]);
+ const r=m.readRecoveryTickets(sessionA,1801000);assert.deepEqual(r.expired.map(t=>t.key),[ticket(1).key]);assert.deepEqual(r.valid.map(t=>t.key),[ticket(2).key]);
 }));
 test('B3 read: version, extra fields, size and duplicate keys make the whole namespace unreadable (fail closed)',async()=>{
  for(const raw of[JSON.stringify({v:2,tickets:[ticket(1)]}),JSON.stringify({v:1,tickets:[{...ticket(1),body:{seats:1}}]}),JSON.stringify({v:1,tickets:[ticket(1,{v:2})]}),JSON.stringify({v:1,tickets:[ticket(1),ticket(1)]}),JSON.stringify({v:1,tickets:[ticket(1)],extra:1}),'{'+' '.repeat(9000)+'}','not json',JSON.stringify({v:1,tickets:Array.from({length:9},(_,i)=>ticket(i))})])

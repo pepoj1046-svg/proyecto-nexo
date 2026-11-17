@@ -22,7 +22,7 @@ function put(store:Storage,tickets:RecoveryTicket[]){if(!tickets.length){store.r
 export function saveRecoveryTicket(t:RecoveryTicket,s:WebSession){try{checkedTicket(t,s);const store=storage(),all=entries(store);if(all.some(a=>a.accountRef!==s.accountRef||a.environmentId!==s.environmentId))throw Error('STORAGE_ACCOUNT');const existing=all.find(a=>a.key===t.key);if(existing&&JSON.stringify(existing)!==JSON.stringify(t))throw Error('STORAGE_CONFLICT');put(store,existing?all:[...all,t]);live.add(t.key);}catch{throw Error('No se pudo guardar la referencia local. La reserva no se enviará hasta guardar el mismo ticket válido; no se activó un modo alternativo.');}}
 export function retireRecoveryTicket(t:RecoveryTicket){live.delete(t.key);try{const store=storage();put(store,entries(store).filter(a=>a.key!==t.key||a.seal!==t.seal));}catch{/* No authority comes from local storage; a failed cleanup cannot resend. */}}
 export function cleanRecoveryStorage(account:string|null,environment?:string){if(account===null){stale=[];fault=null;live.clear();}else{stale=stale.filter(a=>a.account===account);if(fault!==account)fault=null;}try{const store=storage(),all=entries(store);if(account!==null)remember(account,all.filter(a=>a.accountRef===account&&a.environmentId!==environment).map(a=>a.key));put(store,account===null?[]:all.filter(a=>a.accountRef===account&&a.environmentId===environment));return true;}catch{if(account!==null)fault=account;try{storage().removeItem(namespace);}catch{}return false;}}
-export interface RestoredTickets{valid:readonly RecoveryTicket[];expired:readonly string[];invalid:readonly string[];fault:boolean}
+export interface RestoredTickets{valid:readonly RecoveryTicket[];expired:readonly RecoveryTicket[];invalid:readonly string[];fault:boolean}
 const none:RestoredTickets=Object.freeze({valid:[],expired:[],invalid:[],fault:false});
 // Only after the gate: an anonymous or locked document learns nothing, not even a count.
 // The local clock only hides an obviously expired reference; the server decides validity.
@@ -33,7 +33,7 @@ export function readRecoveryTickets(s:WebSession|null,now=Date.now()):RestoredTi
   if(keep.length!==all.length){remember(account,all.filter(a=>a.accountRef===account&&a.environmentId!==s.environmentId).map(a=>a.key));put(store,keep);}all=keep;}
  catch{broken=true;all=[];}
  const mine=all.filter(a=>!live.has(a.key));
- return Object.freeze({valid:Object.freeze(mine.filter(a=>now<a.expiresAt).map(a=>Object.freeze({...a}))),expired:Object.freeze(mine.filter(a=>now>=a.expiresAt).map(a=>a.key)),invalid:Object.freeze(stale.filter(a=>a.account===account).map(a=>a.key)),fault:broken});
+ return Object.freeze({valid:Object.freeze(mine.filter(a=>now<a.expiresAt).map(a=>Object.freeze({...a}))),expired:Object.freeze(mine.filter(a=>now>=a.expiresAt).map(a=>Object.freeze({...a}))),invalid:Object.freeze(stale.filter(a=>a.account===account).map(a=>a.key)),fault:broken});
 }
 export function forgetInvalidRecovery(account:string,key:string){stale=stale.filter(a=>a.account!==account||a.key!==key);}
 export function acknowledgeRecoveryFault(account:string){if(fault===account)fault=null;}
