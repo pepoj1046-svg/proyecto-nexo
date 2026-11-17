@@ -1,7 +1,8 @@
+import{privateGet,proofHeaders,watchDocument}from'./support/document-browser.mjs';
 import {test,expect} from '@playwright/test';
 import {operational} from './support/operation-browser.mjs';
 import {operationEvidence} from './support/operation-evidence.mjs';
-import {revoke,loginApi} from './support/reservation-browser.mjs';
+import {revoke,loginApi,login as recoverLogin} from './support/reservation-browser.mjs';
 
 test('5A3: verified arrival receipt survives failed manifest refresh, which recovers with reads only',async({page},info)=>{
  const audit=await operationEvidence(info.project.name),sent=[];
@@ -23,18 +24,18 @@ test('5A3: A-B-A during manifest refresh is rejected by original CSRF, then reco
   page.on('request',r=>{if(new URL(r.url()).pathname==='/api/operations/command')sent.push(r.postDataJSON());});
   await page.route('**/api/operations/snapshot',async route=>{
    await revoke(page);await loginApi(page,'adminU');
-   const s=await(await page.request.get('/api/session')).json();
-   const headers={Origin:new URL(page.url()).origin,'X-CSRF-Token':s.csrf};
+   const s=await(await privateGet(page,'/api/session')).json();
+   const headers={Origin:new URL(page.url()).origin,...proofHeaders(page)};
    const overview=await page.request.post('/api/operations/overview',{headers,data:{view:'ADMIN'}});expect(overview.status()).toBe(200);
    const trips=(await overview.json()).trips;expect(trips.length).toBeGreaterThan(0);
    const control=await page.request.post('/api/operations/snapshot',{headers,data:{view:'ADMIN',tripId:trips[0].tripId}});expect(control.status()).toBe(200);foreign=(await control.json()).bookings.map(b=>b.bookingId);
    const cookie=(await page.context().cookies()).filter(c=>c.name.startsWith('trufis_lab_')).map(c=>c.name+'='+c.value).join('; ');
-   const actual=await route.fetch({headers:{...route.request().headers(),cookie}});status=actual.status();expect(await actual.json()).toEqual({error:'CSRF_REQUIRED'});
+   const actual=await route.fetch({headers:{...route.request().headers(),cookie}});status=actual.status();expect(await actual.json()).toEqual({error:'AUTHENTICATION_REQUIRED'});
    await revoke(page);await loginApi(page,'adminH');await route.fulfill({response:actual});
   },{times:1});
   await page.locator('.expected-booking').filter({hasText:'Terminal de Yacuiba (ficticia)'}).getByRole('button',{name:'Registrar abordaje del grupo',exact:true}).click();
-  const recovery=page.getByRole('region',{name:'Recuperar actuación pendiente',exact:true});await expect(recovery).toContainText('Recibo recibido; consulta pendiente');expect(status).toBe(403);
-  const committed=await audit.read(tripId);await recovery.getByRole('button',{name:'Actualizar consulta sin repetir actuación',exact:true}).click();await expect(recovery).toHaveCount(0);
+  const recovery=page.getByRole('region',{name:'Recuperar actuación pendiente',exact:true});const authGate=page.getByRole('region',{name:'Recuperar intento administrativo',exact:true});await expect(authGate).toBeVisible();expect(status).toBe(401);
+  const committed=await audit.read(tripId);const auth=page.getByRole('region',{name:'Recuperar intento administrativo',exact:true});await expect(auth).toBeVisible();await recoverLogin(auth,'adminH');await expect(auth).toHaveCount(0);await expect(recovery).toContainText('Recibo recibido; consulta pendiente');await recovery.getByRole('button',{name:'Actualizar consulta sin repetir actuación',exact:true}).click();await expect(recovery).toHaveCount(0);
   expect(sent).toHaveLength(1);expect(await audit.read(tripId)).toEqual(committed);for(const id of foreign)await expect(page.locator('.trip-operations').getByText(id,{exact:true})).toHaveCount(0);
  }finally{await audit.close();}
 });
