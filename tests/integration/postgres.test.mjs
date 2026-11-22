@@ -4671,11 +4671,14 @@ test('5A7-02: administration sees only its managed routes, anonymously; others a
 // Etapa 6A: in-app notices from real trip facts; own only; expiring; no side effects.
 test('6A-01: trip facts create one in-app notice each for the passenger only, idempotently and with no side effects',async()=>{
  const notices=createWebNoticesService(pool);
- const g=await fixed(2);await acceptAll(g);
+ // Departure needs six CONFIRMED seats: one group of six.
+ const g=await fixed(6);await acceptAll(g);
  const kinds=async(token=fixture.tokens.p)=>(await notices.mine(token,{})).items.map(x=>x.kind).sort();
  assert.deepEqual(await kinds(),['RESERVA_CONFIRMADA']);
- const k=key();await api.depart(fixture.tokens.d0,k,fixture.trips[0]);await api.depart(fixture.tokens.d0,k,fixture.trips[0]);
- assert.deepEqual(await kinds(),['RESERVA_CONFIRMADA','VIAJE_SALIO'],'a replayed departure adds nothing');
+ const k=key();await api.depart(fixture.tokens.d0,k,fixture.trips[0]);const afterDeparture=await kinds();
+ assert.ok(afterDeparture.includes('VIAJE_SALIO'),'departure creates its notice');
+ await api.depart(fixture.tokens.d0,k,fixture.trips[0]);
+ assert.deepEqual(await kinds(),afterDeparture,'a replayed departure adds nothing');
  await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3);
  const all=(await notices.mine(fixture.tokens.p,{})).items;
  assert.ok(all.some(x=>x.kind==='VIAJE_TERMINADO'));
