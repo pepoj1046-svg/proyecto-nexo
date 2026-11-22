@@ -196,6 +196,11 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
       if(req.url.startsWith('/api/')) {
         if(Date.now()-windowStart>=60000){windowStart=Date.now();total=0;}
         if(++total>120||inflight>=6)throw denial(429,'RATE_LIMITED');inflight++;entered=true;
+        if(req.url==='/api/health'&&req.method==='GET'){
+          // Etapa 8A: no secrets, no session, no client data. Database down -> 503.
+          try{const c=await pool.connect();try{const h=(await c.query('SELECT nexo.lab_health()AS h')).rows[0].h;return send(200,{status:'ok',mode:'LOCAL_LAB',...h});}finally{c.release();}}
+          catch{return send(503,{status:'degraded',mode:'LOCAL_LAB',database:'down'});}
+        }
         if(req.url==='/api/session'&&req.method==='GET'){
           if(!sessions)return send(200,{authenticated:false,mode:'LOCAL_LAB',reservationWritesEnabled:false});
           const result=await sessions.session(context,req.headers['x-csrf-token']);if(result.handle)setCookie(result.handle);return send(200,result.body);

@@ -22,13 +22,14 @@ en `main` sin su ratificación.
 | 5A.7 Valoraciones | `desarrollo/etapa-5a7` | #21 → `etapa-5a6` | Implementado (migración 045); CI en curso. |
 | 5A.8 Cierre de la etapa 5 | `desarrollo/etapa-5a8` | #22 → `etapa-5a7` | Documento de cierre redactado; falta completar la nota con el CI final. |
 | 6A Seguimiento por paradas y avisos | `desarrollo/etapa-6a` | #23 → `etapa-5a8` | Implementado (migración 046); CI en curso. |
-| 7A Conciliación simulada | `desarrollo/etapa-7a` | ver abajo | Implementado (migración 047); pendiente de CI. |
-| Etapa 8 Operabilidad | — | — | Siguiente. |
-| Etapas 9–10 | — | — | Pendientes. |
+| 7A Conciliación simulada | `desarrollo/etapa-7a` | #24 → `etapa-6a` | Implementado (migración 047); CI en curso. |
+| 8A Operabilidad | `desarrollo/etapa-8a` | ver abajo | Respaldo y restauración, salud (048) y amenazas; pendiente de CI. |
+| Etapa 9 Aceptación integral | — | — | Siguiente. |
+| Etapa 10 Transferencia | — | — | Pendiente. |
 
 ## Ramas
 
-Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← `desarrollo/etapa-6a` ← `desarrollo/etapa-7a` ← (siguientes). Cada PR
+Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← `desarrollo/etapa-6a` ← `desarrollo/etapa-7a` ← `desarrollo/etapa-8a` ← (siguientes). Cada PR
 va en borrador hacia la rama anterior.
 
 ## Lecciones técnicas que no deben perderse
@@ -58,9 +59,11 @@ va en borrador hacia la rama anterior.
 
 ## Próximo paso exacto
 
-1. Revisar el CI de #19–#23 y del PR de 7A. Relanzar los trabajos intermitentes (B3 T13 en móvil) cuando termine cada ejecución. Corregir en la rama que falle y propagar con merge.
+1. Revisar el CI de #19–#24 y del PR de 8A. Si el de 6A (#23) no arrancó, forzarlo con un commit vacío en `desarrollo/etapa-6a`. Relanzar los trabajos intermitentes. Corregir y propagar con merge.
 2. Completar la sección 3 y la nota de cierre de `docs/REPORTES/ETAPA_5_CIERRE.md`.
-3. Etapa 8: operabilidad (respaldo y restauración reproducibles, observabilidad sin secretos, revisión de amenazas), en `desarrollo/etapa-8a`, sobre 7A.
+3. Etapa 9: matriz de aceptación integral (`docs/ACEPTACION_ETAPA_9.md`), con escenarios del comprador, en `desarrollo/etapa-9a`.
+4. Etapa 10: paquete de transferencia (instalación, inventario de dependencias y licencias, primer acceso, capacitación, acta de aceptación), en `desarrollo/etapa-10a`.
+5. Informe final para el propietario.
 
 ## Prompt de reanudación
 
