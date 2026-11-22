@@ -22,6 +22,7 @@ import {createWebTerminalService}from'../db/web-terminal-service.mjs';
 import {createWebDriverWalkInService}from'../db/web-driver-walk-in-service.mjs';
 import{createWebAccountService}from'../db/web-account-service.mjs';
 import{createWebRatingsService}from'../db/web-ratings-service.mjs';
+import{createWebNoticesService}from'../db/web-notices-service.mjs';
 import {createWebSessions}from'./web-sessions.mjs';
 import { assertRuntime } from '../db/runtime.mjs';
 
@@ -43,6 +44,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   const driverWalkIn=identityPool?createWebDriverWalkInService(pool):null;
   const account=identityPool?createWebAccountService(pool):null;
   const ratings=identityPool?createWebRatingsService(pool):null;
+  const notices=identityPool?createWebNoticesService(pool):null;
   const conditions=identityPool?createWebConditionService(pool):null;
   const safety=identityPool?createWebSafetyService(pool):null;
   const care=identityPool?createWebCareService(pool):null;
@@ -137,6 +139,8 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
     ['/api/ratings/mine',authenticated((token,_key,b)=>ratings.mine(token,b))],
     ['/api/ratings/rate',authenticated((token,key,b)=>ratings.rate(token,key,b))],
     ['/api/ratings/admin',authenticated((token,_key,b)=>ratings.admin(token,b))],
+    ['/api/notices/mine',authenticated((token,_key,b)=>notices.mine(token,b))],
+    ['/api/notices/read',authenticated((token,_key,b)=>notices.markRead(token,b))],
     ['/api/walk-in/driver-context',authenticated((token,_key,b)=>driverWalkIn.context(token,b))],
     ['/api/walk-in/driver-quote',authenticated((token,_key,b)=>driverWalkIn.quote(token,b))],
     ['/api/walk-in/driver-register',authenticated((token,key,b)=>driverWalkIn.register(token,key,b))],
