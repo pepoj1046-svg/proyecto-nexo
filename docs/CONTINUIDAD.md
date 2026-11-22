@@ -23,13 +23,13 @@ en `main` sin su ratificación.
 | 5A.8 Cierre de la etapa 5 | `desarrollo/etapa-5a8` | #22 → `etapa-5a7` | Documento de cierre redactado; falta completar la nota con el CI final. |
 | 6A Seguimiento por paradas y avisos | `desarrollo/etapa-6a` | #23 → `etapa-5a8` | Implementado (migración 046); CI en curso. |
 | 7A Conciliación simulada | `desarrollo/etapa-7a` | #24 → `etapa-6a` | Implementado (migración 047); CI en curso. |
-| 8A Operabilidad | `desarrollo/etapa-8a` | ver abajo | Respaldo y restauración, salud (048) y amenazas; pendiente de CI. |
-| Etapa 9 Aceptación integral | — | — | Siguiente. |
-| Etapa 10 Transferencia | — | — | Pendiente. |
+| 8A Operabilidad | `desarrollo/etapa-8a` | #25 → `etapa-7a` | Respaldo y restauración, salud (048) y amenazas; CI en curso. |
+| 9A Aceptación integral | `desarrollo/etapa-9a` | ver abajo | Matriz y escenarios redactados (`docs/ACEPTACION_ETAPA_9.md`). |
+| Etapa 10 Transferencia | — | — | Siguiente. |
 
 ## Ramas
 
-Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← `desarrollo/etapa-6a` ← `desarrollo/etapa-7a` ← `desarrollo/etapa-8a` ← (siguientes). Cada PR
+Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← `desarrollo/etapa-6a` ← `desarrollo/etapa-7a` ← `desarrollo/etapa-8a` ← `desarrollo/etapa-9a` ← (siguientes). Cada PR
 va en borrador hacia la rama anterior.
 
 ## Lecciones técnicas que no deben perderse
@@ -61,7 +61,7 @@ va en borrador hacia la rama anterior.
 
 1. Revisar el CI de #19–#24 y del PR de 8A. Si el de 6A (#23) no arrancó, forzarlo con un commit vacío en `desarrollo/etapa-6a`. Relanzar los trabajos intermitentes. Corregir y propagar con merge.
 2. Completar la sección 3 y la nota de cierre de `docs/REPORTES/ETAPA_5_CIERRE.md`.
-3. Etapa 9: matriz de aceptación integral (`docs/ACEPTACION_ETAPA_9.md`), con escenarios del comprador, en `desarrollo/etapa-9a`.
+3. Etapa 9: hecha (matriz en `docs/ACEPTACION_ETAPA_9.md`).
 4. Etapa 10: paquete de transferencia (instalación, inventario de dependencias y licencias, primer acceso, capacitación, acta de aceptación), en `desarrollo/etapa-10a`.
 5. Informe final para el propietario.
 
