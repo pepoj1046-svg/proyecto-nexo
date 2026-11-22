@@ -41,3 +41,8 @@ inmutabilidad, el bloqueo de borrado y el acceso directo denegado. **No ejecutad
 
 - No hay GPS, mapas ni canales externos (P-6A-1 y P-6A-2).
 - Todavía no hay avisos de rescate o reasignación (P-6A-4).
+
+## Corrección posterior (CI)
+
+- El panel de avisos lee solo a demanda («Consultar avisos» y luego «Actualizar avisos»), con el mismo criterio que la corrección de 5A.7 (límite global del gateway de laboratorio). Se vacía al cambiar de cuenta.
+- Pruebas ajustadas: S08 incluye el permiso intencional de mantenimiento `purge_expired_notices` (P-6A). En 6A-02, una venta presencial puede empezar en HELD hasta que el chofer la acepta. En 6A-01, la salida se hace con 6 plazas confirmadas.

@@ -11,7 +11,7 @@ test('6A-E1: notices panel is in-app only, on demand and without polling',async(
  await expect(panel.getByText('el laboratorio no envía SMS, correos ni llamadas',{exact:false})).toBeVisible();
  const calls=[];page.on('request',r=>{if(new URL(r.url()).pathname==='/api/notices/mine')calls.push(Date.now());});
  await page.waitForTimeout(5000);expect(calls).toEqual([]);
- await panel.getByRole('button',{name:'Actualizar avisos',exact:true}).click();
+ await panel.getByRole('button',{name:'Consultar avisos',exact:true}).click();
  await expect.poll(()=>calls.length).toBe(1);
  expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
 });

@@ -9,6 +9,10 @@ test('5A7-E1: a passenger without finished trips sees the rating panel empty and
  await login(page,'viajero7','/pasajero');
  const panel=page.getByRole('region',{name:'Valora tus viajes terminados'});
  await expect(panel).toBeVisible();
+ // On demand: nothing is read until the passenger asks.
+ const calls=[];page.on('request',r=>{if(new URL(r.url()).pathname==='/api/ratings/mine')calls.push(1);});
+ await page.waitForTimeout(1500);expect(calls).toEqual([]);
+ await panel.getByRole('button',{name:'Consultar viajes para valorar',exact:true}).click();
  await expect(panel.getByText('No tienes viajes terminados en los últimos 30 días.')).toBeVisible();
  await expect(panel.getByRole('button',{name:'Enviar valoración'})).toHaveCount(0);
  await expect(panel.getByText('Tu valoración llega a la asociación sin tu nombre.',{exact:false})).toBeVisible();
