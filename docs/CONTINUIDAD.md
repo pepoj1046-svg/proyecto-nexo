@@ -21,13 +21,14 @@ en `main` sin su ratificación.
 | 5A.6 Ayuda contextual | `desarrollo/etapa-5a6` | #20 → `etapa-5a5` | Implementado; CI en curso. |
 | 5A.7 Valoraciones | `desarrollo/etapa-5a7` | #21 → `etapa-5a6` | Implementado (migración 045); CI en curso. |
 | 5A.8 Cierre de la etapa 5 | `desarrollo/etapa-5a8` | #22 → `etapa-5a7` | Documento de cierre redactado; falta completar la nota con el CI final. |
-| 6A Seguimiento por paradas y avisos | `desarrollo/etapa-6a` | ver abajo | Implementado (migración 046); pendiente de CI. |
-| Etapa 7 Economía simulada | — | — | Siguiente. |
-| Etapas 8–10 | — | — | Pendientes. |
+| 6A Seguimiento por paradas y avisos | `desarrollo/etapa-6a` | #23 → `etapa-5a8` | Implementado (migración 046); CI en curso. |
+| 7A Conciliación simulada | `desarrollo/etapa-7a` | ver abajo | Implementado (migración 047); pendiente de CI. |
+| Etapa 8 Operabilidad | — | — | Siguiente. |
+| Etapas 9–10 | — | — | Pendientes. |
 
 ## Ramas
 
-Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← `desarrollo/etapa-6a` ← (siguientes). Cada PR
+Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← `desarrollo/etapa-6a` ← `desarrollo/etapa-7a` ← (siguientes). Cada PR
 va en borrador hacia la rama anterior.
 
 ## Lecciones técnicas que no deben perderse
@@ -57,9 +58,9 @@ va en borrador hacia la rama anterior.
 
 ## Próximo paso exacto
 
-1. Revisar el CI de #19–#22 y del PR de 6A. Relanzar «web mobile (ubuntu-latest, Node 24)» de 5A.5 si sigue en rojo por B3 T13. Corregir en la rama que falle y propagar con merge.
-2. Completar la sección 3 y la nota de cierre de `docs/REPORTES/ETAPA_5_CIERRE.md` con las cifras reales.
-3. Etapa 7: economía y conciliación simuladas, en `desarrollo/etapa-7a`, sobre 6A.
+1. Revisar el CI de #19–#23 y del PR de 7A. Relanzar los trabajos intermitentes (B3 T13 en móvil) cuando termine cada ejecución. Corregir en la rama que falle y propagar con merge.
+2. Completar la sección 3 y la nota de cierre de `docs/REPORTES/ETAPA_5_CIERRE.md`.
+3. Etapa 8: operabilidad (respaldo y restauración reproducibles, observabilidad sin secretos, revisión de amenazas), en `desarrollo/etapa-8a`, sobre 7A.
 
 ## Prompt de reanudación
 
