@@ -18,14 +18,14 @@ en `main` sin su ratificación.
 | --- | --- | --- | --- |
 | 4B.1 registro presencial del chofer | `desarrollo/etapa-4b1` (`e0e7f23`) | #18 → `main` | Auditado y APROBADO; CI 14/14; pendiente de ratificación. |
 | 5A.5 Mi cuenta | `desarrollo/etapa-5a5` | #19 → `etapa-4b1` | Implementado; CI en curso. |
-| 5A.6 Ayuda contextual | `desarrollo/etapa-5a6` | ver abajo | Implementado; pendiente de CI. |
-| 5A.7 Valoraciones | — | — | Siguiente (decisión provisional prudente). |
-| 5A.8 Cierre de la etapa 5 | — | — | Pendiente. |
+| 5A.6 Ayuda contextual | `desarrollo/etapa-5a6` | #20 → `etapa-5a5` | Implementado; CI en curso. |
+| 5A.7 Valoraciones | `desarrollo/etapa-5a7` | ver abajo | Implementado (migración 045); pendiente de CI. |
+| 5A.8 Cierre de la etapa 5 | — | — | Siguiente. |
 | Etapas 6–10 | — | — | Pendientes. |
 
 ## Ramas
 
-Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← (siguientes). Cada PR
+Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← (siguientes). Cada PR
 va en borrador hacia la rama anterior.
 
 ## Lecciones técnicas que no deben perderse
@@ -43,6 +43,10 @@ va en borrador hacia la rama anterior.
   `reviewer`, `platform`) solo existen con ciertas fixtures. Cada suite E2E nueva se
   registra en `allSuites` de `scripts/test-web.mjs`.
 - Los workflows ya corren en todo PR hacia `desarrollo/**`.
+- **Cada página nueva** de la web debe añadirse al `Set` `pages` de `src/http/web-gateway.mjs`; si no, el servidor no entrega la aplicación para esa ruta (fallo real de 5A.5).
+- **Cada error de negocio nuevo** debe añadirse a la expresión `known` del gateway; si no, llega como un error genérico.
+- **Cada tabla nueva** debe ir en el `TRUNCATE` del `beforeEach`, en `tables043` y en las listas `after` de las pruebas de actualización.
+- **Ramas encadenadas:** una corrección en una rama inferior se propaga con `git merge` hacia las superiores.
 - El límite global del gateway es de 120 solicitudes por minuto: dividir las suites E2E
   largas.
 - El push desde la PC del propietario necesita Git Credential Manager. Desde la sesión de
@@ -50,8 +54,8 @@ va en borrador hacia la rama anterior.
 
 ## Próximo paso exacto
 
-1. Revisar el CI de #19 (5A.5) y del PR de 5A.6; corregir lo que falle en su rama y propagar con merge a las ramas superiores.
-2. Empezar 5A.7 (valoraciones) en `desarrollo/etapa-5a7`, sobre 5A.6.
+1. Revisar el CI de #19 (5A.5), #20 (5A.6) y del PR de 5A.7; corregir en la rama que falle y propagar con merge hacia arriba.
+2. 5A.8: auditoría integral y cierre técnico de la etapa 5 (documento `docs/REPORTES/ETAPA_5_CIERRE.md`, matriz de trazabilidad, CI del SHA final).
 
 ## Prompt de reanudación
 
