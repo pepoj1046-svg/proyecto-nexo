@@ -29,14 +29,15 @@ export function NoticesPanel(){
    const r=await readForAccount<{items:Notice[];unread:number}>('/api/notices/mine',{},s);if(g!==generation.current)return;
    setSession(s);setItems(r.items);setUnread(r.unread);}
   catch(e){if(g===generation.current)setError(message(e));}};
- useEffect(()=>{void load();return()=>{generation.current++;};},[live?.accountRef]);
+ // On demand only: the panel never reads by itself, so it adds no load to the shared gateway.
+ useEffect(()=>{generation.current++;setItems(null);setUnread(0);setSession(null);setError('');},[live?.accountRef]);
  const markAll=async()=>{if(!session||!items)return;const ids=items.filter(i=>!i.read).map(i=>i.id).slice(0,50);if(!ids.length)return;setBusy(true);setError('');
   try{await assertSameAccount(session);await privateApi('/api/notices/read',{ids},session.csrf);await load();}catch(e){setError(message(e));}finally{setBusy(false);}};
- if(!session&&!error)return null;
+ if(!live?.authenticated)return null;
  return <section className="notices-panel" aria-labelledby="notices-title">
   <h2 id="notices-title"><Icon name="info" size={22}/>Avisos de tus viajes{unread>0&&<span className="notice-count">{unread} sin leer</span>}</h2>
   <p>Se generan con lo que registra la operación, paso a paso por paradas (sin GPS). Solo aparecen aquí: el laboratorio no envía SMS, correos ni llamadas. Caducan a las 24 horas.</p>
-  <div className="notice-actions"><button type="button" className="button quiet" onClick={()=>void load()}>Actualizar avisos</button>{unread>0&&<button type="button" className="button quiet" disabled={busy} onClick={()=>void markAll()}>Marcar todos como leídos</button>}</div>
+  <div className="notice-actions"><button type="button" className="button quiet" onClick={()=>void load()}>{items?'Actualizar avisos':'Consultar avisos'}</button>{unread>0&&<button type="button" className="button quiet" disabled={busy} onClick={()=>void markAll()}>Marcar todos como leídos</button>}</div>
   {error&&<p role="alert" className="message error">{error}</p>}
   {items&&(items.length?<ol className="notice-list">{items.map(n=><li key={n.id} className={n.read?'read':'unread'}><span className="notice-time">{time(n.createdAt)}</span><span>{(noticeText[n.kind]??(()=>'Aviso del viaje.'))(n)}</span>{!n.read&&<span className="visually-hidden">(sin leer)</span>}</li>)}</ol>
    :<p>No tienes avisos en las últimas 24 horas.</p>)}
