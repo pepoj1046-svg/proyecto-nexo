@@ -14,11 +14,12 @@ import{OperationalPanel}from'./Operations';
 import{Checkout,PointPicker,PrivateReservations}from'./Functional';
 import{RecoveryPanel}from'./RecoveryPanel';
 import{AccountPage}from'./Account';
+import{HelpPage}from'./Help';
 import{applyPreferences,loadPreferences}from'./preferences';
 
 applyPreferences(loadPreferences());
 
-const navItems=[['/','Buscar viaje'],['/pasajero','Mis reservas'],['/administracion','Administración'],['/chofer','Chofer'],['/plataforma','Plataforma'],['/cuenta','Mi cuenta']] as const;
+const navItems=[['/','Buscar viaje'],['/pasajero','Mis reservas'],['/administracion','Administración'],['/chofer','Chofer'],['/plataforma','Plataforma'],['/cuenta','Mi cuenta'],['/ayuda','Ayuda']] as const;
 // Hide synchronously before a page can enter bfcache. The retained React tree
 // (and its RAM attempts) stays mounted but cannot expose private content.
 window.addEventListener('pagehide',()=>{document.getElementById('document-content')?.setAttribute('hidden','');suspendDocument();});
@@ -30,7 +31,7 @@ function App(){
  const heading=useRef<HTMLElement>(null),menuButton=useRef<HTMLButtonElement>(null),first=useRef(true),currentPath=useRef(path);
  const recoveryAccount=useAdminRecovery(),protectedIntent=useAdminIntent(),[navigationError,setNavigationError]=useState('');
  const blockNavigation=()=>{if(!adminIntentPending())return false;setNavigationError(reservationIntentPending()?'Resuelve la solicitud de reserva pendiente: consulta el servidor o reintenta la misma solicitud antes de salir.':'Resuelve el intento administrativo pendiente: consulta su estado y reintenta la misma actuación antes de salir.');return true;};
- const go=(href:string)=>{if(blockNavigation()){setMenu(false);return;}currentPath.current=href;setNavigationError('');if(location.pathname!==href)history.pushState({},'',href);setPath(href);setMenu(false);};
+ const go=(href:string)=>{if(blockNavigation()){setMenu(false);return;}const target=new URL(href,location.origin);currentPath.current=target.pathname+target.search;setNavigationError('');if(location.pathname+location.search!==currentPath.current)history.pushState({},'',currentPath.current);setPath(target.pathname);setMenu(false);};
  useEffect(()=>{const pop=()=>{if(blockNavigation()){history.pushState({},'',currentPath.current);return;}currentPath.current=location.pathname;setPath(location.pathname);setMenu(false);};window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop);},[]);
  useEffect(()=>{document.title=`${path==='/'?'Busca tu próximo viaje':path==='/reservar'?'Solicitud de reserva':navItems.find(x=>x[0]===path)?.[1]??'Página no encontrada'} · Trufis Bolivia`;if(first.current)first.current=false;else{heading.current?.focus();window.scrollTo({top:0,behavior:'instant'});}},[path]);
  useEffect(()=>{if(!protectedIntent){setNavigationError('');return;}const leave=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue='';};window.addEventListener('beforeunload',leave);return()=>window.removeEventListener('beforeunload',leave);},[protectedIntent]);
@@ -50,11 +51,12 @@ function App(){
    <div hidden={path!=='/'}><Search onChoose={value=>{setSelection(value);go('/reservar');}}/></div>
    {path==='/plataforma'&&<PlatformAdministration/>}
    {path==='/cuenta'&&<AccountPage/>}
+   {path==='/ayuda'&&<HelpPage key={location.search} go={go}/>}
    {path==='/reservar'&&<div className="container"><RecoveryPanel/></div>}
    {path==='/reservar'&&<Reservation selection={selection} back={()=>go('/')} />}
    {path==='/operador'&&<section className="container panel-page"><h1>Ofertas del chofer de laboratorio</h1><PrivateReservations operator/></section>}
    {['/pasajero','/administracion','/chofer'].includes(path)&&<Panel path={path} link={link}/>}
-   {!['/plataforma','/cuenta','/','/reservar','/pasajero','/administracion','/chofer','/operador'].includes(path)&&<section className="container panel-page"><h1>Página no encontrada</h1>{link('/','Volver a buscar viajes','button primary')}</section>}
+   {!['/plataforma','/cuenta','/ayuda','/','/reservar','/pasajero','/administracion','/chofer','/operador'].includes(path)&&<section className="container panel-page"><h1>Página no encontrada</h1>{link('/','Volver a buscar viajes','button primary')}</section>}
    </div>
   </main>
   <footer className="site-footer"><div className="container"><span><Icon name="route" size={18}/><strong>Trufis Bolivia</strong><span>Localidades conectadas. Grupos juntos.</span></span><small>Prototipo local · Sin pagos, GPS ni notificaciones externas</small></div></footer>
@@ -124,8 +126,8 @@ function Reservation({selection,back}:{selection:Selection|null;back:()=>void}){
 function Panel({path,link}:{path:string;link:(href:string,text:string,className?:string)=>React.ReactNode}){
  const kind=path==='/pasajero'?'passenger':path==='/administracion'?'admin':'driver';
  const info={passenger:{title:'Tus viajes, en un solo lugar.',label:'ESPACIO DEL PASAJERO',icon:'users',features:[['Mis reservas','Recorrido, plazas e importe pactado.'],['Estado del vehículo','Asignación y estado del viaje.'],['Historial','Reservas y movimientos propios.'],['Ya llegué','Declaración de llegada y verificación administrativa.']]},admin:{title:'Una operación mejor organizada.',label:'ESPACIO ADMINISTRATIVO',icon:'shield',features:[['Ámbito autorizado','Consulta según los permisos de cada encargado.'],['Vehículos, filas y reservas','Capacidad por tramo, orden y reservas presenciales.'],['Llegadas y abordajes','Verificación y observaciones de pasajeros.'],['Incidencias','Reasignaciones y rescates supervisados.']]},driver:{title:'Tu recorrido, con claridad.',label:'ESPACIO DEL CHOFER',icon:'bus',features:[['Viajes asignados','Vehículo y servicio autorizado.'],['Puntos de recogida','Paradas y pasajeros esperados.'],['Registro de progreso','Avance solo en el recorrido autorizado.'],['Salida y llegada','Operaciones del chofer asignado.']]}}[kind];
- if(kind==='passenger')return <section className="container panel-page"><p className="eyebrow">{info.label}</p><h1>{info.title}</h1><RecoveryPanel/><PrivateReservations/><div className="panel-feature-grid">{info.features.map(([title,description],i)=><article key={title}><Icon name="users" size={24}/><span className="pending-tag">{i===3?'Presencia de laboratorio':'Consulta de laboratorio'}</span><h3>{title}</h3><p>{description}</p></article>)}</div>{link('/','Volver a buscar viajes','button quiet')}</section>;
- return <section className="container panel-page"><p className="eyebrow">{info.label}</p><h1>{info.title}</h1><OperationalPanel key={kind} view={kind==='admin'?'ADMIN':'DRIVER'}><div className="panel-feature-grid">{info.features.map(([title,description])=><article key={title}><Icon name={info.icon} size={24}/><span className="pending-tag">Sesión requerida</span><h3>{title}</h3><p>{description}</p></article>)}</div></OperationalPanel>{link('/','Volver a buscar viajes','button quiet')}</section>;
+ if(kind==='passenger')return <section className="container panel-page"><p className="eyebrow">{info.label}</p><h1>{info.title}</h1><RecoveryPanel/><PrivateReservations/><div className="panel-feature-grid">{info.features.map(([title,description],i)=><article key={title}><Icon name="users" size={24}/><span className="pending-tag">{i===3?'Presencia de laboratorio':'Consulta de laboratorio'}</span><h3>{title}</h3><p>{description}</p></article>)}</div>{link('/ayuda?para=pasajero','Ayuda para pasajeros','button quiet')}{link('/','Volver a buscar viajes','button quiet')}</section>;
+ return <section className="container panel-page"><p className="eyebrow">{info.label}</p><h1>{info.title}</h1><OperationalPanel key={kind} view={kind==='admin'?'ADMIN':'DRIVER'}><div className="panel-feature-grid">{info.features.map(([title,description])=><article key={title}><Icon name={info.icon} size={24}/><span className="pending-tag">Sesión requerida</span><h3>{title}</h3><p>{description}</p></article>)}</div></OperationalPanel>{link(kind==='admin'?'/ayuda?para=administracion':'/ayuda?para=chofer',kind==='admin'?'Ayuda para administración':'Ayuda para choferes','button quiet')}{link('/','Volver a buscar viajes','button quiet')}</section>;
 }
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App/></StrictMode>);

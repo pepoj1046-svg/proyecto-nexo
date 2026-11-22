@@ -17,15 +17,15 @@ en `main` sin su ratificación.
 | Incremento | Rama | PR | Estado |
 | --- | --- | --- | --- |
 | 4B.1 registro presencial del chofer | `desarrollo/etapa-4b1` (`e0e7f23`) | #18 → `main` | Auditado y APROBADO; CI 14/14; pendiente de ratificación. |
-| 5A.5 Mi cuenta | `desarrollo/etapa-5a5` | ver abajo | Implementado; esperando CI. |
-| 5A.6 Ayuda contextual | — | — | Siguiente. |
-| 5A.7 Valoraciones | — | — | Pendiente (decisión provisional prudente). |
+| 5A.5 Mi cuenta | `desarrollo/etapa-5a5` | #19 → `etapa-4b1` | Implementado; CI en curso. |
+| 5A.6 Ayuda contextual | `desarrollo/etapa-5a6` | ver abajo | Implementado; pendiente de CI. |
+| 5A.7 Valoraciones | — | — | Siguiente (decisión provisional prudente). |
 | 5A.8 Cierre de la etapa 5 | — | — | Pendiente. |
 | Etapas 6–10 | — | — | Pendientes. |
 
 ## Ramas
 
-Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← (siguientes). Cada PR
+Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← (siguientes). Cada PR
 va en borrador hacia la rama anterior.
 
 ## Lecciones técnicas que no deben perderse
@@ -50,8 +50,8 @@ va en borrador hacia la rama anterior.
 
 ## Próximo paso exacto
 
-1. Abrir el PR de 5A.5 hacia `desarrollo/etapa-4b1` y esperar su CI.
-2. Empezar 5A.6 (ayuda contextual local por rol y estado) en `desarrollo/etapa-5a6`, sobre 5A.5.
+1. Revisar el CI de #19 (5A.5) y del PR de 5A.6; corregir lo que falle en su rama y propagar con merge a las ramas superiores.
+2. Empezar 5A.7 (valoraciones) en `desarrollo/etapa-5a7`, sobre 5A.6.
 
 ## Prompt de reanudación
 
