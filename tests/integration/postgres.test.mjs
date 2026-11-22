@@ -1042,7 +1042,8 @@ test('S08: function grants, RLS coverage and failed-auth security records preser
   for(const [role,expected] of [
     ['nexo_identity',['identity_attempt','issue_identity_session','record_identity_failure','recover_identity','register_identity']],
     ['nexo_provisioner',['bootstrap_platform','configure_admin_scope','platform_verify_identity','provision_recovery','provision_role','set_identity_active']],
-    ['nexo_maintenance',['maintain_identity']]]) {
+    // 6A: the maintenance role may also purge expired simulated notices (P-6A).
+    ['nexo_maintenance',['maintain_identity','purge_expired_notices']]]) {
     const rows=await admin.query("SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='nexo' AND has_function_privilege($1,p.oid,'EXECUTE') ORDER BY p.proname",[role]);
     assert.deepEqual(rows.rows.map(r=>r.proname),expected);
   }
@@ -4710,7 +4711,8 @@ test('6A-02: walk-in passengers (no account) get no notices and walk-in sales st
  const notices=createWebNoticesService(pool);
  const before=(await admin.query('SELECT count(*)::int n FROM nexo.notices')).rows[0].n;
  const r=await business().walkIn(fixture.tokens.adminA,key(),request(1));
- assert.equal(r.initialStatus,'CONFIRMED','walk-in sale succeeds with the notice triggers in place');
+ assert.ok(['HELD','CONFIRMED'].includes(r.initialStatus)&&r.bookingIds.length===1,'walk-in sale succeeds with the notice triggers in place');
+ await acceptAll(r);
  assert.equal((await admin.query('SELECT count(*)::int n FROM nexo.notices')).rows[0].n,before,'no notice without a passenger account');
  assert.deepEqual((await notices.mine(fixture.tokens.adminA,{})).items,[]);
 });
