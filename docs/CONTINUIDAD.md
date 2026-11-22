@@ -24,12 +24,12 @@ en `main` sin su ratificación.
 | 6A Seguimiento por paradas y avisos | `desarrollo/etapa-6a` | #23 → `etapa-5a8` | Implementado (migración 046); CI en curso. |
 | 7A Conciliación simulada | `desarrollo/etapa-7a` | #24 → `etapa-6a` | Implementado (migración 047); CI en curso. |
 | 8A Operabilidad | `desarrollo/etapa-8a` | #25 → `etapa-7a` | Respaldo y restauración, salud (048) y amenazas; CI en curso. |
-| 9A Aceptación integral | `desarrollo/etapa-9a` | ver abajo | Matriz y escenarios redactados (`docs/ACEPTACION_ETAPA_9.md`). |
-| Etapa 10 Transferencia | — | — | Siguiente. |
+| 9A Aceptación integral | `desarrollo/etapa-9a` | #26 → `etapa-8a` | Matriz y escenarios (`docs/ACEPTACION_ETAPA_9.md`). |
+| 10A Transferencia | `desarrollo/etapa-10a` | ver abajo | Paquete en `docs/TRANSFERENCIA/` e inventario de licencias con prueba. |
 
 ## Ramas
 
-Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← `desarrollo/etapa-6a` ← `desarrollo/etapa-7a` ← `desarrollo/etapa-8a` ← `desarrollo/etapa-9a` ← (siguientes). Cada PR
+Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← `desarrollo/etapa-6a` ← `desarrollo/etapa-7a` ← `desarrollo/etapa-8a` ← `desarrollo/etapa-9a` ← `desarrollo/etapa-10a` (punta de la cadena). Cada PR
 va en borrador hacia la rama anterior.
 
 ## Lecciones técnicas que no deben perderse
@@ -59,11 +59,10 @@ va en borrador hacia la rama anterior.
 
 ## Próximo paso exacto
 
-1. Revisar el CI de #19–#24 y del PR de 8A. Si el de 6A (#23) no arrancó, forzarlo con un commit vacío en `desarrollo/etapa-6a`. Relanzar los trabajos intermitentes. Corregir y propagar con merge.
-2. Completar la sección 3 y la nota de cierre de `docs/REPORTES/ETAPA_5_CIERRE.md`.
-3. Etapa 9: hecha (matriz en `docs/ACEPTACION_ETAPA_9.md`).
-4. Etapa 10: paquete de transferencia (instalación, inventario de dependencias y licencias, primer acceso, capacitación, acta de aceptación), en `desarrollo/etapa-10a`.
-5. Informe final para el propietario.
+Estado al 22-11-2026: **las etapas 5A.5 a 10A están completas en laboratorio**. Todos los PR (#19 a #27) son borradores y tienen el CI en verde. La punta de la cadena es `84a8189`, con 152/152 unitarias, 443/443 de PostgreSQL y 125/125 E2E por trabajo.
+1. **Esperar al propietario.** Debe revisar el informe final, las decisiones provisionales (`docs/DECISIONES_PROVISIONALES.md`) y la matriz de aceptación (`docs/ACEPTACION_ETAPA_9.md`), y pedir correcciones.
+2. Aplicar cada corrección en la rama más baja afectada y propagarla con merge hacia arriba.
+3. **No fusionar nada** sin autorización expresa, PR por PR.
 
 ## Prompt de reanudación
 

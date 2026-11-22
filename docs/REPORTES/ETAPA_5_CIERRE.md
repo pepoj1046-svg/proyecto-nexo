@@ -48,11 +48,12 @@ Cifras del CI de cada SHA, contrastadas en los logs de GitHub Actions.
 | --- | --- | --- | --- | --- | --- |
 | #16 (B3) | `b5ebf13` | 137/137 | 424/424 | 111/111 | ✅ |
 | #18 (4B.1) | `e0e7f23` | 14/14 checks en verde | | | ✅ |
-| #19 (5A.5) | ver la nota de cierre | | | | |
-| #20 (5A.6) | ver la nota de cierre | | | | |
-| #21 (5A.7) | ver la nota de cierre | | | | |
+| #19 (5A.5) | `b51407c` | 142/142 | 434/434 | 119/119 | ✅ |
+| #20 (5A.6) | `60dcd1d` | 145/145 | 434/434 | 121/121 | ✅ |
+| #21 (5A.7) | `3d08fbf` | 147/147 | 436/436 | 123/123 | ✅ |
+| #22 (5A.8) | `1743e30` | 147/147 | 436/436 | 123/123 | ✅ |
 
-La sección 6 se completa con el CI del SHA final de esta rama.
+Las cifras de unitarias y PostgreSQL salen de los trabajos «dominio y PostgreSQL» con Node 24, en Ubuntu y Windows. Los trabajos con Node 22 también terminaron en verde. Las cifras E2E son iguales en los 8 trabajos web: escritorio y móvil, Ubuntu y Windows, Node 22 y 24. Ningún trabajo tuvo fallos ni pruebas marcadas como intermitentes.
 
 ## 4. Riesgos y pendientes al cerrar la etapa
 
@@ -73,4 +74,9 @@ Queda propuesta para cierre técnico de laboratorio, sujeta a:
 
 ## 6. Nota de cierre (CI del SHA final)
 
-Se completa al terminar el CI de esta rama.
+- **SHA final de la etapa 5:** `1743e30` (`desarrollo/etapa-5a8`, PR #22). Sus 12 de 12 checks están en verde.
+- **Correcciones necesarias para llegar al verde.** Ninguna cambia migraciones ya aplicadas en `main`:
+  1. 5A7-01 y 5A7-02 no respetaban dos reglas del núcleo. La salida exige 6 plazas confirmadas y ninguna retención vigente, y una retención no puede adelantarse en la fila (`QUEUE_ORDER`). Se corrigieron las pruebas; el producto no cambió.
+  2. El panel de valoraciones del pasajero leía al montarse. Con el límite global del gateway de laboratorio (120 solicitudes por minuto y 6 simultáneas), eso hacía fallar de forma determinista la prueba E2E de rescate en carretera. Ahora el panel lee solo a demanda.
+  3. B3 T13 falló una vez por intermitencia en 5A.5. Se relanzó sin cambios y pasó.
+- Estas cifras se anotan en la punta de la cadena (`desarrollo/etapa-10a`) para no relanzar el CI de toda la cadena por un cambio que solo toca documentación.
