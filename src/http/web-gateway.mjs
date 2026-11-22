@@ -24,7 +24,7 @@ import{createWebAccountService}from'../db/web-account-service.mjs';
 import {createWebSessions}from'./web-sessions.mjs';
 import { assertRuntime } from '../db/runtime.mjs';
 
-const pages=new Set(['/plataforma','/','/reservar','/pasajero','/administracion','/chofer','/operador','/cuenta']);
+const pages=new Set(['/plataforma','/','/reservar','/pasajero','/administracion','/chofer','/operador','/cuenta','/ayuda']);
 const denial=(status,code)=>Object.assign(new Error(code),{status,code});
 async function jsonBody(req,maxBytes=2048) {
   let size=0,parts=[];
