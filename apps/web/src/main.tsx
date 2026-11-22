@@ -13,8 +13,12 @@ import './styles.css';
 import{OperationalPanel}from'./Operations';
 import{Checkout,PointPicker,PrivateReservations}from'./Functional';
 import{RecoveryPanel}from'./RecoveryPanel';
+import{AccountPage}from'./Account';
+import{applyPreferences,loadPreferences}from'./preferences';
 
-const navItems=[['/','Buscar viaje'],['/pasajero','Mis reservas'],['/administracion','Administración'],['/chofer','Chofer'],['/plataforma','Plataforma']] as const;
+applyPreferences(loadPreferences());
+
+const navItems=[['/','Buscar viaje'],['/pasajero','Mis reservas'],['/administracion','Administración'],['/chofer','Chofer'],['/plataforma','Plataforma'],['/cuenta','Mi cuenta']] as const;
 // Hide synchronously before a page can enter bfcache. The retained React tree
 // (and its RAM attempts) stays mounted but cannot expose private content.
 window.addEventListener('pagehide',()=>{document.getElementById('document-content')?.setAttribute('hidden','');suspendDocument();});
@@ -45,11 +49,12 @@ function App(){
    <div key={documentView} id="document-content" hidden={!!recoveryAccount||!!documentGate}>
    <div hidden={path!=='/'}><Search onChoose={value=>{setSelection(value);go('/reservar');}}/></div>
    {path==='/plataforma'&&<PlatformAdministration/>}
+   {path==='/cuenta'&&<AccountPage/>}
    {path==='/reservar'&&<div className="container"><RecoveryPanel/></div>}
    {path==='/reservar'&&<Reservation selection={selection} back={()=>go('/')} />}
    {path==='/operador'&&<section className="container panel-page"><h1>Ofertas del chofer de laboratorio</h1><PrivateReservations operator/></section>}
    {['/pasajero','/administracion','/chofer'].includes(path)&&<Panel path={path} link={link}/>}
-   {!['/plataforma','/','/reservar','/pasajero','/administracion','/chofer','/operador'].includes(path)&&<section className="container panel-page"><h1>Página no encontrada</h1>{link('/','Volver a buscar viajes','button primary')}</section>}
+   {!['/plataforma','/cuenta','/','/reservar','/pasajero','/administracion','/chofer','/operador'].includes(path)&&<section className="container panel-page"><h1>Página no encontrada</h1>{link('/','Volver a buscar viajes','button primary')}</section>}
    </div>
   </main>
   <footer className="site-footer"><div className="container"><span><Icon name="route" size={18}/><strong>Trufis Bolivia</strong><span>Localidades conectadas. Grupos juntos.</span></span><small>Prototipo local · Sin pagos, GPS ni notificaciones externas</small></div></footer>

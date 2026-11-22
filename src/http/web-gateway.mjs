@@ -20,6 +20,7 @@ import {createWebRecoveryService}from'../db/web-recovery-service.mjs';
 import {createWebManagementService}from'../db/web-management-service.mjs';
 import {createWebTerminalService}from'../db/web-terminal-service.mjs';
 import {createWebDriverWalkInService}from'../db/web-driver-walk-in-service.mjs';
+import{createWebAccountService}from'../db/web-account-service.mjs';
 import {createWebSessions}from'./web-sessions.mjs';
 import { assertRuntime } from '../db/runtime.mjs';
 
@@ -39,6 +40,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
   const recovery=identityPool?createWebRecoveryService(pool):null;
   const terminal=identityPool?createWebTerminalService(pool):null;
   const driverWalkIn=identityPool?createWebDriverWalkInService(pool):null;
+  const account=identityPool?createWebAccountService(pool):null;
   const conditions=identityPool?createWebConditionService(pool):null;
   const safety=identityPool?createWebSafetyService(pool):null;
   const care=identityPool?createWebCareService(pool):null;
@@ -129,6 +131,7 @@ export async function startWebGateway({pool,catalogToken,localTest,service,ident
       const result=await appReceipts.read(context.entry.token,ticket.key);await sessions.actor(context);await recoveryDatabase();tickets.verify(ticket,actor.accountRef);
       return{...result,family:'RESERVATION_APP',key:ticket.key,environmentId:ticket.environmentId,observedAt:tickets.observedAt()};
     })],
+    ['/api/account',authenticated((token,_key,b)=>account.read(token,b))],
     ['/api/walk-in/driver-context',authenticated((token,_key,b)=>driverWalkIn.context(token,b))],
     ['/api/walk-in/driver-quote',authenticated((token,_key,b)=>driverWalkIn.quote(token,b))],
     ['/api/walk-in/driver-register',authenticated((token,key,b)=>driverWalkIn.register(token,key,b))],
