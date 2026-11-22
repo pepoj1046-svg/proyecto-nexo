@@ -22,14 +22,15 @@ export function PassengerRatings(){
    const r=await readForAccount<{items:Ratable[]}>('/api/ratings/mine',{},s);if(g!==generation.current)return;setSession(s);setItems(r.items);}
   catch(e){if(g===generation.current)setError(message(e));}};
  const live=useSyncExternalStore(subscribeSession,currentSession,()=>null);
- useEffect(()=>{void load();return()=>{generation.current++;};},[live?.accountRef]);
- if(!session&&!error)return null;
+ // On demand only: the panel never reads by itself, so it adds no load to the shared gateway.
+ useEffect(()=>{generation.current++;setItems(null);setSession(null);setError('');},[live?.accountRef]);
+ if(!live?.authenticated)return null;
  return <section className="ratings-panel" aria-labelledby="ratings-title">
   <h2 id="ratings-title"><Icon name="check" size={22}/>Valora tus viajes terminados</h2>
   <p>Tu valoración llega a la asociación sin tu nombre. No cambia tu reserva ni la de nadie, y no se puede editar después.</p>
-  <button type="button" className="button quiet" onClick={()=>void load()}>Actualizar viajes para valorar</button>
+  <button type="button" className="button quiet" onClick={()=>void load()}>{items?'Actualizar viajes para valorar':'Consultar viajes para valorar'}</button>
   {error&&<p role="alert" className="message error">{error}</p>}
-  {items&&(items.length?<ul className="ratings-list">{items.map(i=><li key={i.bookingId}><RatingForm item={i} session={session!} onDone={()=>void load()}/></li>)}</ul>
+  {items&&session&&(items.length?<ul className="ratings-list">{items.map(i=><li key={i.bookingId}><RatingForm item={i} session={session} onDone={()=>void load()}/></li>)}</ul>
    :<p>No tienes viajes terminados en los últimos 30 días.</p>)}
  </section>;
 }
