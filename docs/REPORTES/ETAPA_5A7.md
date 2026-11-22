@@ -44,3 +44,9 @@ cubre el CI del PR.
 - Las E2E no recorren una valoración completa desde la interfaz, porque el laboratorio web
   no tiene viajes terminados para el pasajero. Ese recorrido lo cubre la prueba de integración.
 - No hay texto libre, edición ni visibilidad para el chofer (P-5A7-4 y P-5A7-5).
+
+## Corrección posterior (CI)
+
+- **Defecto:** el panel de valoraciones del pasajero leía al montarse. El gateway de laboratorio tiene un límite global (120 solicitudes por minuto y 6 simultáneas), y esa lectura extra hacía fallar de forma determinista la prueba E2E «rescate en carretera» en las tres configuraciones que la ejecutaron: la última consulta del chofer seguía mostrando la fase anterior.
+- **Corrección:** el panel lee solo a demanda («Consultar viajes para valorar»), igual que los demás paneles, y se vacía al cambiar de cuenta. La prueba 5A7-E1 ahora exige que no haya lecturas automáticas.
+- **Pruebas:** también se corrigieron 5A7-01 y 5A7-02, que no respetaban las reglas del núcleo. La salida exige 6 plazas confirmadas y ninguna retención vigente, y una retención no puede adelantarse en la fila (`QUEUE_ORDER`).
