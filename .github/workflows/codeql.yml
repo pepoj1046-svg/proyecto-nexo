@@ -17,6 +17,7 @@ on:
   pull_request:
     branches:
       - main
+      - 'desarrollo/**'
       - desarrollo/etapa-5a4-b3
       - desarrollo/etapa-5a4-b2
       - desarrollo/etapa-5a4-b1

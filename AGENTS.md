@@ -7,16 +7,18 @@ Trabaja **solo** en este repositorio, `pepoj1046-svg/proyecto-nexo`. Nunca uses,
 - Rama principal protegida por convención: no hacer push ni merge directo a `main`.
 - Estas instrucciones aplican a cualquier agente (Codex, Claude u otro) que trabaje en el repositorio.
 - Etapas 1–3 cerradas técnicamente en laboratorio y Etapa 4A con cierre técnico de laboratorio (PR #5), sin habilitación productiva.
-- Etapa 5 en curso por incrementos encadenados (PR #7–#12). Último ratificado por el propietario, solo para laboratorio:
-  5A.4-B2 en `desarrollo/etapa-5a4-b2` (PR #12, incluye la corrección 042 del PR #13).
-- **Autorización por incremento:** cada incremento requiere autorización expresa del propietario y nombrada; terminar uno
-  no autoriza el siguiente. 5A.4-B3, 5A.5–5A.8 y etapas 6–10 no están autorizadas salvo encargo explícito posterior.
-- Cada incremento parte del SHA ratificado del anterior, en rama propia, con PR en borrador hacia la rama del incremento
+- Etapa 5 integrada en `main` hasta 5A.4-B3 (17-11-2026, `89ec522`). 4B.1 (registro presencial por el chofer) en el
+  PR #18, auditado y pendiente de ratificación.
+- **Autorización vigente (21-11-2026):** el propietario encargó a Claude completar 5A.5–5A.8 y las etapas 6–10 en
+  laboratorio, tomando las decisiones de negocio necesarias como **provisionales**, documentadas en
+  `docs/DECISIONES_PROVISIONALES.md`, para revisarlas al final. No autoriza fusionar en `main`, desplegar, usar datos
+  reales, dinero real ni servicios de pago. El estado de trabajo y el prompt de reanudación están en `docs/CONTINUIDAD.md`.
+- Cada incremento parte del SHA del anterior, en rama propia, con PR en borrador hacia la rama del incremento
   anterior; nunca desde una `main` antigua. No fusionar, cerrar ni modificar PRs ajenos al encargo sin autorización.
-- Si una rama nueva será base de PR, añadirla a `pull_request.branches` de `etapa-1-tests.yml` y `codeql.yml`.
+- El CI corre en todo PR hacia `main` o `desarrollo/**`.
 - Solo web adaptable, PostgreSQL local y datos ficticios; sin aplicaciones nativas,
   bancos, GPS real, comunicaciones externas ni despliegues.
-- Conservar 001–042 intactas; nuevas migraciones desde 043, aditivas y exclusivas de su incremento. Sin privilegios
+- Conservar intactas las migraciones ya integradas; cada migración nueva es la siguiente numerada, aditivas y exclusivas de su incremento. Sin privilegios
   operativos globales ni otro inventario. Reutilizar el núcleo transaccional y documentar decisiones pendientes.
 - Antes de editar, leer `docs/REQUISITOS_INICIALES.md`, `docs/ARQUITECTURA.md`, `docs/MODELO_DE_DATOS.md`, `docs/SEGURIDAD_PENDIENTE.md` y `docs/PRUEBAS_ETAPA_1.md`.
 - Implementar incrementos pequeños con pruebas automatizadas reproducibles. Documentar cómo ejecutar cada prueba y su salida.
