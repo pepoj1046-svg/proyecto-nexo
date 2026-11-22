@@ -20,12 +20,14 @@ en `main` sin su ratificación.
 | 5A.5 Mi cuenta | `desarrollo/etapa-5a5` | #19 → `etapa-4b1` | Implementado; CI en curso. |
 | 5A.6 Ayuda contextual | `desarrollo/etapa-5a6` | #20 → `etapa-5a5` | Implementado; CI en curso. |
 | 5A.7 Valoraciones | `desarrollo/etapa-5a7` | #21 → `etapa-5a6` | Implementado (migración 045); CI en curso. |
-| 5A.8 Cierre de la etapa 5 | `desarrollo/etapa-5a8` | ver abajo | Documento de cierre redactado; falta completar la nota con el CI final. |
-| Etapas 6–10 | — | — | Pendientes. |
+| 5A.8 Cierre de la etapa 5 | `desarrollo/etapa-5a8` | #22 → `etapa-5a7` | Documento de cierre redactado; falta completar la nota con el CI final. |
+| 6A Seguimiento por paradas y avisos | `desarrollo/etapa-6a` | ver abajo | Implementado (migración 046); pendiente de CI. |
+| Etapa 7 Economía simulada | — | — | Siguiente. |
+| Etapas 8–10 | — | — | Pendientes. |
 
 ## Ramas
 
-Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← (siguientes). Cada PR
+Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← `desarrollo/etapa-6a` ← (siguientes). Cada PR
 va en borrador hacia la rama anterior.
 
 ## Lecciones técnicas que no deben perderse
@@ -46,6 +48,7 @@ va en borrador hacia la rama anterior.
 - **Cada página nueva** de la web debe añadirse al `Set` `pages` de `src/http/web-gateway.mjs`; si no, el servidor no entrega la aplicación para esa ruta (fallo real de 5A.5).
 - **Cada error de negocio nuevo** debe añadirse a la expresión `known` del gateway; si no, llega como un error genérico.
 - **Cada tabla nueva** debe ir en el `TRUNCATE` del `beforeEach`, en `tables043` y en las listas `after` de las pruebas de actualización.
+- **Lista de funciones nuevas de `4B1-09`:** debe ir en el orden de `sort()` de JS (código ASCII): `web_ratable_bookings` va antes que `web_rate_service`. Hay que calcularla con `sorted()`.
 - **Ramas encadenadas:** una corrección en una rama inferior se propaga con `git merge` hacia las superiores.
 - El límite global del gateway es de 120 solicitudes por minuto: dividir las suites E2E
   largas.
@@ -54,9 +57,9 @@ va en borrador hacia la rama anterior.
 
 ## Próximo paso exacto
 
-1. Cuando termine la ejecución de 5A.5, relanzar solo el trabajo «web mobile (ubuntu-latest, Node 24)» (falló B3 T13 por tiempo, en un paso ajeno al cambio).
-2. Revisar el CI de #20, #21 y del PR de 5A.8; completar la sección 3 y la nota de cierre de `docs/REPORTES/ETAPA_5_CIERRE.md`.
-3. Etapa 6: seguimiento y avisos simulados, en `desarrollo/etapa-6a`, sobre 5A.8.
+1. Revisar el CI de #19–#22 y del PR de 6A. Relanzar «web mobile (ubuntu-latest, Node 24)» de 5A.5 si sigue en rojo por B3 T13. Corregir en la rama que falle y propagar con merge.
+2. Completar la sección 3 y la nota de cierre de `docs/REPORTES/ETAPA_5_CIERRE.md` con las cifras reales.
+3. Etapa 7: economía y conciliación simuladas, en `desarrollo/etapa-7a`, sobre 6A.
 
 ## Prompt de reanudación
 
