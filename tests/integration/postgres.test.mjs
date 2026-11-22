@@ -4622,12 +4622,15 @@ test('5A5-01: my account shows only the actor\'s own label and active roles; no 
 // to administration, and without any effect on inventory, fares, queue or custody.
 test('5A7-01: only the passenger rates his completed APP booking, once, idempotently and concurrently safe',async()=>{
  const ratings=createWebRatingsService(pool);
- const g1=await fixed(2),g2=await fixed(1),g3=await fixed(1);await acceptAll(g1);await acceptAll(g2);await acceptAll(g3);
- const open=await hold(1,{parts:[{tripId:fixture.trips[1],seats:1}]});
+ // Departure needs six CONFIRMED seats and no live hold: four groups fill the trufi.
+ const g1=await fixed(2),g2=await fixed(1),g3=await fixed(1),g4=await fixed(2);for(const g of[g1,g2,g3,g4])await acceptAll(g);
  assert.equal((await ratings.mine(fixture.tokens.p,{})).items.length,0,'nothing is ratable before the trip ends');
- await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);assert.equal((await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3)).status,'COMPLETED');
+ await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);
+ // Created after the departure, so the core allocates it to the next trufi in the queue.
+ const open=await hold(1);
+ assert.equal((await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3)).status,'COMPLETED');
  const listed=(await ratings.mine(fixture.tokens.p,{})).items;
- assert.deepEqual(listed.map(x=>x.bookingId).sort(),[g1.bookingIds[0],g2.bookingIds[0],g3.bookingIds[0]].sort());
+ assert.deepEqual(listed.map(x=>x.bookingId).sort(),[g1,g2,g3,g4].map(g=>g.bookingIds[0]).sort());
  assert.ok(listed.every(x=>x.rated===false&&x.score===null));
  const before=(await admin.query('SELECT * FROM nexo.bookings ORDER BY id')).rows,trips=(await admin.query('SELECT * FROM nexo.trips ORDER BY id')).rows;
  const k=key(),r=await ratings.rate(fixture.tokens.p,k,{bookingId:g1.bookingIds[0],score:4,tags:['TRATO','PUNTUALIDAD']});
@@ -4651,7 +4654,7 @@ test('5A7-01: only the passenger rates his completed APP booking, once, idempote
 
 test('5A7-02: administration sees only its managed routes, anonymously; others are refused',async()=>{
  const ratings=createWebRatingsService(pool);
- const g=await fixed(1);await acceptAll(g);await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3);
+ const g=await fixed(6);await acceptAll(g);await api.depart(fixture.tokens.d0,key(),fixture.trips[0]);await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3);
  await ratings.rate(fixture.tokens.p,key(),{bookingId:g.bookingIds[0],score:3,tags:['LIMPIEZA']});
  const a=await ratings.admin(fixture.tokens.adminA,{limit:10,offset:0});
  assert.equal(a.items.length,1);assert.equal(a.items[0].score,3);assert.deepEqual(a.items[0].tags,['LIMPIEZA']);
@@ -4670,11 +4673,14 @@ test('5A7-02: administration sees only its managed routes, anonymously; others a
 // Etapa 6A: in-app notices from real trip facts; own only; expiring; no side effects.
 test('6A-01: trip facts create one in-app notice each for the passenger only, idempotently and with no side effects',async()=>{
  const notices=createWebNoticesService(pool);
- const g=await fixed(2);await acceptAll(g);
+ // Departure needs six CONFIRMED seats: one group of six.
+ const g=await fixed(6);await acceptAll(g);
  const kinds=async(token=fixture.tokens.p)=>(await notices.mine(token,{})).items.map(x=>x.kind).sort();
  assert.deepEqual(await kinds(),['RESERVA_CONFIRMADA']);
- const k=key();await api.depart(fixture.tokens.d0,k,fixture.trips[0]);await api.depart(fixture.tokens.d0,k,fixture.trips[0]);
- assert.deepEqual(await kinds(),['RESERVA_CONFIRMADA','VIAJE_SALIO'],'a replayed departure adds nothing');
+ const k=key();await api.depart(fixture.tokens.d0,k,fixture.trips[0]);const afterDeparture=await kinds();
+ assert.ok(afterDeparture.includes('VIAJE_SALIO'),'departure creates its notice');
+ await api.depart(fixture.tokens.d0,k,fixture.trips[0]);
+ assert.deepEqual(await kinds(),afterDeparture,'a replayed departure adds nothing');
  await api.progress(fixture.tokens.d0,key(),fixture.trips[0],3);
  const all=(await notices.mine(fixture.tokens.p,{})).items;
  assert.ok(all.some(x=>x.kind==='VIAJE_TERMINADO'));
