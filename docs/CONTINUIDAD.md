@@ -19,13 +19,13 @@ en `main` sin su ratificación.
 | 4B.1 registro presencial del chofer | `desarrollo/etapa-4b1` (`e0e7f23`) | #18 → `main` | Auditado y APROBADO; CI 14/14; pendiente de ratificación. |
 | 5A.5 Mi cuenta | `desarrollo/etapa-5a5` | #19 → `etapa-4b1` | Implementado; CI en curso. |
 | 5A.6 Ayuda contextual | `desarrollo/etapa-5a6` | #20 → `etapa-5a5` | Implementado; CI en curso. |
-| 5A.7 Valoraciones | `desarrollo/etapa-5a7` | ver abajo | Implementado (migración 045); pendiente de CI. |
-| 5A.8 Cierre de la etapa 5 | — | — | Siguiente. |
+| 5A.7 Valoraciones | `desarrollo/etapa-5a7` | #21 → `etapa-5a6` | Implementado (migración 045); CI en curso. |
+| 5A.8 Cierre de la etapa 5 | `desarrollo/etapa-5a8` | ver abajo | Documento de cierre redactado; falta completar la nota con el CI final. |
 | Etapas 6–10 | — | — | Pendientes. |
 
 ## Ramas
 
-Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← (siguientes). Cada PR
+Cadena: `main` ← `desarrollo/etapa-4b1` ← `desarrollo/etapa-5a5` ← `desarrollo/etapa-5a6` ← `desarrollo/etapa-5a7` ← `desarrollo/etapa-5a8` ← (siguientes). Cada PR
 va en borrador hacia la rama anterior.
 
 ## Lecciones técnicas que no deben perderse
@@ -54,8 +54,9 @@ va en borrador hacia la rama anterior.
 
 ## Próximo paso exacto
 
-1. Revisar el CI de #19 (5A.5), #20 (5A.6) y del PR de 5A.7; corregir en la rama que falle y propagar con merge hacia arriba.
-2. 5A.8: auditoría integral y cierre técnico de la etapa 5 (documento `docs/REPORTES/ETAPA_5_CIERRE.md`, matriz de trazabilidad, CI del SHA final).
+1. Cuando termine la ejecución de 5A.5, relanzar solo el trabajo «web mobile (ubuntu-latest, Node 24)» (falló B3 T13 por tiempo, en un paso ajeno al cambio).
+2. Revisar el CI de #20, #21 y del PR de 5A.8; completar la sección 3 y la nota de cierre de `docs/REPORTES/ETAPA_5_CIERRE.md`.
+3. Etapa 6: seguimiento y avisos simulados, en `desarrollo/etapa-6a`, sobre 5A.8.
 
 ## Prompt de reanudación
 
